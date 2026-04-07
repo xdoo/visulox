@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import type { TenderCriterion } from '../../types/new-tender'
+
 defineProps<{
-  criteria: { name: string; weight: number }[]
   totalWeight: number
 }>()
 
-const emit = defineEmits(['add', 'remove'])
+const criteria = defineModel<TenderCriterion[]>('criteria', { required: true })
+
+const emit = defineEmits<{
+  add: []
+  remove: [index: number]
+}>()
 </script>
 
 <template>

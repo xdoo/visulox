@@ -1,9 +1,12 @@
 <script setup lang="ts">
-defineProps<{
-  vendors: { name: string }[]
-}>()
+import type { TenderVendor } from '../../types/new-tender'
 
-const emit = defineEmits(['add', 'remove'])
+const vendors = defineModel<TenderVendor[]>('vendors', { required: true })
+
+const emit = defineEmits<{
+  add: []
+  remove: [index: number]
+}>()
 </script>
 
 <template>
