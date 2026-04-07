@@ -1,0 +1,24 @@
+CREATE TABLE IF NOT EXISTS ausschreibungen (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS abschnitte (
+  id BIGSERIAL PRIMARY KEY,
+  ausschreibung_id BIGINT NOT NULL REFERENCES ausschreibungen(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  weight INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS kostenbloecke (
+  id BIGSERIAL PRIMARY KEY,
+  ausschreibung_id BIGINT NOT NULL REFERENCES ausschreibungen(id) ON DELETE CASCADE,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS anbieter (
+  id BIGSERIAL PRIMARY KEY,
+  ausschreibung_id BIGINT NOT NULL REFERENCES ausschreibungen(id) ON DELETE CASCADE,
+  name TEXT NOT NULL
+);

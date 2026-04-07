@@ -10,12 +10,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U visulox -d visulox"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-volumes:
-  postgres_data:

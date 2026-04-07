@@ -1,9 +1,19 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
 import { onKeyStroke } from '@vueuse/core'
 
-const route = useRoute()
 const isNewTenderModalOpen = ref(false)
+const {
+  loadAusschreibungen,
+  overviewLinks,
+  ausschreibungLinks,
+  settingsLinks,
+  breadcrumbItems,
+  currentTitle
+} = useAusschreibungenNavigation()
+
+await callOnce(async () => {
+  await loadAusschreibungen()
+})
 
 // Shortcut: Shift + N öffnet das Modal
 onKeyStroke(['N'], (e) => {
@@ -11,32 +21,6 @@ onKeyStroke(['N'], (e) => {
     e.preventDefault()
     isNewTenderModalOpen.value = true
   }
-})
-
-const links = computed<NavigationMenuItem[]>(() => [{
-  label: 'Ausschreibungen',
-  icon: 'i-heroicons-home',
-  to: '/',
-  active: route.path === '/'
-}, {
-  label: 'Settings',
-  icon: 'i-heroicons-cog-6-tooth',
-  to: '/settings',
-  active: route.path === '/settings'
-}])
-
-const breadcrumbItems = computed(() => {
-  const items = [{ label: 'Home', icon: 'i-heroicons-home', to: '/' }]
-  if (route.path === '/settings') {
-    items.push({ label: 'Settings', to: '/settings' })
-  } else {
-    items.push({ label: 'Ausschreibungen', to: '/' })
-  }
-  return items
-})
-
-const currentTitle = computed(() => {
-  return route.path === '/settings' ? 'Settings' : 'Ausschreibungen'
 })
 </script>
 
@@ -51,7 +35,19 @@ const currentTitle = computed(() => {
       </template>
 
       <div class="flex-1 overflow-y-auto p-3">
-        <UNavigationMenu :items="links" orientation="vertical" />
+        <div class="space-y-4">
+          <UNavigationMenu :items="overviewLinks" orientation="vertical" />
+
+          <div v-if="ausschreibungLinks.length > 0" class="space-y-3">
+            <hr class="ui-border">
+            <UNavigationMenu :items="ausschreibungLinks" orientation="vertical" />
+          </div>
+
+          <div class="space-y-3">
+            <hr class="ui-border">
+            <UNavigationMenu :items="settingsLinks" orientation="vertical" />
+          </div>
+        </div>
       </div>
 
       <template #footer>
@@ -59,7 +55,7 @@ const currentTitle = computed(() => {
           <UUser
             name="Benjamin Canac"
             description="ben@nuxtlabs.com"
-            avatar="https://avatars.githubusercontent.com/u/739984?v=4"
+            :avatar="{ src: 'https://avatars.githubusercontent.com/u/739984?v=4' }"
           />
         </div>
       </template>
