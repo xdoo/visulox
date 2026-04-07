@@ -118,7 +118,7 @@ const currentTitle = computed(() => {
           <UUser
             name="Benjamin Canac"
             description="ben@nuxtlabs.com"
-            avatar="https://avatars.githubusercontent.com/u/739984?v=4"
+            :avatar="{ src: 'https://avatars.githubusercontent.com/u/739984?v=4' }"
           />
         </div>
       </template>
