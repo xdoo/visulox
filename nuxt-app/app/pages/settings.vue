@@ -1,3 +1,9 @@
+<script setup lang="ts">
+useSeoMeta({
+  title: 'Settings'
+})
+</script>
+
 <template>
   <div class="space-y-6">
     <div>

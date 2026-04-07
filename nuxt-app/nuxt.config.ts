@@ -9,6 +9,12 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/test-utils/module'
   ],
+  app: {
+    head: {
+      titleTemplate: '%s - Visulox',
+      title: 'Visulox'
+    }
+  },
   future: {
     compatibilityVersion: 4
   }
