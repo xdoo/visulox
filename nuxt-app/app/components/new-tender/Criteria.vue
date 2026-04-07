@@ -15,7 +15,7 @@ const emit = defineEmits(['add', 'remove'])
     </div>
     
     <div class="space-y-2 max-h-[250px] overflow-y-auto pr-2">
-      <div v-for="(item, index) in criteria" :key="index" class="flex gap-4 items-end bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg group border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-colors">
+      <div v-for="(item, index) in criteria" :key="index" class="flex gap-4 items-end ui-bg-muted p-3 rounded-lg group border border-transparent hover:ui-border transition-colors">
         <UFormField label="Name" class="flex-1">
           <UInput v-model="item.name" placeholder="z.B. Service Level" />
         </UFormField>
@@ -26,7 +26,7 @@ const emit = defineEmits(['add', 'remove'])
       </div>
     </div>
     
-    <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+    <div class="pt-4 border-t ui-border flex justify-end">
       <div class="text-sm font-medium" :class="totalWeight === 100 ? 'text-success' : 'text-error'">
         Summe: {{ totalWeight }}% / 100%
       </div>
