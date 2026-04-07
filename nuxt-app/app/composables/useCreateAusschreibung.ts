@@ -1,5 +1,7 @@
 import { ref } from 'vue'
 
+import { useAusschreibungen } from './useAusschreibungen'
+
 import type { NewTenderFormData } from '../types/new-tender'
 import type { CreateAusschreibungRequest, CreateAusschreibungResponse } from '../../shared/types/ausschreibungen'
 
@@ -20,6 +22,7 @@ export function mapNewTenderToCreateAusschreibungRequest(tenderData: NewTenderFo
 export function useCreateAusschreibung(fetcher: CreateAusschreibungFetcher = $fetch as CreateAusschreibungFetcher) {
   const isSaving = ref(false)
   const errorMessage = ref('')
+  const { addAusschreibung, getAusschreibungPath } = useAusschreibungen()
 
   async function createAusschreibung(tenderData: NewTenderFormData) {
     isSaving.value = true
@@ -28,10 +31,19 @@ export function useCreateAusschreibung(fetcher: CreateAusschreibungFetcher = $fe
     try {
       const payload = mapNewTenderToCreateAusschreibungRequest(tenderData)
 
-      return await fetcher<CreateAusschreibungResponse>('/api/ausschreibungen', {
+      const response = await fetcher<CreateAusschreibungResponse>('/api/ausschreibungen', {
         method: 'POST',
         body: payload
       })
+
+      addAusschreibung({
+        id: response.id,
+        name: payload.name
+      })
+
+      await navigateTo(getAusschreibungPath(response.id))
+
+      return response
     } catch {
       errorMessage.value = 'Ausschreibung konnte nicht gespeichert werden.'
       throw new Error(errorMessage.value)

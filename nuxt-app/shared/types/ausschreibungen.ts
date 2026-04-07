@@ -21,3 +21,8 @@ export interface CreateAusschreibungRequest {
 export interface CreateAusschreibungResponse {
   id: string
 }
+
+export interface AusschreibungListItem {
+  id: string
+  name: string
+}

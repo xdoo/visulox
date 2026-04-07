@@ -4,6 +4,17 @@ import { onKeyStroke } from '@vueuse/core'
 
 const route = useRoute()
 const isNewTenderModalOpen = ref(false)
+const {
+  items: ausschreibungen,
+  latestAusschreibungName,
+  loadAusschreibungen,
+  getAusschreibungPath,
+  findAusschreibungById
+} = useAusschreibungen()
+
+await callOnce(async () => {
+  await loadAusschreibungen()
+})
 
 // Shortcut: Shift + N öffnet das Modal
 onKeyStroke(['N'], (e) => {
@@ -13,30 +24,66 @@ onKeyStroke(['N'], (e) => {
   }
 })
 
-const links = computed<NavigationMenuItem[]>(() => [{
+const overviewLinks = computed<NavigationMenuItem[]>(() => [{
   label: 'Ausschreibungen',
   icon: 'i-heroicons-home',
   to: '/',
   active: route.path === '/'
-}, {
+}])
+
+const ausschreibungLinks = computed<NavigationMenuItem[]>(() => {
+  return ausschreibungen.value.map((item) => ({
+    label: item.name,
+    icon: 'i-heroicons-document-text',
+    to: getAusschreibungPath(item.id),
+    active: route.path === getAusschreibungPath(item.id)
+  }))
+})
+
+const settingsLinks = computed<NavigationMenuItem[]>(() => [{
   label: 'Settings',
   icon: 'i-heroicons-cog-6-tooth',
   to: '/settings',
   active: route.path === '/settings'
 }])
 
+const currentAusschreibung = computed(() => {
+  const ausschreibungId = typeof route.params.id === 'string' ? route.params.id : ''
+
+  if (!ausschreibungId) {
+    return null
+  }
+
+  return findAusschreibungById(ausschreibungId)
+})
+
 const breadcrumbItems = computed(() => {
   const items = [{ label: 'Home', icon: 'i-heroicons-home', to: '/' }]
+
   if (route.path === '/settings') {
     items.push({ label: 'Settings', to: '/settings' })
+  } else if (currentAusschreibung.value) {
+    items.push({
+      label: currentAusschreibung.value.name,
+      to: getAusschreibungPath(currentAusschreibung.value.id)
+    })
   } else {
     items.push({ label: 'Ausschreibungen', to: '/' })
   }
+
   return items
 })
 
 const currentTitle = computed(() => {
-  return route.path === '/settings' ? 'Settings' : 'Ausschreibungen'
+  if (route.path === '/settings') {
+    return 'Settings'
+  }
+
+  if (currentAusschreibung.value) {
+    return currentAusschreibung.value.name
+  }
+
+  return latestAusschreibungName.value
 })
 </script>
 
@@ -51,7 +98,19 @@ const currentTitle = computed(() => {
       </template>
 
       <div class="flex-1 overflow-y-auto p-3">
-        <UNavigationMenu :items="links" orientation="vertical" />
+        <div class="space-y-4">
+          <UNavigationMenu :items="overviewLinks" orientation="vertical" />
+
+          <div v-if="ausschreibungLinks.length > 0" class="space-y-3">
+            <hr class="ui-border">
+            <UNavigationMenu :items="ausschreibungLinks" orientation="vertical" />
+          </div>
+
+          <div class="space-y-3">
+            <hr class="ui-border">
+            <UNavigationMenu :items="settingsLinks" orientation="vertical" />
+          </div>
+        </div>
       </div>
 
       <template #footer>
