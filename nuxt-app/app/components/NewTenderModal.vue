@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { watch } from 'vue'
+
 const isOpen = defineModel<boolean>('open', { default: false })
 
 const items = [
@@ -24,9 +26,27 @@ const {
   reset
 } = useNewTender()
 
-function handleFinish() {
-  isOpen.value = false
-  reset()
+const {
+  isSaving,
+  errorMessage,
+  createAusschreibung,
+  clearError
+} = useCreateAusschreibung()
+
+watch(isOpen, (open) => {
+  if (!open) {
+    clearError()
+  }
+})
+
+async function handleFinish() {
+  try {
+    await createAusschreibung(tenderData)
+    isOpen.value = false
+    reset()
+  } catch {
+    // Error state is handled by the composable and displayed in the modal.
+  }
 }
 </script>
 
@@ -59,6 +79,10 @@ function handleFinish() {
           @add="addVendor"
           @remove="removeVendor"
         />
+
+        <p v-if="errorMessage" class="text-sm text-error">
+          {{ errorMessage }}
+        </p>
       </div>
     </template>
 
@@ -68,7 +92,7 @@ function handleFinish() {
         <div class="flex gap-2">
           <UButton color="neutral" variant="outline" @click="isOpen = false">Abbrechen</UButton>
           <UButton v-if="activeStep < items.length - 1" :disabled="!isStepValid" @click="nextStep(items.length)">Weiter</UButton>
-          <UButton v-else color="success" :disabled="!isStepValid" @click="handleFinish">Ausschreibung erstellen</UButton>
+          <UButton v-else color="success" :loading="isSaving" :disabled="!isStepValid || isSaving" @click="handleFinish">Ausschreibung erstellen</UButton>
         </div>
       </div>
     </template>

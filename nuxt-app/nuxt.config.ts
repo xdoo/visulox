@@ -15,6 +15,9 @@ export default defineNuxtConfig({
       title: 'Visulox'
     }
   },
+  runtimeConfig: {
+    databaseUrl: 'postgresql://visulox:visulox@localhost:5432/visulox'
+  },
   future: {
     compatibilityVersion: 4
   }

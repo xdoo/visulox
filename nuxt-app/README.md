@@ -10,6 +10,39 @@ Install dependencies before running any local command:
 npm install
 ```
 
+For the save flow, `runtimeConfig.databaseUrl` defaults to the local PostgreSQL container from [infrastructure/docker-compose.yml](/home/claus/Projekte/visulox/infrastructure/docker-compose.yml):
+
+```bash
+postgresql://visulox:visulox@localhost:5432/visulox
+```
+
+If you want to override that value, configure the Nuxt runtime config through an environment variable that matches the runtime config key:
+
+```bash
+NUXT_DATABASE_URL=postgresql://visulox:visulox@localhost:5432/visulox
+```
+
+For local development, copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Restart the Nuxt dev server after changing `.env` so the server runtime picks up the new value.
+
+## Database Setup
+
+The API expects these PostgreSQL tables to exist:
+
+- `ausschreibungen`
+- `abschnitte`
+- `kostenbloecke`
+- `anbieter`
+
+The repository Compose setup initializes them from [001-schema.sql](/home/claus/Projekte/visulox/infrastructure/postgres/init/001-schema.sql) on the first container start.
+
+If your Postgres container was already created before that init script existed, recreate the database volume or run the SQL manually, because `/docker-entrypoint-initdb.d` is only processed during initial database creation.
+
 ## Available Scripts
 
 Run the development server on `http://localhost:3000`:
