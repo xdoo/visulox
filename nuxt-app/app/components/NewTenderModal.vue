@@ -36,12 +36,11 @@ function handleFinish() {
       <div class="space-y-8">
         <UStepper v-model="activeStep" :items="items" class="mb-8" />
 
-        <!-- Steps -->
-        <NewTenderBasis v-if="activeStep === 0" :tender-data="tenderData" />
+        <NewTenderBasis v-if="activeStep === 0" v-model:name="tenderData.name" />
         
         <NewTenderCriteria 
           v-if="activeStep === 1" 
-          :criteria="tenderData.criteria" 
+          v-model:criteria="tenderData.criteria"
           :total-weight="totalWeight"
           @add="addCriterion"
           @remove="removeCriterion"
@@ -49,14 +48,14 @@ function handleFinish() {
 
         <NewTenderPriceBlocks
           v-if="activeStep === 2"
-          :price-blocks="tenderData.priceBlocks"
+          v-model:price-blocks="tenderData.priceBlocks"
           @add="addPriceBlock"
           @remove="removePriceBlock"
         />
 
         <NewTenderVendors
           v-if="activeStep === 3"
-          :vendors="tenderData.vendors"
+          v-model:vendors="tenderData.vendors"
           @add="addVendor"
           @remove="removeVendor"
         />

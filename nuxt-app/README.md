@@ -1,52 +1,40 @@
-# Nuxt Minimal Starter
+# Visulox Nuxt App
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+This directory contains the Nuxt 4 frontend for Visulox. The current app shell provides a sidebar layout, a settings page, and a multi-step modal for creating tenders.
 
-## Setup
+## Prerequisites
 
-Make sure to install dependencies:
+Install dependencies before running any local command:
 
 ```bash
-# npm
 npm install
 ```
 
-## Development Server
+## Available Scripts
 
-Start the development server on `http://localhost:3000`:
+Run the development server on `http://localhost:3000`:
 
 ```bash
-# npm
 npm run dev
 ```
 
-## Theming & Design System
+Lint the project:
 
-Dieses Projekt verwendet **Tailwind CSS v4** in Kombination mit **Nuxt UI v4**. Das Theming erfolgt zentral über CSS-Variablen und semantische Klassen.
+```bash
+npm run lint
+```
 
-### Globales Theme
-Die zentralen Farbdefinitionen (Primärfarben, Graustufen) befinden sich in:
-`nuxt-app/app/app.css`
+Run the Nuxt type check:
 
-Dort werden die Tailwind-Standardfarben auf CSS-Variablen gemappt, die von Nuxt UI Komponenten automatisch verwendet werden.
-
-### Semantische CSS-Klassen
-Um ein konsistentes Design über alle Komponenten hinweg zu gewährleisten, sollten bevorzugt die folgenden semantischen Klassen verwendet werden:
-
-- `ui-bg-surface`: Standard-Hintergrund für Karten, Header und Inhaltsbereiche.
-- `ui-bg-muted`: Dezenter Hintergrund für Sidebars oder inaktive Bereiche.
-- `ui-border`: Standard-Rahmenfarbe für Trennlinien und Container.
-- `ui-text-muted`: Farbe für weniger wichtige Texte oder Hilfsinformationen.
-
-### Typsicherheit
-Das Projekt ist vollständig in **TypeScript** geschrieben. Nutze für Komponenten-Props und Composables die entsprechenden Typen aus `@nuxt/ui` (z. B. `NavigationMenuItem`).
-
-Ein Type-Check kann jederzeit durchgeführt werden:
 ```bash
 npm run typecheck
 ```
 
-## Production
+Run the test suite:
+
+```bash
+npm run test
+```
 
 Build the application for production:
 
@@ -54,8 +42,28 @@ Build the application for production:
 npm run build
 ```
 
-Locally preview production build:
+Preview the production build locally:
 
 ```bash
 npm run preview
 ```
+
+## Project Structure
+
+- `app/layouts/default.vue`: Main application shell with sidebar, header, breadcrumb, and modal trigger.
+- `app/components/NewTenderModal.vue`: Multi-step tender creation wizard.
+- `app/components/new-tender/*`: Step-specific form sections for the wizard.
+- `app/composables/useNewTender.ts`: State and navigation logic for the tender workflow.
+- `app/types/new-tender.ts`: Shared TypeScript contracts for the tender form data.
+- `app/app.css`: Global theme variables and shared semantic utility classes.
+
+## Styling Guidelines
+
+The project uses Tailwind CSS v4 together with Nuxt UI v4. Theme tokens live in `app/app.css` and are exposed through semantic helper classes:
+
+- `ui-bg-surface`
+- `ui-bg-muted`
+- `ui-border`
+- `ui-text-muted`
+
+Prefer those semantic classes over repeating raw color utilities inside components.
