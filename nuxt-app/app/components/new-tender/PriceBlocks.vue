@@ -14,7 +14,7 @@ const emit = defineEmits(['add', 'remove'])
     </div>
 
     <div class="space-y-2 max-h-[250px] overflow-y-auto pr-2">
-      <div v-for="(item, index) in priceBlocks" :key="index" class="flex gap-4 items-center bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-colors">
+      <div v-for="(item, index) in priceBlocks" :key="index" class="flex gap-4 items-center ui-bg-muted p-3 rounded-lg border border-transparent hover:ui-border transition-colors">
         <UFormField label="Bezeichnung des Kostenblocks" class="flex-1">
           <UInput v-model="item.name" placeholder="z.B. Implementierungspauschale" />
         </UFormField>

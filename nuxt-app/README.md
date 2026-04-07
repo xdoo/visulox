@@ -9,15 +9,6 @@ Make sure to install dependencies:
 ```bash
 # npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
 ## Development Server
@@ -27,15 +18,32 @@ Start the development server on `http://localhost:3000`:
 ```bash
 # npm
 npm run dev
+```
 
-# pnpm
-pnpm dev
+## Theming & Design System
 
-# yarn
-yarn dev
+Dieses Projekt verwendet **Tailwind CSS v4** in Kombination mit **Nuxt UI v4**. Das Theming erfolgt zentral über CSS-Variablen und semantische Klassen.
 
-# bun
-bun run dev
+### Globales Theme
+Die zentralen Farbdefinitionen (Primärfarben, Graustufen) befinden sich in:
+`nuxt-app/app/app.css`
+
+Dort werden die Tailwind-Standardfarben auf CSS-Variablen gemappt, die von Nuxt UI Komponenten automatisch verwendet werden.
+
+### Semantische CSS-Klassen
+Um ein konsistentes Design über alle Komponenten hinweg zu gewährleisten, sollten bevorzugt die folgenden semantischen Klassen verwendet werden:
+
+- `ui-bg-surface`: Standard-Hintergrund für Karten, Header und Inhaltsbereiche.
+- `ui-bg-muted`: Dezenter Hintergrund für Sidebars oder inaktive Bereiche.
+- `ui-border`: Standard-Rahmenfarbe für Trennlinien und Container.
+- `ui-text-muted`: Farbe für weniger wichtige Texte oder Hilfsinformationen.
+
+### Typsicherheit
+Das Projekt ist vollständig in **TypeScript** geschrieben. Nutze für Komponenten-Props und Composables die entsprechenden Typen aus `@nuxt/ui` (z. B. `NavigationMenuItem`).
+
+Ein Type-Check kann jederzeit durchgeführt werden:
+```bash
+npm run typecheck
 ```
 
 ## Production
@@ -43,33 +51,11 @@ bun run dev
 Build the application for production:
 
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
 Locally preview production build:
 
 ```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
