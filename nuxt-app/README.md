@@ -22,13 +22,7 @@ If you want to override that value, configure the Nuxt runtime config through an
 NUXT_DATABASE_URL=postgresql://visulox:visulox@localhost:5432/visulox
 ```
 
-For local development, copy `.env.example` to `.env`:
-
-```bash
-cp .env.example .env
-```
-
-Restart the Nuxt dev server after changing `.env` so the server runtime picks up the new value.
+Restart the Nuxt dev server after changing your environment so the server runtime picks up the new value.
 
 ## Database Setup
 
