@@ -3,7 +3,7 @@ import { useRuntimeConfig } from '#imports'
 
 import { getPostgresClient } from '../../utils/postgres'
 
-import type { AusschreibungDetail, AusschreibungVendor } from '../../../shared/types/ausschreibungen'
+import type { AusschreibungDetail, AusschreibungSection, AusschreibungVendor } from '../../../shared/types/ausschreibungen'
 
 interface AusschreibungRow {
   id: string | number
@@ -13,6 +13,12 @@ interface AusschreibungRow {
 interface AnbieterRow {
   id: string | number
   name: string
+}
+
+interface AbschnittRow {
+  id: string | number
+  name: string
+  weight: number
 }
 
 export default defineEventHandler(async (event): Promise<AusschreibungDetail> => {
@@ -53,10 +59,22 @@ export default defineEventHandler(async (event): Promise<AusschreibungDetail> =>
       name: row.name
     }))
 
+    const sectionsResult = await client.query<AbschnittRow>(
+      'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
+      [ausschreibungId]
+    )
+
+    const sections: AusschreibungSection[] = sectionsResult.rows.map(row => ({
+      id: String(row.id),
+      name: row.name,
+      weight: row.weight
+    }))
+
     return {
       id: String(ausschreibung.id),
       name: ausschreibung.name,
-      vendors
+      vendors,
+      sections
     }
   } finally {
     client.release()

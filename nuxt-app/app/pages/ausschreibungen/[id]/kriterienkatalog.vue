@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AusschreibungCriteriaSections from '../../../components/AusschreibungCriteriaSections.vue'
 import AusschreibungVendorTabs from '../../../components/AusschreibungVendorTabs.vue'
 
 const route = useRoute()
@@ -52,17 +53,21 @@ useSeoMeta({
       </template>
 
       <template #vendor="{ vendor }">
-        <UCard>
-          <template #header>
-            <h3 class="font-semibold">
-              {{ vendor?.name || 'Anbieter' }}
-            </h3>
-          </template>
+        <div class="space-y-4">
+          <UCard>
+            <template #header>
+              <h3 class="font-semibold">
+                {{ vendor?.name || 'Anbieter' }}
+              </h3>
+            </template>
 
-          <p class="ui-text-muted">
-            Kriterienkatalog für {{ vendor?.name || 'den ausgewählten Anbieter' }}.
-          </p>
-        </UCard>
+            <p class="ui-text-muted">
+              Kriterienkatalog für {{ vendor?.name || 'den ausgewählten Anbieter' }}.
+            </p>
+          </UCard>
+
+          <AusschreibungCriteriaSections :sections="ausschreibung?.sections || []" />
+        </div>
       </template>
     </AusschreibungVendorTabs>
   </div>

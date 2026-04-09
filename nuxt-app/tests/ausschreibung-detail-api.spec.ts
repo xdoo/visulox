@@ -34,7 +34,7 @@ describe('GET /api/ausschreibungen/:id', () => {
     })
   })
 
-  it('returns the ausschreibung details with vendors', async () => {
+  it('returns the ausschreibung details with vendors and sections', async () => {
     const query = vi.fn()
       .mockResolvedValueOnce({
         rows: [{ id: 2, name: 'Neue Ausschreibung' }]
@@ -43,6 +43,12 @@ describe('GET /api/ausschreibungen/:id', () => {
         rows: [
           { id: 11, name: 'Acme AG' },
           { id: 12, name: 'Beispiel GmbH' }
+        ]
+      })
+      .mockResolvedValueOnce({
+        rows: [
+          { id: 21, name: 'Qualitaet', weight: 60 },
+          { id: 22, name: 'Preis', weight: 40 }
         ]
       })
     const release = vi.fn()
@@ -60,12 +66,17 @@ describe('GET /api/ausschreibungen/:id', () => {
 
     expect(query).toHaveBeenNthCalledWith(1, 'SELECT id, name FROM ausschreibungen WHERE id = $1 LIMIT 1', ['2'])
     expect(query).toHaveBeenNthCalledWith(2, 'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(3, 'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(response).toEqual({
       id: '2',
       name: 'Neue Ausschreibung',
       vendors: [
         { id: '11', name: 'Acme AG' },
         { id: '12', name: 'Beispiel GmbH' }
+      ],
+      sections: [
+        { id: '21', name: 'Qualitaet', weight: 60 },
+        { id: '22', name: 'Preis', weight: 40 }
       ]
     })
     expect(release).toHaveBeenCalledTimes(1)

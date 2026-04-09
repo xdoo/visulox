@@ -32,8 +32,15 @@ export interface AusschreibungVendor {
   name: string
 }
 
+export interface AusschreibungSection {
+  id: string
+  name: string
+  weight: number
+}
+
 export interface AusschreibungDetail {
   id: string
   name: string
   vendors: AusschreibungVendor[]
+  sections: AusschreibungSection[]
 }
