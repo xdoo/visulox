@@ -87,13 +87,52 @@ git checkout -b <feature-branch-name>
 
 Only after that should implementation work begin.
 
+## Naming Convention
+
+Use English for code artifacts and German for visible UI text.
+
+This applies to:
+
+- component names
+- composable names
+- type names
+- file names
+- folder names
+- auto-imported component names
+
+Use German for:
+
+- labels
+- button text
+- headings
+- helper text
+- validation and error messages shown in the UI
+
+Domain term mapping for code:
+
+- `Ausschreibung` -> `Tender`
+- `Abschnitt` -> `Section`
+- `Anbieter` -> `Vendor`
+- `Frage` -> `Question`
+- `Kriterienkatalog` -> `Criteria`
+- `Kostenblock` -> `CostBlock` or `PriceBlock`
+
+Avoid mixed German/English names in code. Pick the English domain term and use it consistently.
+
+Examples:
+
+- `useAusschreibungDetail` -> `useTenderDetail`
+- `AusschreibungVendorTabs` -> `TenderVendorTabs`
+- `AusschreibungCriteriaSection` -> `TenderCriteriaSection`
+
 ## Project Structure
 
 - `app/layouts/default.vue`: Main application shell with sidebar, header, breadcrumb, and modal trigger.
-- `app/components/NewTenderModal.vue`: Multi-step tender creation wizard.
-- `app/components/new-tender/*`: Step-specific form sections for the wizard.
-- `app/composables/useNewTender.ts`: State and navigation logic for the tender workflow.
-- `app/types/new-tender.ts`: Shared TypeScript contracts for the tender form data.
+- `app/components/tender-create/Modal.vue`: Multi-step tender creation wizard.
+- `app/components/tender/*`: Tender detail components for vendor tabs, sections, and CSV upload flows.
+- `app/components/tender-create/*`: Step-specific form sections for the wizard.
+- `app/composables/useTenderWizard.ts`: State and navigation logic for the tender workflow.
+- `app/types/tender-wizard.ts`: Shared TypeScript contracts for the tender form data.
 - `app/app.css`: Global theme variables and shared semantic utility classes.
 
 ## Styling Guidelines
