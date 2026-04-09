@@ -6,7 +6,8 @@ const props = defineProps<{
   vendors: AusschreibungVendor[]
 }>()
 
-const activeTab = ref<string | number>('overview')
+const route = useRoute()
+const activeTab = useState<string | number>(`ausschreibung-vendor-tab:${route.path}`, () => 'overview')
 
 const items = computed<TabsItem[]>(() => {
   return [
