@@ -6,6 +6,8 @@ const props = defineProps<{
   vendors: AusschreibungVendor[]
 }>()
 
+const activeTab = ref<string | number>('overview')
+
 const items = computed<TabsItem[]>(() => {
   return [
     {
@@ -36,8 +38,8 @@ function getVendorForItemValue(value: string | number | undefined) {
 
 <template>
   <UTabs
+    v-model="activeTab"
     :items="items"
-    default-value="overview"
     color="neutral"
     variant="link"
     :unmount-on-hide="false"

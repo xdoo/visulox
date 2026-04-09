@@ -8,6 +8,7 @@ const props = defineProps<{
   sectionName: string
   sectionWeight: number
   errorMessage?: string
+  inline?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -123,7 +124,22 @@ watch(csvFile, async (file) => {
   await handleCsvSelection(file)
 })
 
+watch(
+  () => props.inline,
+  (inline) => {
+    if (inline) {
+      csvFile.value = null
+      csvError.value = ''
+    }
+  },
+  { immediate: true }
+)
+
 watch(isOpen, (open) => {
+  if (props.inline) {
+    return
+  }
+
   if (open) {
     csvFile.value = null
     csvError.value = ''
@@ -134,7 +150,21 @@ watch(isOpen, (open) => {
 </script>
 
 <template>
-  <UModal v-model:open="isOpen" title="CSV hochladen" :ui="{ width: 'sm:max-w-2xl' }">
+  <div v-if="props.inline" class="space-y-4">
+    <UFileUpload
+      v-model="csvFile"
+      accept=".csv,text/csv"
+      label="CSV-Datei auswaehlen"
+      :description="`CSV fuer Abschnitt ${props.sectionName}. Es ist nur eine einzelne CSV-Datei erlaubt.`"
+      class="w-full"
+    />
+
+    <p v-if="csvError || props.errorMessage" class="text-sm text-error">
+      {{ csvError || props.errorMessage }}
+    </p>
+  </div>
+
+  <UModal v-else v-model:open="isOpen" title="CSV hochladen" :ui="{ width: 'sm:max-w-2xl' }">
     <template #body>
       <div class="space-y-4">
         <p class="text-sm ui-text-muted">
@@ -145,7 +175,7 @@ watch(isOpen, (open) => {
           v-model="csvFile"
           accept=".csv,text/csv"
           label="CSV-Datei auswaehlen"
-          description="Es ist nur eine einzelne CSV-Datei erlaubt."
+          :description="`CSV fuer Abschnitt ${props.sectionName}. Es ist nur eine einzelne CSV-Datei erlaubt.`"
           class="w-full"
         />
 
