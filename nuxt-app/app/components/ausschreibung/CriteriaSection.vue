@@ -1,45 +1,22 @@
 <script setup lang="ts">
-import AusschreibungSectionCsvUpload from './AusschreibungSectionCsvUpload.vue'
-
-import type { AusschreibungSection } from '../../shared/types/ausschreibungen'
-import type { CriteriaCsvQuestionRow } from '../types/criteria-csv'
+import type { AusschreibungSection } from '../../../shared/types/ausschreibungen'
 
 const props = defineProps<{
   section: AusschreibungSection
 }>()
 
-const csvError = ref('')
-const isDeleteModalOpen = ref(false)
-const { isSaving, errorMessage, saveAbschnittFragen } = useSaveAbschnittFragen()
-const { isDeleting, errorMessage: deleteErrorMessage, deleteAbschnittFragen } = useDeleteAbschnittFragen()
+const {
+  csvError,
+  isDeleteModalOpen,
+  isSaving,
+  isDeleting,
+  handleCsvUploaded,
+  handleCsvError,
+  handleDeleteQuestions
+} = useCriteriaSectionActions({
+  sectionId: props.section.id
+})
 const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting()
-
-async function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
-  csvError.value = ''
-
-  try {
-    await saveAbschnittFragen(props.section.id, parsedQuestions)
-    await refreshNuxtData(`ausschreibung-detail:${useRoute().params.id}`)
-  } catch {
-    csvError.value = errorMessage.value || 'Fragen konnten nicht gespeichert werden.'
-  }
-}
-
-function handleCsvError(message: string) {
-  csvError.value = message
-}
-
-async function handleDeleteQuestions() {
-  csvError.value = ''
-
-  try {
-    await deleteAbschnittFragen(props.section.id)
-    await refreshNuxtData(`ausschreibung-detail:${useRoute().params.id}`)
-    isDeleteModalOpen.value = false
-  } catch {
-    csvError.value = deleteErrorMessage.value || 'Fragen konnten nicht gelöscht werden.'
-  }
-}
 </script>
 
 <template>

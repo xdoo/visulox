@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
-import type { AusschreibungVendor } from '../../shared/types/ausschreibungen'
+import type { AusschreibungVendor } from '../../../shared/types/ausschreibungen'
 
 const props = defineProps<{
   vendors: AusschreibungVendor[]

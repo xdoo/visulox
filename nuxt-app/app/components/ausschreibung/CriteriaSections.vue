@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import AusschreibungCriteriaSection from './AusschreibungCriteriaSection.vue'
-
-import type { AusschreibungSection } from '../../shared/types/ausschreibungen'
+import type { AusschreibungSection } from '../../../shared/types/ausschreibungen'
 
 const props = defineProps<{
   sections: AusschreibungSection[]

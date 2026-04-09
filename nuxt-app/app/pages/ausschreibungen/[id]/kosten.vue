@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import AusschreibungVendorTabs from '../../../components/AusschreibungVendorTabs.vue'
-
 const route = useRoute()
 const ausschreibungId = computed(() => String(route.params.id || ''))
 const { data: ausschreibung, status, error } = await useAusschreibungDetail(ausschreibungId)
