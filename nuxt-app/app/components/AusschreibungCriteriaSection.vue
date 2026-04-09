@@ -11,16 +11,7 @@ const props = defineProps<{
 const isUploadModalOpen = ref(false)
 const questions = ref<CriteriaCsvQuestionRow[]>([])
 const csvError = ref('')
-
-function formatPercentage(value: number) {
-  const percentage = value * 100
-
-  if (Number.isInteger(percentage)) {
-    return `${percentage}%`
-  }
-
-  return `${percentage.toFixed(2).replace(/\.?0+$/, '')}%`
-}
+const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting()
 
 function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
   csvError.value = ''
@@ -71,9 +62,10 @@ watch(isUploadModalOpen, (open) => {
         <div class="overflow-hidden rounded-lg border ui-border">
           <div class="grid grid-cols-12 gap-4 bg-gray-50 px-4 py-3 text-sm font-medium dark:bg-gray-950">
             <div class="col-span-1">Nr</div>
-            <div class="col-span-7">Frage</div>
-            <div class="col-span-2">Punkte</div>
-            <div class="col-span-2">Anteil</div>
+            <div class="col-span-8">Frage</div>
+            <div class="col-span-1 text-right">Punkte</div>
+            <div class="col-span-1 text-right">Anteil</div>
+            <div class="col-span-1 text-right">gew. Punkte</div>
           </div>
 
           <div class="divide-y ui-border">
@@ -83,9 +75,10 @@ watch(isUploadModalOpen, (open) => {
               class="grid grid-cols-12 gap-4 px-4 py-3 text-sm"
             >
               <div class="col-span-1">{{ question.nr }}</div>
-              <div class="col-span-7">{{ question.frage }}</div>
-              <div class="col-span-2">{{ question.punkte }}</div>
-              <div class="col-span-2">{{ formatPercentage(question.anteil) }}</div>
+              <div class="col-span-8">{{ question.frage }}</div>
+              <div class="col-span-1 text-right">{{ question.punkte }}</div>
+              <div class="col-span-1 text-right">{{ formatPercentage(question.anteil) }}</div>
+              <div class="col-span-1 text-right">{{ formatWeightedPoints(question.punkte, question.anteil) }}</div>
             </div>
           </div>
         </div>
