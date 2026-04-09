@@ -1,18 +1,18 @@
 import type { CriteriaCsvQuestionRow } from '../types/criteria-csv'
-import type { SaveAbschnittFragenResponse } from '../../shared/types/ausschreibungen'
+import type { SaveSectionQuestionsResponse } from '../../shared/types/tenders'
 
 interface UseCriteriaSectionActionsOptions {
   sectionId: string
 }
 
-type SaveAbschnittFragenFetcher = <T>(request: string, options: {
+type SaveSectionQuestionsFetcher = <T>(request: string, options: {
   method: 'POST'
   body: {
     questions: CriteriaCsvQuestionRow[]
   }
 }) => Promise<T>
 
-type DeleteAbschnittFragenFetcher = <T>(request: string, options: {
+type DeleteSectionQuestionsFetcher = <T>(request: string, options: {
   method: 'DELETE'
 }) => Promise<T>
 
@@ -23,19 +23,19 @@ export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOpti
   const isDeleting = ref(false)
   const errorMessage = ref('')
   const route = useRoute()
-  const saveFetcher = $fetch as SaveAbschnittFragenFetcher
-  const deleteFetcher = $fetch as DeleteAbschnittFragenFetcher
+  const saveFetcher = $fetch as SaveSectionQuestionsFetcher
+  const deleteFetcher = $fetch as DeleteSectionQuestionsFetcher
 
   async function refreshSectionData() {
-    await refreshNuxtData(`ausschreibung-detail:${route.params.id}`)
+    await refreshNuxtData(`tender-detail:${route.params.id}`)
   }
 
-  async function saveAbschnittFragen(abschnittId: string, questions: CriteriaCsvQuestionRow[]) {
+  async function saveSectionQuestions(sectionId: string, questions: CriteriaCsvQuestionRow[]) {
     isSaving.value = true
     errorMessage.value = ''
 
     try {
-      return await saveFetcher<SaveAbschnittFragenResponse>(`/api/abschnitte/${abschnittId}/fragen`, {
+      return await saveFetcher<SaveSectionQuestionsResponse>(`/api/sections/${sectionId}/questions`, {
         method: 'POST',
         body: { questions }
       })
@@ -47,12 +47,12 @@ export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOpti
     }
   }
 
-  async function deleteAbschnittFragen(abschnittId: string) {
+  async function deleteSectionQuestions(sectionId: string) {
     isDeleting.value = true
     errorMessage.value = ''
 
     try {
-      return await deleteFetcher<{ deleted: true }>(`/api/abschnitte/${abschnittId}/fragen`, {
+      return await deleteFetcher<{ deleted: true }>(`/api/sections/${sectionId}/questions`, {
         method: 'DELETE'
       })
     } catch (error) {
@@ -67,7 +67,7 @@ export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOpti
     csvError.value = ''
 
     try {
-      await saveAbschnittFragen(options.sectionId, parsedQuestions)
+      await saveSectionQuestions(options.sectionId, parsedQuestions)
       await refreshSectionData()
     } catch {
       csvError.value = errorMessage.value || 'Fragen konnten nicht gespeichert werden.'
@@ -82,7 +82,7 @@ export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOpti
     csvError.value = ''
 
     try {
-      await deleteAbschnittFragen(options.sectionId)
+      await deleteSectionQuestions(options.sectionId)
       await refreshSectionData()
       isDeleteModalOpen.value = false
     } catch {

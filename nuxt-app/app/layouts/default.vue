@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
 
-const isNewTenderModalOpen = ref(false)
+const isTenderCreateModalOpen = ref(false)
 const {
-  loadAusschreibungen,
+  loadTenders,
   overviewLinks,
-  ausschreibungLinks,
+  tenderLinks,
   settingsLinks,
   breadcrumbItems,
   currentTitle
-} = useAusschreibungenNavigation()
+} = useTendersNavigation()
 
 await callOnce(async () => {
-  await loadAusschreibungen()
+  await loadTenders()
 })
 
 // Shortcut: Shift + N öffnet das Modal
 onKeyStroke(['N'], (e) => {
-  if (e.shiftKey && !isNewTenderModalOpen.value) {
+  if (e.shiftKey && !isTenderCreateModalOpen.value) {
     e.preventDefault()
-    isNewTenderModalOpen.value = true
+    isTenderCreateModalOpen.value = true
   }
 })
 </script>
@@ -38,9 +38,9 @@ onKeyStroke(['N'], (e) => {
         <div class="space-y-4">
           <UNavigationMenu :items="overviewLinks" orientation="vertical" />
 
-          <div v-if="ausschreibungLinks.length > 0" class="space-y-3">
+          <div v-if="tenderLinks.length > 0" class="space-y-3">
             <hr class="ui-border">
-            <UNavigationMenu :items="ausschreibungLinks" orientation="vertical" />
+            <UNavigationMenu :items="tenderLinks" orientation="vertical" />
           </div>
 
           <div class="space-y-3">
@@ -76,7 +76,7 @@ onKeyStroke(['N'], (e) => {
               variant="ghost"
               size="xl"
               class="rounded-full"
-              @click="isNewTenderModalOpen = true"
+              @click="isTenderCreateModalOpen = true"
             />
           </UTooltip>
 
@@ -93,6 +93,6 @@ onKeyStroke(['N'], (e) => {
       </main>
     </div>
 
-    <NewTenderModal v-model:open="isNewTenderModalOpen" />
+    <TenderCreateModal v-model:open="isTenderCreateModalOpen" />
   </div>
 </template>
