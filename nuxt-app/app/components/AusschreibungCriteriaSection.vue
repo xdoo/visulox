@@ -9,7 +9,9 @@ const props = defineProps<{
 }>()
 
 const csvError = ref('')
+const isDeleteModalOpen = ref(false)
 const { isSaving, errorMessage, saveAbschnittFragen } = useSaveAbschnittFragen()
+const { isDeleting, errorMessage: deleteErrorMessage, deleteAbschnittFragen } = useDeleteAbschnittFragen()
 const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting()
 
 async function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
@@ -26,6 +28,18 @@ async function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
 function handleCsvError(message: string) {
   csvError.value = message
 }
+
+async function handleDeleteQuestions() {
+  csvError.value = ''
+
+  try {
+    await deleteAbschnittFragen(props.section.id)
+    await refreshNuxtData(`ausschreibung-detail:${useRoute().params.id}`)
+    isDeleteModalOpen.value = false
+  } catch {
+    csvError.value = deleteErrorMessage.value || 'Fragen konnten nicht gelöscht werden.'
+  }
+}
 </script>
 
 <template>
@@ -36,9 +50,21 @@ function handleCsvError(message: string) {
           <h3 class="font-semibold">{{ props.section.name }}</h3>
         </div>
 
-        <UBadge color="neutral" variant="subtle" size="lg">
-          {{ props.section.weight }}%
-        </UBadge>
+        <div class="flex items-center gap-2">
+          <UTooltip v-if="props.section.questions.length > 0" text="Importierte Fragen dieser Sektion löschen">
+            <UButton
+              icon="i-lucide-shredder"
+              color="neutral"
+              variant="outline"
+              aria-label="Fragen fuer Abschnitt loeschen"
+              @click="isDeleteModalOpen = true"
+            />
+          </UTooltip>
+
+          <UBadge color="neutral" variant="subtle" size="lg">
+            {{ props.section.weight }}%
+          </UBadge>
+        </div>
       </div>
     </template>
 
@@ -86,6 +112,27 @@ function handleCsvError(message: string) {
       <p v-if="isSaving" class="text-sm ui-text-muted">
         Fragen werden gespeichert ...
       </p>
+
+      <p v-if="isDeleting" class="text-sm ui-text-muted">
+        Fragen werden gelöscht ...
+      </p>
     </div>
+
+    <UModal
+      v-model:open="isDeleteModalOpen"
+      title="Fragen löschen"
+      description="Möchten Sie die importierten Fragen dieser Sektion wirklich löschen?"
+    >
+      <template #footer>
+        <div class="flex w-full justify-center gap-2">
+          <UButton color="neutral" variant="ghost" @click="isDeleteModalOpen = false">
+            Abbrechen
+          </UButton>
+          <UButton color="error" :loading="isDeleting" @click="handleDeleteQuestions">
+            Löschen
+          </UButton>
+        </div>
+      </template>
+    </UModal>
   </UCard>
 </template>
