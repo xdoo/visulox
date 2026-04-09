@@ -34,7 +34,7 @@ describe('GET /api/ausschreibungen/:id', () => {
     })
   })
 
-  it('returns the ausschreibung details with vendors and sections', async () => {
+  it('returns the ausschreibung details with vendors, sections and saved questions', async () => {
     const query = vi.fn()
       .mockResolvedValueOnce({
         rows: [{ id: 2, name: 'Neue Ausschreibung' }]
@@ -49,6 +49,11 @@ describe('GET /api/ausschreibungen/:id', () => {
         rows: [
           { id: 21, name: 'Qualitaet', weight: 60 },
           { id: 22, name: 'Preis', weight: 40 }
+        ]
+      })
+      .mockResolvedValueOnce({
+        rows: [
+          { id: 31, abschnitt_id: 21, nr: '1', frage: 'Service', punkte: '10', anteil: '0.6', gewichtete_punkte: '6.0' }
         ]
       })
     const release = vi.fn()
@@ -67,6 +72,13 @@ describe('GET /api/ausschreibungen/:id', () => {
     expect(query).toHaveBeenNthCalledWith(1, 'SELECT id, name FROM ausschreibungen WHERE id = $1 LIMIT 1', ['2'])
     expect(query).toHaveBeenNthCalledWith(2, 'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(3, 'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(4,
+      `SELECT id, abschnitt_id, nr, frage, punkte, anteil, gewichtete_punkte
+         FROM abschnittsfragen
+         WHERE abschnitt_id = ANY($1::bigint[])
+         ORDER BY id ASC`,
+      [['21', '22']]
+    )
     expect(response).toEqual({
       id: '2',
       name: 'Neue Ausschreibung',
@@ -75,8 +87,20 @@ describe('GET /api/ausschreibungen/:id', () => {
         { id: '12', name: 'Beispiel GmbH' }
       ],
       sections: [
-        { id: '21', name: 'Qualitaet', weight: 60 },
-        { id: '22', name: 'Preis', weight: 40 }
+        {
+          id: '21',
+          name: 'Qualitaet',
+          weight: 60,
+          questions: [
+            { id: '31', nr: '1', frage: 'Service', punkte: 10, anteil: 0.6, gewichtetePunkte: 6 }
+          ]
+        },
+        {
+          id: '22',
+          name: 'Preis',
+          weight: 40,
+          questions: []
+        }
       ]
     })
     expect(release).toHaveBeenCalledTimes(1)

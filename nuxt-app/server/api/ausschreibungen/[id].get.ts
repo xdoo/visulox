@@ -3,7 +3,7 @@ import { useRuntimeConfig } from '#imports'
 
 import { getPostgresClient } from '../../utils/postgres'
 
-import type { AusschreibungDetail, AusschreibungSection, AusschreibungVendor } from '../../../shared/types/ausschreibungen'
+import type { AbschnittFrage, AusschreibungDetail, AusschreibungSection, AusschreibungVendor } from '../../../shared/types/ausschreibungen'
 
 interface AusschreibungRow {
   id: string | number
@@ -19,6 +19,20 @@ interface AbschnittRow {
   id: string | number
   name: string
   weight: number
+}
+
+interface AbschnittFrageRow {
+  id: string | number
+  abschnitt_id: string | number
+  nr: string
+  frage: string
+  punkte: string | number
+  anteil: string | number
+  gewichtete_punkte: string | number
+}
+
+function toNumber(value: string | number) {
+  return typeof value === 'number' ? value : Number(value)
 }
 
 export default defineEventHandler(async (event): Promise<AusschreibungDetail> => {
@@ -64,11 +78,45 @@ export default defineEventHandler(async (event): Promise<AusschreibungDetail> =>
       [ausschreibungId]
     )
 
-    const sections: AusschreibungSection[] = sectionsResult.rows.map(row => ({
-      id: String(row.id),
-      name: row.name,
-      weight: row.weight
-    }))
+    const sectionIds = sectionsResult.rows.map(row => String(row.id))
+    const sectionQuestionsMap = new Map<string, AbschnittFrage[]>()
+
+    if (sectionIds.length > 0) {
+      const questionsResult = await client.query<AbschnittFrageRow>(
+        `SELECT id, abschnitt_id, nr, frage, punkte, anteil, gewichtete_punkte
+         FROM abschnittsfragen
+         WHERE abschnitt_id = ANY($1::bigint[])
+         ORDER BY id ASC`,
+        [sectionIds]
+      )
+
+      for (const row of questionsResult.rows) {
+        const abschnittId = String(row.abschnitt_id)
+        const questions = sectionQuestionsMap.get(abschnittId) || []
+
+        questions.push({
+          id: String(row.id),
+          nr: row.nr,
+          frage: row.frage,
+          punkte: toNumber(row.punkte),
+          anteil: toNumber(row.anteil),
+          gewichtetePunkte: toNumber(row.gewichtete_punkte)
+        })
+
+        sectionQuestionsMap.set(abschnittId, questions)
+      }
+    }
+
+    const sections: AusschreibungSection[] = sectionsResult.rows.map(row => {
+      const sectionId = String(row.id)
+
+      return {
+        id: sectionId,
+        name: row.name,
+        weight: row.weight,
+        questions: sectionQuestionsMap.get(sectionId) || []
+      }
+    })
 
     return {
       id: String(ausschreibung.id),

@@ -9,14 +9,20 @@ const props = defineProps<{
 }>()
 
 const isUploadModalOpen = ref(false)
-const questions = ref<CriteriaCsvQuestionRow[]>([])
 const csvError = ref('')
+const { isSaving, errorMessage, saveAbschnittFragen } = useSaveAbschnittFragen()
 const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting()
 
-function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
+async function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
   csvError.value = ''
-  questions.value = parsedQuestions
-  isUploadModalOpen.value = false
+
+  try {
+    await saveAbschnittFragen(props.section.id, parsedQuestions)
+    await refreshNuxtData(`ausschreibung-detail:${useRoute().params.id}`)
+    isUploadModalOpen.value = false
+  } catch {
+    csvError.value = errorMessage.value || 'Fragen konnten nicht gespeichert werden.'
+  }
 }
 
 function handleCsvError(message: string) {
@@ -56,7 +62,7 @@ watch(isUploadModalOpen, (open) => {
 
     <div class="space-y-4">
       <div
-        v-if="questions.length > 0"
+        v-if="props.section.questions.length > 0"
         class="space-y-2"
       >
         <div class="overflow-hidden rounded-lg border ui-border">
@@ -70,7 +76,7 @@ watch(isUploadModalOpen, (open) => {
 
           <div class="divide-y ui-border">
             <div
-              v-for="question in questions"
+              v-for="question in props.section.questions"
               :key="`${props.section.id}-${question.nr}-${question.frage}`"
               class="grid grid-cols-12 gap-4 px-4 py-3 text-sm"
             >
@@ -87,12 +93,17 @@ watch(isUploadModalOpen, (open) => {
       <p v-if="csvError" class="text-sm text-error">
         {{ csvError }}
       </p>
+
+      <p v-if="isSaving" class="text-sm ui-text-muted">
+        Fragen werden gespeichert ...
+      </p>
     </div>
 
     <AusschreibungSectionCsvUpload
       v-model:open="isUploadModalOpen"
       :section-name="props.section.name"
       :section-weight="props.section.weight"
+      :error-message="csvError"
       @uploaded="handleCsvUploaded"
       @error="handleCsvError"
     />

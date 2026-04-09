@@ -7,6 +7,7 @@ import type { CriteriaCsvQuestionRow } from '../types/criteria-csv'
 const props = defineProps<{
   sectionName: string
   sectionWeight: number
+  errorMessage?: string
 }>()
 
 const emit = defineEmits<{
@@ -126,6 +127,8 @@ watch(isOpen, (open) => {
   if (open) {
     csvFile.value = null
     csvError.value = ''
+  } else {
+    csvFile.value = null
   }
 })
 </script>
@@ -146,8 +149,8 @@ watch(isOpen, (open) => {
           class="w-full"
         />
 
-        <p v-if="csvError" class="text-sm text-error">
-          {{ csvError }}
+        <p v-if="csvError || props.errorMessage" class="text-sm text-error">
+          {{ csvError || props.errorMessage }}
         </p>
       </div>
     </template>

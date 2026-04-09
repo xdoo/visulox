@@ -11,6 +11,13 @@ export interface AusschreibungVendorInput {
   name: string
 }
 
+export interface AbschnittFrageInput {
+  nr: string
+  frage: string
+  punkte: number
+  anteil: number
+}
+
 export interface CreateAusschreibungRequest {
   name: string
   sections: AusschreibungSectionInput[]
@@ -36,6 +43,7 @@ export interface AusschreibungSection {
   id: string
   name: string
   weight: number
+  questions: AbschnittFrage[]
 }
 
 export interface AusschreibungDetail {
@@ -43,4 +51,21 @@ export interface AusschreibungDetail {
   name: string
   vendors: AusschreibungVendor[]
   sections: AusschreibungSection[]
+}
+
+export interface AbschnittFrage {
+  id: string
+  nr: string
+  frage: string
+  punkte: number
+  anteil: number
+  gewichtetePunkte: number
+}
+
+export interface SaveAbschnittFragenRequest {
+  questions: AbschnittFrageInput[]
+}
+
+export interface SaveAbschnittFragenResponse {
+  questions: AbschnittFrage[]
 }

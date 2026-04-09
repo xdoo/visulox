@@ -33,7 +33,7 @@ The API expects these PostgreSQL tables to exist:
 - `kostenbloecke`
 - `anbieter`
 
-The repository Compose setup initializes them from [001-schema.sql](/home/claus/Projekte/visulox/infrastructure/postgres/init/001-schema.sql) on the first container start.
+The repository Compose setup initializes them from [001-ausschreibungen-schema.sql](/home/claus/Projekte/visulox/infrastructure/postgres/init/001-ausschreibungen-schema.sql) on the first container start.
 
 If your Postgres container was already created before that init script existed, recreate the database volume or run the SQL manually, because `/docker-entrypoint-initdb.d` is only processed during initial database creation.
 
