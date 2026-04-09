@@ -75,6 +75,18 @@ Preview the production build locally:
 npm run preview
 ```
 
+## Git Workflow
+
+Do not work directly on `main`.
+
+Before making any code change, always create and switch to a new branch first:
+
+```bash
+git checkout -b <feature-branch-name>
+```
+
+Only after that should implementation work begin.
+
 ## Project Structure
 
 - `app/layouts/default.vue`: Main application shell with sidebar, header, breadcrumb, and modal trigger.
