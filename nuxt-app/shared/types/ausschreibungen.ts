@@ -26,3 +26,14 @@ export interface AusschreibungListItem {
   id: string
   name: string
 }
+
+export interface AusschreibungVendor {
+  id: string
+  name: string
+}
+
+export interface AusschreibungDetail {
+  id: string
+  name: string
+  vendors: AusschreibungVendor[]
+}
