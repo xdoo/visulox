@@ -12,6 +12,16 @@ const isUploadModalOpen = ref(false)
 const questions = ref<CriteriaCsvQuestionRow[]>([])
 const csvError = ref('')
 
+function formatPercentage(value: number) {
+  const percentage = value * 100
+
+  if (Number.isInteger(percentage)) {
+    return `${percentage}%`
+  }
+
+  return `${percentage.toFixed(2).replace(/\.?0+$/, '')}%`
+}
+
 function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
   csvError.value = ''
   questions.value = parsedQuestions
@@ -35,9 +45,6 @@ watch(isUploadModalOpen, (open) => {
       <div class="flex items-start justify-between gap-4">
         <div>
           <h3 class="font-semibold">{{ props.section.name }}</h3>
-          <p class="mt-1 text-sm ui-text-muted">
-            Abschnitt des Kriterienkatalogs
-          </p>
         </div>
 
         <div class="flex items-center gap-2">
@@ -57,35 +64,30 @@ watch(isUploadModalOpen, (open) => {
     </template>
 
     <div class="space-y-4">
-      <p class="text-sm ui-text-muted">
-        Weitere fachliche Logik fuer diesen Abschnitt wird hier aufgebaut.
-      </p>
-
       <div
         v-if="questions.length > 0"
         class="space-y-2"
       >
-        <p class="text-sm font-medium">Importierte Fragen</p>
+        <div class="overflow-hidden rounded-lg border ui-border">
+          <div class="grid grid-cols-12 gap-4 bg-gray-50 px-4 py-3 text-sm font-medium dark:bg-gray-950">
+            <div class="col-span-1">Nr</div>
+            <div class="col-span-7">Frage</div>
+            <div class="col-span-2">Punkte</div>
+            <div class="col-span-2">Anteil</div>
+          </div>
 
-        <div class="overflow-x-auto rounded-lg border ui-border">
-          <table class="min-w-full divide-y ui-border text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-950">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium">Nr</th>
-                <th class="px-4 py-3 text-left font-medium">Frage</th>
-                <th class="px-4 py-3 text-left font-medium">Punkte</th>
-                <th class="px-4 py-3 text-left font-medium">Anteil</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y ui-border">
-              <tr v-for="question in questions" :key="`${props.section.id}-${question.nr}-${question.frage}`">
-                <td class="px-4 py-3 align-top">{{ question.nr }}</td>
-                <td class="px-4 py-3">{{ question.frage }}</td>
-                <td class="px-4 py-3 align-top">{{ question.punkte }}</td>
-                <td class="px-4 py-3 align-top">{{ question.anteil }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="divide-y ui-border">
+            <div
+              v-for="question in questions"
+              :key="`${props.section.id}-${question.nr}-${question.frage}`"
+              class="grid grid-cols-12 gap-4 px-4 py-3 text-sm"
+            >
+              <div class="col-span-1">{{ question.nr }}</div>
+              <div class="col-span-7">{{ question.frage }}</div>
+              <div class="col-span-2">{{ question.punkte }}</div>
+              <div class="col-span-2">{{ formatPercentage(question.anteil) }}</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -97,6 +99,7 @@ watch(isUploadModalOpen, (open) => {
     <AusschreibungSectionCsvUpload
       v-model:open="isUploadModalOpen"
       :section-name="props.section.name"
+      :section-weight="props.section.weight"
       @uploaded="handleCsvUploaded"
       @error="handleCsvError"
     />
