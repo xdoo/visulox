@@ -2,18 +2,19 @@
 import AusschreibungSectionCsvUpload from './AusschreibungSectionCsvUpload.vue'
 
 import type { AusschreibungSection } from '../../shared/types/ausschreibungen'
+import type { CriteriaCsvQuestionRow } from '../types/criteria-csv'
 
 const props = defineProps<{
   section: AusschreibungSection
 }>()
 
 const isUploadModalOpen = ref(false)
-const csvContent = ref('')
+const questions = ref<CriteriaCsvQuestionRow[]>([])
 const csvError = ref('')
 
-function handleCsvUploaded(content: string) {
+function handleCsvUploaded(parsedQuestions: CriteriaCsvQuestionRow[]) {
   csvError.value = ''
-  csvContent.value = content
+  questions.value = parsedQuestions
   isUploadModalOpen.value = false
 }
 
@@ -61,11 +62,31 @@ watch(isUploadModalOpen, (open) => {
       </p>
 
       <div
-        v-if="csvContent"
+        v-if="questions.length > 0"
         class="space-y-2"
       >
-        <p class="text-sm font-medium">CSV-Inhalt</p>
-        <pre class="overflow-x-auto rounded-lg border ui-border bg-gray-50 p-4 text-sm text-gray-800 dark:bg-gray-950 dark:text-gray-100">{{ csvContent }}</pre>
+        <p class="text-sm font-medium">Importierte Fragen</p>
+
+        <div class="overflow-x-auto rounded-lg border ui-border">
+          <table class="min-w-full divide-y ui-border text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-950">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium">Nr</th>
+                <th class="px-4 py-3 text-left font-medium">Frage</th>
+                <th class="px-4 py-3 text-left font-medium">Punkte</th>
+                <th class="px-4 py-3 text-left font-medium">Anteil</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y ui-border">
+              <tr v-for="question in questions" :key="`${props.section.id}-${question.nr}-${question.frage}`">
+                <td class="px-4 py-3 align-top">{{ question.nr }}</td>
+                <td class="px-4 py-3">{{ question.frage }}</td>
+                <td class="px-4 py-3 align-top">{{ question.punkte }}</td>
+                <td class="px-4 py-3 align-top">{{ question.anteil }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <p v-if="csvError" class="text-sm text-error">

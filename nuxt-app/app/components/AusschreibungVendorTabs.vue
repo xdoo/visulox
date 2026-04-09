@@ -37,6 +37,7 @@ function getVendorForItemValue(value: string | number | undefined) {
 <template>
   <UTabs
     :items="items"
+    default-value="overview"
     color="neutral"
     variant="link"
     :unmount-on-hide="false"

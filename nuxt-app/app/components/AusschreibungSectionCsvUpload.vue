@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import Papa from 'papaparse'
+
+import type { ParseError } from 'papaparse'
+import type { CriteriaCsvQuestionRow } from '../types/criteria-csv'
+
 const props = defineProps<{
   sectionName: string
 }>()
 
 const emit = defineEmits<{
-  uploaded: [csvContent: string]
+  uploaded: [questions: CriteriaCsvQuestionRow[]]
   error: [message: string]
 }>()
 
@@ -12,6 +17,62 @@ const isOpen = defineModel<boolean>('open', { default: false })
 
 const csvFile = ref<File | null>(null)
 const csvError = ref('')
+
+function parseNumber(value: string) {
+  const normalizedValue = value.trim().replace(',', '.')
+  const parsedValue = Number(normalizedValue)
+
+  return Number.isFinite(parsedValue) ? parsedValue : null
+}
+
+function buildParseErrorMessage(errors: ParseError[]) {
+  if (errors.length === 0) {
+    return 'Die CSV-Datei konnte nicht interpretiert werden.'
+  }
+
+  const firstError = errors[0]
+  return `CSV-Parsing fehlgeschlagen: ${firstError.message}`
+}
+
+function parseCsvQuestions(csvContent: string) {
+  const result = Papa.parse<string[]>(csvContent, {
+    header: false,
+    skipEmptyLines: true
+  })
+
+  if (result.errors.length > 0) {
+    throw new Error(buildParseErrorMessage(result.errors))
+  }
+
+  return result.data.map((row, index) => {
+    if (row.length !== 4) {
+      throw new Error(`CSV-Zeile ${index + 1} muss genau 4 Spalten enthalten.`)
+    }
+
+    const [nr, frage, punkteRaw, anteilRaw] = row.map(value => value.trim())
+    const punkte = parseNumber(punkteRaw)
+    const anteil = parseNumber(anteilRaw)
+
+    if (!frage) {
+      throw new Error(`CSV-Zeile ${index + 1} hat keine Frage.`)
+    }
+
+    if (punkte === null) {
+      throw new Error(`CSV-Zeile ${index + 1} hat keinen gueltigen Punkte-Wert.`)
+    }
+
+    if (anteil === null) {
+      throw new Error(`CSV-Zeile ${index + 1} hat keinen gueltigen Anteil-Wert.`)
+    }
+
+    return {
+      nr,
+      frage,
+      punkte,
+      anteil
+    }
+  })
+}
 
 async function handleCsvSelection(file: File | null | undefined) {
   csvError.value = ''
@@ -29,9 +90,10 @@ async function handleCsvSelection(file: File | null | undefined) {
 
   try {
     const csvContent = await file.text()
-    emit('uploaded', csvContent)
-  } catch {
-    csvError.value = 'Die CSV-Datei konnte nicht gelesen werden.'
+    const questions = parseCsvQuestions(csvContent)
+    emit('uploaded', questions)
+  } catch (error) {
+    csvError.value = error instanceof Error ? error.message : 'Die CSV-Datei konnte nicht gelesen werden.'
     emit('error', csvError.value)
   }
 }
