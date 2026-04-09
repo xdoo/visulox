@@ -1,15 +1,9 @@
 <script setup lang="ts">
+import AusschreibungVendorTabs from '../../../components/AusschreibungVendorTabs.vue'
+
 const route = useRoute()
 const ausschreibungId = computed(() => String(route.params.id || ''))
-const { findAusschreibungById, loadAusschreibungen } = useAusschreibungen()
-
-await callOnce(async () => {
-  await loadAusschreibungen()
-})
-
-const ausschreibung = computed(() => {
-  return findAusschreibungById(ausschreibungId.value)
-})
+const { data: ausschreibung, status, error } = await useAusschreibungDetail(ausschreibungId)
 
 useSeoMeta({
   title: () => {
@@ -30,8 +24,46 @@ useSeoMeta({
       </p>
     </div>
 
-    <div class="flex h-96 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400">
-      Inhalte für die Kostenansicht dieser Ausschreibung folgen später.
+    <UAlert
+      v-if="error"
+      color="error"
+      variant="subtle"
+      title="Ausschreibungsdetails konnten nicht geladen werden."
+    />
+
+    <div
+      v-else-if="status === 'pending'"
+      class="flex h-96 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400"
+    >
+      Lade Anbieter und Kostenansicht ...
     </div>
+
+    <AusschreibungVendorTabs v-else :vendors="ausschreibung?.vendors || []">
+      <template #overview>
+        <UCard>
+          <template #header>
+            <h3 class="font-semibold">Gesamtübersicht</h3>
+          </template>
+
+          <p class="ui-text-muted">
+            Gesamtsicht auf die Kosten der Ausschreibung {{ ausschreibung?.name }}.
+          </p>
+        </UCard>
+      </template>
+
+      <template #vendor="{ vendor }">
+        <UCard>
+          <template #header>
+            <h3 class="font-semibold">
+              {{ vendor?.name || 'Anbieter' }}
+            </h3>
+          </template>
+
+          <p class="ui-text-muted">
+            Kostenansicht für {{ vendor?.name || 'den ausgewählten Anbieter' }}.
+          </p>
+        </UCard>
+      </template>
+    </AusschreibungVendorTabs>
   </div>
 </template>
