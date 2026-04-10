@@ -2,6 +2,7 @@ import { createError, defineEventHandler } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
 import { getPostgresClient } from '../../utils/postgres'
+import { normalizeTenderSettingsRow } from '../../utils/tender-general-settings'
 
 import type {
   SectionQuestion,
@@ -14,6 +15,12 @@ import type {
 interface TenderRow {
   id: string | number
   name: string
+}
+
+interface TenderSettingsRow {
+  score_min: string | number
+  score_max: string | number
+  chart_palette: string[] | null
 }
 
 interface VendorRow {
@@ -69,6 +76,13 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
         statusMessage: 'Ausschreibung not found'
       })
     }
+
+    const tenderSettingsResult = await client.query<TenderSettingsRow>(
+      'SELECT score_min, score_max, chart_palette FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1',
+      [tenderId]
+    )
+
+    const settings = normalizeTenderSettingsRow(tenderSettingsResult.rows[0] || null)
 
     const vendorsResult = await client.query<VendorRow>(
       'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC',
@@ -135,6 +149,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     return {
       id: String(tender.id),
       name: tender.name,
+      settings,
       vendors,
       sections
     }

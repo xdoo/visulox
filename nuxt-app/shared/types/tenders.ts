@@ -39,6 +39,11 @@ export interface TenderVendor {
   name: string
 }
 
+export interface TenderSettings {
+  scoreRange: [number, number]
+  chartPalette: string[]
+}
+
 export interface TenderSectionQuestionsByVendor {
   vendorId: string
   questions: SectionQuestion[]
@@ -54,6 +59,7 @@ export interface TenderSection {
 export interface TenderDetail {
   id: string
   name: string
+  settings: TenderSettings
   vendors: TenderVendor[]
   sections: TenderSection[]
 }
@@ -74,4 +80,13 @@ export interface SaveSectionQuestionsRequest {
 
 export interface SaveSectionQuestionsResponse {
   questions: SectionQuestion[]
+}
+
+export interface UpdateTenderSettingsRequest {
+  scoreRange: [number, number]
+  chartPalette: string[]
+}
+
+export interface UpdateTenderSettingsResponse {
+  settings: TenderSettings
 }

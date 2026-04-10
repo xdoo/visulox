@@ -66,6 +66,7 @@ useSeoMeta({
           <TenderCriteriaSections
             :sections="tender?.sections || []"
             :vendor-id="vendor?.id || ''"
+            :max-points="tender?.settings.scoreRange[1] || 10"
           />
         </div>
       </template>
