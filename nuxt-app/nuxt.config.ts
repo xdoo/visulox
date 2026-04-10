@@ -7,8 +7,14 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxt/eslint',
     '@nuxt/fonts',
-    '@nuxt/test-utils/module'
+    '@nuxt/test-utils/module',
+    'nuxt-echarts'
   ],
+  echarts: {
+    renderer: ['svg', 'canvas'],
+    charts: ['BarChart', 'LineChart', 'PieChart', 'RadarChart'],
+    components: ['DatasetComponent', 'GridComponent', 'TooltipComponent', 'LegendComponent', 'TitleComponent', 'VisualMapComponent'],
+  },
   app: {
     head: {
       titleTemplate: '%s - Visulox',

@@ -51,17 +51,12 @@ useSeoMeta({
 
       <template #vendor="{ vendor }">
         <div class="space-y-4">
-          <UCard>
-            <template #header>
-              <h3 class="font-semibold">
-                {{ vendor?.name || 'Anbieter' }}
-              </h3>
-            </template>
-
-            <p class="ui-text-muted">
-              Kriterienkatalog für {{ vendor?.name || 'den ausgewählten Anbieter' }}.
-            </p>
-          </UCard>
+          <TenderVendorCriteriaCard
+            v-if="vendor"
+            :vendor="vendor"
+            :sections="tender?.sections || []"
+            :max-points="tender?.settings.scoreRange[1] || 10"
+          />
 
           <TenderCriteriaSections
             :sections="tender?.sections || []"
