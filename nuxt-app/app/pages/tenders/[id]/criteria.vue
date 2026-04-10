@@ -63,7 +63,10 @@ useSeoMeta({
             </p>
           </UCard>
 
-          <TenderCriteriaSections :sections="tender?.sections || []" />
+          <TenderCriteriaSections
+            :sections="tender?.sections || []"
+            :vendor-id="vendor?.id || ''"
+          />
         </div>
       </template>
     </TenderVendorTabs>

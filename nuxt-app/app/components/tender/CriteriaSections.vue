@@ -3,6 +3,7 @@ import type { TenderSection } from '../../../shared/types/tenders'
 
 const props = defineProps<{
   sections: TenderSection[]
+  vendorId: string
 }>()
 
 const hasSections = computed(() => props.sections.length > 0)
@@ -22,6 +23,7 @@ const hasSections = computed(() => props.sections.length > 0)
         v-for="section in sections"
         :key="section.id"
         :section="section"
+        :vendor-id="vendorId"
       />
     </div>
   </div>

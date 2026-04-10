@@ -13,10 +13,16 @@ import type {
 
 interface SectionRow {
   id: string | number
+  ausschreibung_id: string | number
   weight: number
 }
 
-interface SectionQuestionRow {
+interface VendorRow {
+  id: string | number
+  ausschreibung_id: string | number
+}
+
+interface SavedSectionQuestionRow {
   id: string | number
   nr: string
   frage: string
@@ -71,7 +77,7 @@ function normalizeQuestion(input: Partial<SectionQuestionInput>, index: number):
   }
 }
 
-function mapQuestionRow(row: SectionQuestionRow): SectionQuestion {
+function mapQuestionRow(row: SavedSectionQuestionRow): SectionQuestion {
   return {
     id: String(row.id),
     nr: row.nr,
@@ -84,25 +90,39 @@ function mapQuestionRow(row: SectionQuestionRow): SectionQuestion {
 
 async function loadSection(client: Pick<PoolClient, 'query'>, sectionId: string) {
   const result = await client.query<SectionRow>(
-    'SELECT id, weight FROM abschnitte WHERE id = $1 LIMIT 1',
+    'SELECT id, ausschreibung_id, weight FROM abschnitte WHERE id = $1 LIMIT 1',
     [sectionId]
   )
 
   return result.rows[0] || null
 }
 
-async function saveQuestions(client: Pick<PoolClient, 'query'>, sectionId: string, questions: SectionQuestionInput[]) {
-  await client.query('DELETE FROM abschnittsfragen WHERE abschnitt_id = $1', [sectionId])
+async function loadVendor(client: Pick<PoolClient, 'query'>, vendorId: string) {
+  const result = await client.query<VendorRow>(
+    'SELECT id, ausschreibung_id FROM anbieter WHERE id = $1 LIMIT 1',
+    [vendorId]
+  )
+
+  return result.rows[0] || null
+}
+
+async function saveQuestions(
+  client: Pick<PoolClient, 'query'>,
+  sectionId: string,
+  vendorId: string,
+  questions: SectionQuestionInput[]
+) {
+  await client.query('DELETE FROM abschnittsfragen WHERE abschnitt_id = $1 AND anbieter_id = $2', [sectionId, vendorId])
 
   const savedQuestions: SectionQuestion[] = []
 
   for (const question of questions) {
     const gewichtetePunkte = Number((question.punkte * question.anteil).toFixed(4))
-    const result = await client.query<SectionQuestionRow>(
-      `INSERT INTO abschnittsfragen (abschnitt_id, nr, frage, punkte, anteil, gewichtete_punkte)
-       VALUES ($1, $2, $3, $4, $5, $6)
+    const result = await client.query<SavedSectionQuestionRow>(
+      `INSERT INTO abschnittsfragen (abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, nr, frage, punkte, anteil, gewichtete_punkte`,
-      [sectionId, question.nr, question.frage, question.punkte, question.anteil, gewichtetePunkte]
+      [sectionId, vendorId, question.nr, question.frage, question.punkte, question.anteil, gewichtetePunkte]
     )
 
     const row = result.rows[0]
@@ -131,7 +151,15 @@ export default defineEventHandler(async (event): Promise<SaveSectionQuestionsRes
   }
 
   const body = await readBody<Partial<SaveSectionQuestionsRequest>>(event)
+  const vendorId = body?.vendorId?.trim() || ''
   const questionsInput = Array.isArray(body?.questions) ? body.questions : []
+
+  if (!vendorId) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Anbieter id is required'
+    })
+  }
 
   if (questionsInput.length === 0) {
     throw createError({
@@ -156,6 +184,22 @@ export default defineEventHandler(async (event): Promise<SaveSectionQuestionsRes
       })
     }
 
+    const vendor = await loadVendor(client, vendorId)
+
+    if (!vendor) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Anbieter not found'
+      })
+    }
+
+    if (String(section.ausschreibung_id) !== String(vendor.ausschreibung_id)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Abschnitt and Anbieter do not belong to the same Ausschreibung'
+      })
+    }
+
     const totalAnteil = questions.reduce((sum, question) => sum + question.anteil, 0)
     const totalPercentage = totalAnteil * 100
 
@@ -166,7 +210,7 @@ export default defineEventHandler(async (event): Promise<SaveSectionQuestionsRes
       })
     }
 
-    const savedQuestions = await saveQuestions(client, sectionId, questions)
+    const savedQuestions = await saveQuestions(client, sectionId, vendorId, questions)
 
     await client.query('COMMIT')
 

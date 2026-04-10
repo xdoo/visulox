@@ -39,11 +39,16 @@ export interface TenderVendor {
   name: string
 }
 
+export interface TenderSectionQuestionsByVendor {
+  vendorId: string
+  questions: SectionQuestion[]
+}
+
 export interface TenderSection {
   id: string
   name: string
   weight: number
-  questions: SectionQuestion[]
+  questionsByVendor: TenderSectionQuestionsByVendor[]
 }
 
 export interface TenderDetail {
@@ -63,6 +68,7 @@ export interface SectionQuestion {
 }
 
 export interface SaveSectionQuestionsRequest {
+  vendorId: string
   questions: SectionQuestionInput[]
 }
 
