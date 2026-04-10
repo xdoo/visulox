@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const getPostgresClient = vi.fn()
+const getQuery = vi.fn()
 const useRuntimeConfig = vi.fn()
 
 vi.mock('h3', async () => {
@@ -8,6 +9,7 @@ vi.mock('h3', async () => {
 
   return {
     ...actual,
+    getQuery,
     createError: ({ statusCode, statusMessage }: { statusCode: number, statusMessage: string }) => {
       const error = new Error(statusMessage) as Error & { statusCode: number, statusMessage: string }
       error.statusCode = statusCode
@@ -28,6 +30,9 @@ vi.mock('../server/utils/postgres', () => ({
 describe('DELETE /api/sections/:id/questions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    getQuery.mockReturnValue({
+      vendorId: '11'
+    })
     useRuntimeConfig.mockReturnValue({
       databaseUrl: 'postgresql://visulox:visulox@localhost:5432/visulox'
     })
@@ -36,7 +41,8 @@ describe('DELETE /api/sections/:id/questions', () => {
   it('deletes all saved questions for a section', async () => {
     const query = vi.fn()
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ id: 7 }] })
+      .mockResolvedValueOnce({ rows: [{ id: 7, ausschreibung_id: 1 }] })
+      .mockResolvedValueOnce({ rows: [{ id: 11, ausschreibung_id: 1 }] })
       .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [] })
     const release = vi.fn()
@@ -53,9 +59,10 @@ describe('DELETE /api/sections/:id/questions', () => {
     } as never)
 
     expect(query).toHaveBeenNthCalledWith(1, 'BEGIN')
-    expect(query).toHaveBeenNthCalledWith(2, 'SELECT id FROM abschnitte WHERE id = $1 LIMIT 1', ['7'])
-    expect(query).toHaveBeenNthCalledWith(3, 'DELETE FROM abschnittsfragen WHERE abschnitt_id = $1', ['7'])
-    expect(query).toHaveBeenNthCalledWith(4, 'COMMIT')
+    expect(query).toHaveBeenNthCalledWith(2, 'SELECT id, ausschreibung_id FROM abschnitte WHERE id = $1 LIMIT 1', ['7'])
+    expect(query).toHaveBeenNthCalledWith(3, 'SELECT id, ausschreibung_id FROM anbieter WHERE id = $1 LIMIT 1', ['11'])
+    expect(query).toHaveBeenNthCalledWith(4, 'DELETE FROM abschnittsfragen WHERE abschnitt_id = $1 AND anbieter_id = $2', ['7', '11'])
+    expect(query).toHaveBeenNthCalledWith(5, 'COMMIT')
     expect(response).toEqual({ deleted: true })
     expect(release).toHaveBeenCalledTimes(1)
   })

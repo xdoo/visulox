@@ -3,7 +3,13 @@ import { useRuntimeConfig } from '#imports'
 
 import { getPostgresClient } from '../../utils/postgres'
 
-import type { SectionQuestion, TenderDetail, TenderSection, TenderVendor } from '../../../shared/types/tenders'
+import type {
+  SectionQuestion,
+  TenderDetail,
+  TenderSection,
+  TenderSectionQuestionsByVendor,
+  TenderVendor
+} from '../../../shared/types/tenders'
 
 interface TenderRow {
   id: string | number
@@ -24,6 +30,7 @@ interface SectionRow {
 interface SectionQuestionRow {
   id: string | number
   abschnitt_id: string | number
+  anbieter_id: string | number
   nr: string
   frage: string
   punkte: string | number
@@ -79,11 +86,11 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     )
 
     const sectionIds = sectionsResult.rows.map(row => String(row.id))
-    const sectionQuestionsMap = new Map<string, SectionQuestion[]>()
+    const sectionQuestionsMap = new Map<string, Map<string, SectionQuestion[]>>()
 
     if (sectionIds.length > 0) {
       const questionsResult = await client.query<SectionQuestionRow>(
-        `SELECT id, abschnitt_id, nr, frage, punkte, anteil, gewichtete_punkte
+        `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte
          FROM abschnittsfragen
          WHERE abschnitt_id = ANY($1::bigint[])
          ORDER BY id ASC`,
@@ -92,7 +99,9 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
 
       for (const row of questionsResult.rows) {
         const sectionId = String(row.abschnitt_id)
-        const questions = sectionQuestionsMap.get(sectionId) || []
+        const vendorId = String(row.anbieter_id)
+        const questionsByVendor = sectionQuestionsMap.get(sectionId) || new Map<string, SectionQuestion[]>()
+        const questions = questionsByVendor.get(vendorId) || []
 
         questions.push({
           id: String(row.id),
@@ -103,18 +112,23 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
           gewichtetePunkte: toNumber(row.gewichtete_punkte)
         })
 
-        sectionQuestionsMap.set(sectionId, questions)
+        questionsByVendor.set(vendorId, questions)
+        sectionQuestionsMap.set(sectionId, questionsByVendor)
       }
     }
 
     const sections: TenderSection[] = sectionsResult.rows.map(row => {
       const sectionId = String(row.id)
+      const questionsByVendor = sectionQuestionsMap.get(sectionId) || new Map<string, SectionQuestion[]>()
 
       return {
         id: sectionId,
         name: row.name,
         weight: row.weight,
-        questions: sectionQuestionsMap.get(sectionId) || []
+        questionsByVendor: vendors.map<TenderSectionQuestionsByVendor>((vendor) => ({
+          vendorId: vendor.id,
+          questions: questionsByVendor.get(vendor.id) || []
+        }))
       }
     })
 

@@ -3,17 +3,22 @@ import type { SaveSectionQuestionsResponse } from '../../shared/types/tenders'
 
 interface UseCriteriaSectionActionsOptions {
   sectionId: string
+  vendorId: string
 }
 
 type SaveSectionQuestionsFetcher = <T>(request: string, options: {
   method: 'POST'
   body: {
+    vendorId: string
     questions: CriteriaCsvQuestionRow[]
   }
 }) => Promise<T>
 
 type DeleteSectionQuestionsFetcher = <T>(request: string, options: {
   method: 'DELETE'
+  query: {
+    vendorId: string
+  }
 }) => Promise<T>
 
 export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOptions) {
@@ -37,7 +42,10 @@ export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOpti
     try {
       return await saveFetcher<SaveSectionQuestionsResponse>(`/api/sections/${sectionId}/questions`, {
         method: 'POST',
-        body: { questions }
+        body: {
+          vendorId: options.vendorId,
+          questions
+        }
       })
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Fragen konnten nicht gespeichert werden.'
@@ -53,7 +61,10 @@ export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOpti
 
     try {
       return await deleteFetcher<{ deleted: true }>(`/api/sections/${sectionId}/questions`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        query: {
+          vendorId: options.vendorId
+        }
       })
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : 'Fragen konnten nicht gelöscht werden.'

@@ -3,7 +3,12 @@ import type { TenderSection } from '../../../shared/types/tenders'
 
 const props = defineProps<{
   section: TenderSection
+  vendorId: string
 }>()
+
+const vendorQuestions = computed(() => {
+  return props.section.questionsByVendor.find((entry) => entry.vendorId === props.vendorId)?.questions || []
+})
 
 const {
   csvError,
@@ -14,7 +19,8 @@ const {
   handleCsvError,
   handleDeleteQuestions
 } = useCriteriaSectionActions({
-  sectionId: props.section.id
+  sectionId: props.section.id,
+  vendorId: props.vendorId
 })
 const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting()
 </script>
@@ -28,7 +34,7 @@ const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting
         </div>
 
         <div class="flex items-center gap-2">
-          <UTooltip v-if="props.section.questions.length > 0" text="Importierte Fragen dieser Sektion löschen">
+          <UTooltip v-if="vendorQuestions.length > 0" text="Importierte Fragen dieser Sektion löschen">
             <UButton
               icon="i-lucide-shredder"
               color="neutral"
@@ -46,7 +52,7 @@ const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting
     </template>
 
     <div class="space-y-4">
-      <div v-if="props.section.questions.length > 0" class="space-y-2">
+      <div v-if="vendorQuestions.length > 0" class="space-y-2">
         <div class="overflow-hidden rounded-lg border ui-border">
           <div class="grid grid-cols-12 gap-4 bg-gray-50 px-4 py-3 text-sm font-medium dark:bg-gray-950">
             <div class="col-span-1">Nr</div>
@@ -58,7 +64,7 @@ const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting
 
           <div class="divide-y ui-border">
             <div
-              v-for="question in props.section.questions"
+              v-for="question in vendorQuestions"
               :key="`${props.section.id}-${question.nr}-${question.frage}`"
               class="grid grid-cols-12 gap-4 px-4 py-3 text-sm"
             >
@@ -82,7 +88,7 @@ const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting
         />
       </div>
 
-      <p v-if="csvError && props.section.questions.length > 0" class="text-sm text-error">
+      <p v-if="csvError && vendorQuestions.length > 0" class="text-sm text-error">
         {{ csvError }}
       </p>
 
