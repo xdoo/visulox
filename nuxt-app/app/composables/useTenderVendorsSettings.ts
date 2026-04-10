@@ -1,6 +1,7 @@
-import { computed, reactive, ref, toValue } from 'vue'
+import { computed, toValue } from 'vue'
 
-import { useTenderSettings } from './useTenderSettings'
+import { useEditableSettingsModal } from './useEditableSettingsModal'
+import { useTenderVendorMutations } from './useTenderVendorMutations'
 
 import type { MaybeRefOrGetter } from 'vue'
 import type { TenderSection, TenderVendor } from '../../shared/types/tenders'
@@ -8,8 +9,6 @@ import type { TenderSection, TenderVendor } from '../../shared/types/tenders'
 export interface VendorSettingsRow extends TenderVendor {
   hasImportedQuestions: boolean
 }
-
-type VendorModalMode = 'create' | 'edit'
 
 export function mapVendorsForSettings(vendors: TenderVendor[], sections: TenderSection[]): VendorSettingsRow[] {
   return vendors.map((vendor) => ({
@@ -25,21 +24,33 @@ export function useTenderVendorsSettings(
   vendors: MaybeRefOrGetter<TenderVendor[]>,
   sections: MaybeRefOrGetter<TenderSection[]>
 ) {
-  const isModalOpen = ref(false)
-  const modalMode = ref<VendorModalMode>('create')
-  const selectedVendorId = ref('')
-  const pendingAction = ref('')
-  const form = reactive({
-    name: ''
-  })
-
   const {
     errorMessage,
     addVendor,
     updateVendor,
     deleteVendor,
     clearError
-  } = useTenderSettings(tenderId)
+  } = useTenderVendorMutations(tenderId)
+
+  const {
+    isModalOpen,
+    modalMode,
+    selectedItemId: selectedVendorId,
+    pendingAction,
+    form,
+    openCreateModal,
+    openEditModal,
+    startPending,
+    stopPending
+  } = useEditableSettingsModal<VendorSettingsRow, { name: string }>({
+    createForm: () => ({
+      name: ''
+    }),
+    assignForm: (nextForm, vendor) => {
+      nextForm.name = vendor?.name || ''
+    },
+    clearError
+  })
 
   const rows = computed<VendorSettingsRow[]>(() => {
     return mapVendorsForSettings(toValue(vendors), toValue(sections))
@@ -65,28 +76,12 @@ export function useTenderVendorsSettings(
     return form.name.trim() !== selectedVendor.value.name
   })
 
-  function openCreateModal() {
-    modalMode.value = 'create'
-    selectedVendorId.value = ''
-    form.name = ''
-    clearError()
-    isModalOpen.value = true
-  }
-
-  function openEditModal(vendor: VendorSettingsRow) {
-    modalMode.value = 'edit'
-    selectedVendorId.value = vendor.id
-    form.name = vendor.name
-    clearError()
-    isModalOpen.value = true
-  }
-
   async function handleSubmit() {
     if (!canSave.value) {
       return
     }
 
-    pendingAction.value = modalMode.value === 'create' ? 'create' : `save:${selectedVendorId.value}`
+    startPending(modalMode.value === 'create' ? 'create' : `save:${selectedVendorId.value}`)
     clearError()
 
     try {
@@ -102,18 +97,18 @@ export function useTenderVendorsSettings(
 
       isModalOpen.value = false
     } finally {
-      pendingAction.value = ''
+      stopPending()
     }
   }
 
   async function handleDelete(vendor: VendorSettingsRow) {
-    pendingAction.value = `delete:${vendor.id}`
+    startPending(`delete:${vendor.id}`)
     clearError()
 
     try {
       await deleteVendor(vendor.id)
     } finally {
-      pendingAction.value = ''
+      stopPending()
     }
   }
 

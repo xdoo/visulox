@@ -1,5 +1,7 @@
 import { computed } from 'vue'
 
+import { getTenderPath } from './useTenderPaths'
+
 import type { TenderListItem } from '../../shared/types/tenders'
 
 type FetchTenders = <T>(request: string) => Promise<T>
@@ -11,10 +13,6 @@ export function useTenders(fetcher: FetchTenders = $fetch as FetchTenders) {
   const latestTenderName = computed(() => {
     return items.value[0]?.name || 'Ausschreibungen'
   })
-
-  function getTenderPath(id: string) {
-    return `/tenders/${id}`
-  }
 
   function findTenderById(id: string) {
     return items.value.find(item => item.id === id) || null

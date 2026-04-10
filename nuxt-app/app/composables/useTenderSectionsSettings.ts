@@ -1,6 +1,7 @@
-import { computed, reactive, ref, toValue } from 'vue'
+import { computed, toValue } from 'vue'
 
-import { useTenderSettings } from './useTenderSettings'
+import { useEditableSettingsModal } from './useEditableSettingsModal'
+import { useTenderSectionMutations } from './useTenderSectionMutations'
 
 import type { MaybeRefOrGetter } from 'vue'
 import type { TenderSection } from '../../shared/types/tenders'
@@ -8,8 +9,6 @@ import type { TenderSection } from '../../shared/types/tenders'
 export interface SectionSettingsRow extends TenderSection {
   hasImportedQuestions: boolean
 }
-
-type SectionModalMode = 'create' | 'edit'
 
 export function mapSectionsForSettings(sections: TenderSection[]): SectionSettingsRow[] {
   return sections.map((section) => ({
@@ -26,7 +25,7 @@ export function parseSectionWeight(value: string) {
 interface NextWeightTotalOptions {
   currentTotal: number
   nextWeight: number
-  mode: SectionModalMode
+  mode: 'create' | 'edit'
   selectedSectionWeight?: number
 }
 
@@ -44,22 +43,35 @@ export function calculateNextSectionWeightTotal(options: NextWeightTotalOptions)
 
 export function useTenderSectionsSettings(tenderId: string, sections: MaybeRefOrGetter<TenderSection[]>) {
   const toast = useToast()
-  const isModalOpen = ref(false)
-  const modalMode = ref<SectionModalMode>('create')
-  const selectedSectionId = ref('')
-  const pendingAction = ref('')
-  const form = reactive({
-    name: '',
-    weight: ''
-  })
-
   const {
     errorMessage,
     addSection,
     updateSection,
     deleteSection,
     clearError
-  } = useTenderSettings(tenderId)
+  } = useTenderSectionMutations(tenderId)
+
+  const {
+    isModalOpen,
+    modalMode,
+    selectedItemId: selectedSectionId,
+    pendingAction,
+    form,
+    openCreateModal,
+    openEditModal,
+    startPending,
+    stopPending
+  } = useEditableSettingsModal<SectionSettingsRow, { name: string, weight: string }>({
+    createForm: () => ({
+      name: '',
+      weight: ''
+    }),
+    assignForm: (nextForm, section) => {
+      nextForm.name = section?.name || ''
+      nextForm.weight = section ? String(section.weight) : ''
+    },
+    clearError
+  })
 
   const rows = computed<SectionSettingsRow[]>(() => mapSectionsForSettings(toValue(sections)))
 
@@ -95,27 +107,6 @@ export function useTenderSectionsSettings(tenderId: string, sections: MaybeRefOr
     return form.name.trim() !== selectedSection.value.name || parsedWeight !== selectedSection.value.weight
   })
 
-  function setForm(section?: TenderSection) {
-    form.name = section?.name || ''
-    form.weight = section ? String(section.weight) : ''
-  }
-
-  function openCreateModal() {
-    modalMode.value = 'create'
-    selectedSectionId.value = ''
-    setForm()
-    clearError()
-    isModalOpen.value = true
-  }
-
-  function openEditModal(section: SectionSettingsRow) {
-    modalMode.value = 'edit'
-    selectedSectionId.value = section.id
-    setForm(section)
-    clearError()
-    isModalOpen.value = true
-  }
-
   function notifyIfWeightTotalIsInvalid(nextTotal: number) {
     if (nextTotal === 100) {
       return
@@ -136,7 +127,7 @@ export function useTenderSectionsSettings(tenderId: string, sections: MaybeRefOr
       return
     }
 
-    pendingAction.value = modalMode.value === 'create' ? 'create' : `save:${selectedSectionId.value}`
+    startPending(modalMode.value === 'create' ? 'create' : `save:${selectedSectionId.value}`)
     clearError()
 
     try {
@@ -162,19 +153,19 @@ export function useTenderSectionsSettings(tenderId: string, sections: MaybeRefOr
       isModalOpen.value = false
       notifyIfWeightTotalIsInvalid(nextTotal)
     } finally {
-      pendingAction.value = ''
+      stopPending()
     }
   }
 
   async function handleDelete(section: SectionSettingsRow) {
-    pendingAction.value = `delete:${section.id}`
+    startPending(`delete:${section.id}`)
     clearError()
 
     try {
       await deleteSection(section.id)
       notifyIfWeightTotalIsInvalid(totalWeight.value - section.weight)
     } finally {
-      pendingAction.value = ''
+      stopPending()
     }
   }
 

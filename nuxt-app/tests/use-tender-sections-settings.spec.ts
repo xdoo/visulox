@@ -14,8 +14,8 @@ const deleteSectionMock = vi.fn()
 const clearErrorMock = vi.fn()
 const toastAddMock = vi.fn()
 
-vi.mock('../app/composables/useTenderSettings', () => ({
-  useTenderSettings: () => ({
+vi.mock('../app/composables/useTenderSectionMutations', () => ({
+  useTenderSectionMutations: () => ({
     errorMessage: ref(''),
     addSection: addSectionMock,
     updateSection: updateSectionMock,

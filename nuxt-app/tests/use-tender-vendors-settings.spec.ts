@@ -8,8 +8,8 @@ const updateVendorMock = vi.fn()
 const deleteVendorMock = vi.fn()
 const clearErrorMock = vi.fn()
 
-vi.mock('../app/composables/useTenderSettings', () => ({
-  useTenderSettings: () => ({
+vi.mock('../app/composables/useTenderVendorMutations', () => ({
+  useTenderVendorMutations: () => ({
     errorMessage: ref(''),
     addVendor: addVendorMock,
     updateVendor: updateVendorMock,
