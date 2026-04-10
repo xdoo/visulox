@@ -22,6 +22,14 @@ const props = defineProps<{
   palette?: string[]
 }>()
 
+const isVisible = ref(false)
+
+onMounted(() => {
+  nextTick(() => {
+    isVisible.value = true
+  })
+})
+
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 
 // Sort vendors by total score descending
@@ -174,7 +182,7 @@ const option = computed<ECOption>(() => {
 <template>
   <div class="h-[400px] w-full overflow-hidden">
     <ClientOnly>
-      <VChart :option="option" autoresize />
+      <VChart v-if="isVisible" :option="option" autoresize />
     </ClientOnly>
   </div>
 </template>
