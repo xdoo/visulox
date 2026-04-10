@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
+import type { PaletteDialogRow } from '../../composables/useTenderGeneralSettingsDialogs'
 import type { TenderSettings } from '../../../shared/types/tenders'
 
 const props = defineProps<{
@@ -23,11 +24,17 @@ interface PaletteRow {
   index: number
 }
 
-const isScoreModalOpen = ref(false)
-const editingScoreRange = ref<[number, number]>([...scoreRange.value] as [number, number])
-const isColorModalOpen = ref(false)
-const editingPaletteIndex = ref<number | null>(null)
-const editingPaletteColor = ref('')
+const {
+  isScoreModalOpen,
+  editingScoreRange,
+  isColorModalOpen,
+  editingPaletteIndex,
+  editingPaletteColor,
+  openScoreModal,
+  closeScoreModal,
+  openPaletteModal,
+  closePaletteModal
+} = useTenderGeneralSettingsDialogs(() => scoreRange.value)
 
 const paletteColumns: TableColumn<PaletteRow>[] = [
   {
@@ -63,20 +70,9 @@ const paletteRows = computed<PaletteRow[]>(() => {
   }))
 })
 
-function openPaletteModal(row: PaletteRow) {
-  editingPaletteIndex.value = row.index
-  editingPaletteColor.value = row.color
-  isColorModalOpen.value = true
-}
-
-function openScoreModal() {
-  editingScoreRange.value = [...scoreRange.value] as [number, number]
-  isScoreModalOpen.value = true
-}
-
 async function saveScoreRange() {
   scoreRange.value = [...editingScoreRange.value] as [number, number]
-  isScoreModalOpen.value = false
+  closeScoreModal()
   await save()
 }
 
@@ -86,7 +82,7 @@ async function savePaletteColor() {
   }
 
   updatePaletteColor(editingPaletteIndex.value, editingPaletteColor.value)
-  isColorModalOpen.value = false
+  closePaletteModal()
   await save()
 }
 </script>
@@ -181,7 +177,7 @@ async function savePaletteColor() {
                 color="neutral"
                 variant="outline"
                 aria-label="Farbe bearbeiten"
-                @click="openPaletteModal(row.original)"
+                @click="openPaletteModal(row.original as PaletteDialogRow)"
               />
 
               <UButton
@@ -198,86 +194,18 @@ async function savePaletteColor() {
       </div>
     </UCard>
 
-    <UModal
+    <TenderSettingsScoreModal
       v-model:open="isScoreModalOpen"
-      title="Bewertungsskala bearbeiten"
-      description="Wählen Sie den Wertebereich für die Bewertung dieser Ausschreibung."
-    >
-      <template #body>
-        <div class="space-y-6">
-          <USlider
-            v-model="editingScoreRange"
-            :min="0"
-            :max="100"
-            :step="1"
-            color="primary"
-          />
+      v-model:score-range="editingScoreRange"
+      :is-saving="isSaving"
+      @submit="saveScoreRange"
+    />
 
-          <div class="grid gap-4 md:grid-cols-2">
-            <UFormField label="Von">
-              <UInput :model-value="String(editingScoreRange[0])" disabled />
-            </UFormField>
-
-            <UFormField label="Bis">
-              <UInput :model-value="String(editingScoreRange[1])" disabled />
-            </UFormField>
-          </div>
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="flex w-full justify-between gap-2">
-          <UButton color="neutral" variant="ghost" @click="isScoreModalOpen = false">
-            Abbrechen
-          </UButton>
-          <UButton
-            icon="i-lucide-save"
-            color="primary"
-            :loading="isSaving"
-            @click="saveScoreRange"
-          >
-            Speichern
-          </UButton>
-        </div>
-      </template>
-    </UModal>
-
-    <UModal
+    <TenderSettingsPaletteColorModal
       v-model:open="isColorModalOpen"
-      title="Farbe bearbeiten"
-      description="Wählen Sie eine Farbe aus oder geben Sie einen Hex-Code direkt ein."
-    >
-      <template #body>
-        <div class="space-y-4">
-          <div class="flex justify-center">
-            <UColorPicker v-model="editingPaletteColor" />
-          </div>
-
-          <UFormField label="Farb-Code">
-            <UInput
-              v-model="editingPaletteColor"
-              class="w-full"
-              placeholder="#0D57A6"
-            />
-          </UFormField>
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="flex w-full justify-between gap-2">
-          <UButton color="neutral" variant="ghost" @click="isColorModalOpen = false">
-            Abbrechen
-          </UButton>
-          <UButton
-            icon="i-lucide-save"
-            color="primary"
-            @click="savePaletteColor"
-          >
-            Speichern
-          </UButton>
-        </div>
-      </template>
-    </UModal>
+      v-model:color="editingPaletteColor"
+      @submit="savePaletteColor"
+    />
 
     <div class="xl:col-span-2 space-y-3">
       <UAlert
