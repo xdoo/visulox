@@ -38,15 +38,12 @@ useSeoMeta({
 
     <TenderVendorTabs v-else :vendors="tender?.vendors || []">
       <template #overview>
-        <UCard>
-          <template #header>
-            <h3 class="font-semibold">Gesamtübersicht</h3>
-          </template>
-
-          <p class="ui-text-muted">
-            Gesamtsicht auf den Kriterienkatalog der Ausschreibung {{ tender?.name }}.
-          </p>
-        </UCard>
+        <TenderOverviewCard
+          :vendors="tender?.vendors || []"
+          :sections="tender?.sections || []"
+          :max-points="tender?.settings.scoreRange[1] || 10"
+          :palette="tender?.settings.chartPalette"
+        />
       </template>
 
       <template #vendor="{ vendor }">
