@@ -12,7 +12,6 @@ const {
   scoreRange,
   chartPalette,
   isSaving,
-  canSave,
   updatePaletteColor,
   addPaletteColor,
   removePaletteColor,
@@ -24,6 +23,8 @@ interface PaletteRow {
   index: number
 }
 
+const isScoreModalOpen = ref(false)
+const editingScoreRange = ref<[number, number]>([...scoreRange.value] as [number, number])
 const isColorModalOpen = ref(false)
 const editingPaletteIndex = ref<number | null>(null)
 const editingPaletteColor = ref('')
@@ -68,13 +69,25 @@ function openPaletteModal(row: PaletteRow) {
   isColorModalOpen.value = true
 }
 
-function savePaletteColor() {
+function openScoreModal() {
+  editingScoreRange.value = [...scoreRange.value] as [number, number]
+  isScoreModalOpen.value = true
+}
+
+async function saveScoreRange() {
+  scoreRange.value = [...editingScoreRange.value] as [number, number]
+  isScoreModalOpen.value = false
+  await save()
+}
+
+async function savePaletteColor() {
   if (editingPaletteIndex.value === null) {
     return
   }
 
   updatePaletteColor(editingPaletteIndex.value, editingPaletteColor.value)
   isColorModalOpen.value = false
+  await save()
 }
 </script>
 
@@ -82,23 +95,27 @@ function savePaletteColor() {
   <div class="grid gap-6 xl:grid-cols-2">
     <UCard>
       <template #header>
-        <div class="space-y-1">
-          <h3 class="font-semibold">Bewertungsskala</h3>
-          <p class="text-sm ui-text-muted">
-            Legen Sie fest, in welchem Bereich Bewertungen für diese Ausschreibung erfolgen.
-          </p>
+        <div class="flex items-start justify-between gap-4">
+          <div class="space-y-1">
+            <h3 class="font-semibold">Bewertungsskala</h3>
+            <p class="text-sm ui-text-muted">
+              Legen Sie fest, in welchem Bereich Bewertungen für diese Ausschreibung erfolgen.
+            </p>
+          </div>
+
+          <UTooltip text="Bewertungsskala bearbeiten">
+            <UButton
+              icon="i-lucide-sliders-horizontal"
+              color="neutral"
+              variant="outline"
+              aria-label="Bewertungsskala bearbeiten"
+              @click="openScoreModal"
+            />
+          </UTooltip>
         </div>
       </template>
 
-      <div class="space-y-6">
-        <USlider
-          v-model="scoreRange"
-          :min="0"
-          :max="100"
-          :step="1"
-          color="primary"
-        />
-
+      <div class="space-y-4">
         <div class="grid gap-4 md:grid-cols-2">
           <UFormField label="Von">
             <UInput :model-value="String(scoreRange[0])" disabled />
@@ -110,7 +127,7 @@ function savePaletteColor() {
         </div>
 
         <p class="text-sm ui-text-muted">
-          Die linke und rechte Grenze der Skala werden direkt über den Slider gesteuert.
+          Die Grenzen der Bewertungsskala werden im Bearbeitungsdialog über einen Slider angepasst.
         </p>
       </div>
     </UCard>
@@ -182,6 +199,50 @@ function savePaletteColor() {
     </UCard>
 
     <UModal
+      v-model:open="isScoreModalOpen"
+      title="Bewertungsskala bearbeiten"
+      description="Wählen Sie den Wertebereich für die Bewertung dieser Ausschreibung."
+    >
+      <template #body>
+        <div class="space-y-6">
+          <USlider
+            v-model="editingScoreRange"
+            :min="0"
+            :max="100"
+            :step="1"
+            color="primary"
+          />
+
+          <div class="grid gap-4 md:grid-cols-2">
+            <UFormField label="Von">
+              <UInput :model-value="String(editingScoreRange[0])" disabled />
+            </UFormField>
+
+            <UFormField label="Bis">
+              <UInput :model-value="String(editingScoreRange[1])" disabled />
+            </UFormField>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <div class="flex w-full justify-between gap-2">
+          <UButton color="neutral" variant="ghost" @click="isScoreModalOpen = false">
+            Abbrechen
+          </UButton>
+          <UButton
+            icon="i-lucide-save"
+            color="primary"
+            :loading="isSaving"
+            @click="saveScoreRange"
+          >
+            Speichern
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
       v-model:open="isColorModalOpen"
       title="Farbe bearbeiten"
       description="Wählen Sie eine Farbe aus oder geben Sie einen Hex-Code direkt ein."
@@ -225,18 +286,6 @@ function savePaletteColor() {
         variant="subtle"
         :description="errorMessage"
       />
-
-      <div class="flex justify-end">
-        <UButton
-          icon="i-lucide-save"
-          color="primary"
-          :loading="isSaving"
-          :disabled="!canSave"
-          @click="save"
-        >
-          Allgemeine Settings speichern
-        </UButton>
-      </div>
     </div>
   </div>
 </template>
