@@ -9,3 +9,6 @@ CREATE TABLE IF NOT EXISTS abschnittsfragen (
   gewichtete_punkte NUMERIC(12, 4) NOT NULL,
   CONSTRAINT abschnittsfragen_abschnitt_anbieter_nr_unique UNIQUE (abschnitt_id, anbieter_id, nr)
 );
+
+CREATE INDEX IF NOT EXISTS abschnittsfragen_anbieter_id_idx
+  ON abschnittsfragen (anbieter_id);
