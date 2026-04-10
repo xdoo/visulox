@@ -30,6 +30,10 @@ export function useTendersNavigation() {
     return `${getTenderPath(id)}/costs`
   }
 
+  function getTenderSettingsPath(id: string) {
+    return `${getTenderPath(id)}/settings`
+  }
+
   const tenderLinks = computed<NavigationMenuItem[]>(() => {
     return tenders.value.map((item) => ({
       label: item.name,
@@ -45,6 +49,11 @@ export function useTendersNavigation() {
           label: 'Kosten',
           icon: 'i-heroicons-currency-euro',
           to: getTenderCostsPath(item.id)
+        },
+        {
+          label: 'Settings',
+          icon: 'i-lucide-settings-2',
+          to: getTenderSettingsPath(item.id)
         }
       ]
     }))
@@ -52,7 +61,7 @@ export function useTendersNavigation() {
 
   const settingsLinks = computed<NavigationMenuItem[]>(() => [{
     label: 'Settings',
-    icon: 'i-heroicons-cog-6-tooth',
+    icon: 'i-lucide-settings-2',
     to: '/settings'
   }])
 
@@ -89,6 +98,11 @@ export function useTendersNavigation() {
           label: 'Kosten',
           to: getTenderCostsPath(currentTender.value.id)
         })
+      } else if (route.path === getTenderSettingsPath(currentTender.value.id)) {
+        items.push({
+          label: 'Settings',
+          to: getTenderSettingsPath(currentTender.value.id)
+        })
       }
     } else {
       items.push({ label: 'Ausschreibungen', to: '/' })
@@ -109,6 +123,10 @@ export function useTendersNavigation() {
 
       if (route.path === getTenderCostsPath(currentTender.value.id)) {
         return 'Kosten'
+      }
+
+      if (route.path === getTenderSettingsPath(currentTender.value.id)) {
+        return 'Settings'
       }
     }
 
