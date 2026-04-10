@@ -4,6 +4,7 @@ import type { TenderSection } from '../../../shared/types/tenders'
 const props = defineProps<{
   section: TenderSection
   vendorId: string
+  maxPoints: number
 }>()
 
 const vendorQuestions = computed(() => {
@@ -23,6 +24,11 @@ const {
   vendorId: props.vendorId
 })
 const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting()
+const { fulfillmentLabel, fulfillmentBadgeColor } = useCriteriaSectionFulfillment(
+  computed(() => vendorQuestions.value),
+  computed(() => props.section.weight),
+  computed(() => props.maxPoints)
+)
 </script>
 
 <template>
@@ -46,6 +52,15 @@ const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting
 
           <UBadge color="neutral" variant="subtle" size="lg">
             {{ props.section.weight }}%
+          </UBadge>
+
+          <UBadge
+            v-if="vendorQuestions.length > 0"
+            :color="fulfillmentBadgeColor"
+            variant="subtle"
+            size="lg"
+          >
+            {{ fulfillmentLabel }}
           </UBadge>
         </div>
       </div>
