@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
+import type { VendorSettingsRow } from '../../composables/useTenderVendorsSettings'
 import type { TenderSection, TenderVendor } from '../../../shared/types/tenders'
 
 const props = defineProps<{
@@ -9,38 +10,29 @@ const props = defineProps<{
   sections: TenderSection[]
 }>()
 
-type VendorRow = TenderVendor & {
-  hasImportedQuestions: boolean
-}
-
-const isModalOpen = ref(false)
-const modalMode = ref<'create' | 'edit'>('create')
-const selectedVendorId = ref('')
-const pendingAction = ref('')
-const form = reactive({
-  name: ''
-})
+const deleteLockReason = 'Nicht verfügbar, weil für diesen Anbieter bereits Fragen importiert wurden.'
 
 const {
   errorMessage,
-  addVendor,
-  updateVendor,
-  deleteVendor,
-  clearError
-} = useTenderSettings(props.tenderId)
+  rows,
+  isModalOpen,
+  modalMode,
+  selectedVendorId,
+  selectedVendor,
+  pendingAction,
+  form,
+  canSave,
+  openCreateModal,
+  openEditModal,
+  handleSubmit,
+  handleDelete
+} = useTenderVendorsSettings(
+  props.tenderId,
+  computed(() => props.vendors),
+  computed(() => props.sections)
+)
 
-const deleteLockReason = 'Nicht verfügbar, weil für diesen Anbieter bereits Fragen importiert wurden.'
-
-const rows = computed<VendorRow[]>(() => {
-  return props.vendors.map((vendor) => ({
-    ...vendor,
-    hasImportedQuestions: props.sections.some((section) => {
-      return section.questionsByVendor.some((entry) => entry.vendorId === vendor.id && entry.questions.length > 0)
-    })
-  }))
-})
-
-const columns: TableColumn<VendorRow>[] = [
+const columns: TableColumn<VendorSettingsRow>[] = [
   {
     accessorKey: 'name',
     header: 'Anbieter'
@@ -56,82 +48,6 @@ const columns: TableColumn<VendorRow>[] = [
     }
   }
 ]
-
-const selectedVendor = computed(() => {
-  return rows.value.find((vendor) => vendor.id === selectedVendorId.value) || null
-})
-
-const modalTitle = computed(() => {
-  return modalMode.value === 'create' ? 'Anbieter hinzufügen' : 'Anbieter bearbeiten'
-})
-
-const canSave = computed(() => {
-  if (!form.name.trim()) {
-    return false
-  }
-
-  if (modalMode.value === 'create') {
-    return true
-  }
-
-  if (!selectedVendor.value) {
-    return false
-  }
-
-  return form.name.trim() !== selectedVendor.value.name
-})
-
-function openCreateModal() {
-  modalMode.value = 'create'
-  selectedVendorId.value = ''
-  form.name = ''
-  clearError()
-  isModalOpen.value = true
-}
-
-function openEditModal(vendor: VendorRow) {
-  modalMode.value = 'edit'
-  selectedVendorId.value = vendor.id
-  form.name = vendor.name
-  clearError()
-  isModalOpen.value = true
-}
-
-async function handleSubmit() {
-  if (!canSave.value) {
-    return
-  }
-
-  pendingAction.value = modalMode.value === 'create' ? 'create' : `save:${selectedVendorId.value}`
-  clearError()
-
-  try {
-    if (modalMode.value === 'create') {
-      await addVendor({
-        name: form.name.trim()
-      })
-    } else if (selectedVendor.value) {
-      await updateVendor(selectedVendor.value.id, {
-        name: form.name.trim()
-      })
-    }
-
-    isModalOpen.value = false
-  } finally {
-    pendingAction.value = ''
-  }
-}
-
-async function handleDelete(vendor: VendorRow) {
-  pendingAction.value = `delete:${vendor.id}`
-  clearError()
-
-  try {
-    await deleteVendor(vendor.id)
-  } finally {
-    pendingAction.value = ''
-  }
-}
 </script>
 
 <template>
@@ -202,39 +118,14 @@ async function handleDelete(vendor: VendorRow) {
       </p>
     </div>
 
-    <UModal
+    <TenderSettingsVendorModal
       v-model:open="isModalOpen"
-      :title="modalTitle"
-      description="Pflegen Sie die Anbieter dieser Ausschreibung."
-    >
-      <template #body>
-        <div class="space-y-4">
-          <UFormField label="Anbieter">
-            <UInput
-              v-model="form.name"
-              class="w-full"
-              placeholder="Name des Anbieters"
-              :disabled="pendingAction !== ''"
-            />
-          </UFormField>
-        </div>
-      </template>
-
-      <template #footer>
-        <div class="flex w-full justify-between gap-2">
-          <UButton color="neutral" variant="ghost" @click="isModalOpen = false">
-            Abbrechen
-          </UButton>
-          <UButton
-            icon="i-lucide-save"
-            :loading="pendingAction === 'create' || pendingAction === `save:${selectedVendorId}`"
-            :disabled="!canSave"
-            @click="handleSubmit"
-          >
-            Speichern
-          </UButton>
-        </div>
-      </template>
-    </UModal>
+      v-model:name="form.name"
+      :mode="modalMode"
+      :selected-vendor="selectedVendor"
+      :pending-action="pendingAction"
+      :can-save="canSave"
+      @submit="handleSubmit"
+    />
   </UCard>
 </template>
