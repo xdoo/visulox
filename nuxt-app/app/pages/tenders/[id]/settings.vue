@@ -1,7 +1,30 @@
 <script setup lang="ts">
+import type { TabsItem } from '@nuxt/ui'
+
+import { defaultTenderSettings } from '../../../../shared/constants/tender-settings'
+
 const route = useRoute()
 const tenderId = computed(() => String(route.params.id || ''))
 const { data: tender, status, error } = await useTenderDetail(tenderId)
+
+const settingsTab = ref<'general' | 'criteria' | 'costs'>('general')
+const items = computed<TabsItem[]>(() => ([
+  {
+    label: 'Allgemein',
+    value: 'general',
+    icon: 'i-lucide-sliders-horizontal'
+  },
+  {
+    label: 'Kriterienkatalog',
+    value: 'criteria',
+    icon: 'i-lucide-list-checks'
+  },
+  {
+    label: 'Kosten',
+    value: 'costs',
+    icon: 'i-lucide-chart-column'
+  }
+]))
 
 useSeoMeta({
   title: () => {
@@ -37,25 +60,45 @@ useSeoMeta({
     </div>
 
     <div v-else class="space-y-6">
-      <UAlert
+      <UTabs
+        v-model="settingsTab"
+        :items="items"
         color="neutral"
-        variant="subtle"
-        title="Hinweis"
-        description="Abschnitte und Anbieter können nicht gelöscht werden, sobald dafür Fragen importiert wurden. Bei Abschnitten bleibt der Name bearbeitbar, das Gewicht ist jedoch gesperrt, solange für diesen Abschnitt bereits Fragen importiert wurden."
-      />
+        variant="link"
+        class="space-y-6"
+      >
+        <template #content="{ item }">
+          <TenderSettingsGeneralCard
+            v-if="item.value === 'general'"
+            :tender-id="tenderId"
+            :settings="tender?.settings || defaultTenderSettings"
+          />
 
-      <div class="grid gap-6 xl:grid-cols-2">
-        <TenderSettingsSectionsCard
-          :tender-id="tenderId"
-          :sections="tender?.sections || []"
-        />
+          <div v-else-if="item.value === 'criteria'" class="space-y-6">
+            <UAlert
+              color="neutral"
+              variant="subtle"
+              title="Hinweis"
+              description="Abschnitte und Anbieter können nicht gelöscht werden, sobald dafür Fragen importiert wurden. Bei Abschnitten bleibt der Name bearbeitbar, das Gewicht ist jedoch gesperrt, solange für diesen Abschnitt bereits Fragen importiert wurden."
+            />
 
-        <TenderSettingsVendorsCard
-          :tender-id="tenderId"
-          :vendors="tender?.vendors || []"
-          :sections="tender?.sections || []"
-        />
-      </div>
+            <div class="grid gap-6 xl:grid-cols-2">
+              <TenderSettingsSectionsCard
+                :tender-id="tenderId"
+                :sections="tender?.sections || []"
+              />
+
+              <TenderSettingsVendorsCard
+                :tender-id="tenderId"
+                :vendors="tender?.vendors || []"
+                :sections="tender?.sections || []"
+              />
+            </div>
+          </div>
+
+          <TenderSettingsCostsCard v-else />
+        </template>
+      </UTabs>
     </div>
   </div>
 </template>
