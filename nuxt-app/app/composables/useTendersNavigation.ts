@@ -1,5 +1,13 @@
 import { computed } from 'vue'
 
+import {
+  getTenderCostsPath,
+  getTenderCriteriaPath,
+  getTenderPath,
+  getTenderSettingsPath,
+  resolveTenderSubpage
+} from './useTenderPaths'
+
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 export function useTendersNavigation() {
@@ -8,7 +16,6 @@ export function useTendersNavigation() {
     items: tenders,
     latestTenderName,
     loadTenders,
-    getTenderPath,
     findTenderById
   } = useTenders()
 
@@ -18,23 +25,11 @@ export function useTendersNavigation() {
     to: '/'
   }])
 
-  function getTenderOverviewPath(id: string) {
-    return getTenderPath(id)
-  }
-
-  function getTenderCriteriaPath(id: string) {
-    return `${getTenderPath(id)}/criteria`
-  }
-
-  function getTenderCostsPath(id: string) {
-    return `${getTenderPath(id)}/costs`
-  }
-
   const tenderLinks = computed<NavigationMenuItem[]>(() => {
     return tenders.value.map((item) => ({
       label: item.name,
       icon: 'i-heroicons-document-text',
-      to: getTenderOverviewPath(item.id),
+      to: getTenderPath(item.id),
       children: [
         {
           label: 'Kriterienkatalog',
@@ -45,6 +40,11 @@ export function useTendersNavigation() {
           label: 'Kosten',
           icon: 'i-heroicons-currency-euro',
           to: getTenderCostsPath(item.id)
+        },
+        {
+          label: 'Settings',
+          icon: 'i-lucide-settings-2',
+          to: getTenderSettingsPath(item.id)
         }
       ]
     }))
@@ -52,7 +52,7 @@ export function useTendersNavigation() {
 
   const settingsLinks = computed<NavigationMenuItem[]>(() => [{
     label: 'Settings',
-    icon: 'i-heroicons-cog-6-tooth',
+    icon: 'i-lucide-settings-2',
     to: '/settings'
   }])
 
@@ -64,6 +64,14 @@ export function useTendersNavigation() {
     }
 
     return findTenderById(tenderId)
+  })
+
+  const currentTenderSubpage = computed(() => {
+    if (!currentTender.value) {
+      return null
+    }
+
+    return resolveTenderSubpage(route.path, currentTender.value.id)
   })
 
   const breadcrumbItems = computed(() => {
@@ -79,15 +87,20 @@ export function useTendersNavigation() {
         to: getTenderPath(currentTender.value.id)
       })
 
-      if (route.path === getTenderCriteriaPath(currentTender.value.id)) {
+      if (currentTenderSubpage.value === 'criteria') {
         items.push({
           label: 'Kriterienkatalog',
           to: getTenderCriteriaPath(currentTender.value.id)
         })
-      } else if (route.path === getTenderCostsPath(currentTender.value.id)) {
+      } else if (currentTenderSubpage.value === 'costs') {
         items.push({
           label: 'Kosten',
           to: getTenderCostsPath(currentTender.value.id)
+        })
+      } else if (currentTenderSubpage.value === 'settings') {
+        items.push({
+          label: 'Settings',
+          to: getTenderSettingsPath(currentTender.value.id)
         })
       }
     } else {
@@ -103,12 +116,16 @@ export function useTendersNavigation() {
     }
 
     if (currentTender.value) {
-      if (route.path === getTenderCriteriaPath(currentTender.value.id)) {
+      if (currentTenderSubpage.value === 'criteria') {
         return 'Kriterienkatalog'
       }
 
-      if (route.path === getTenderCostsPath(currentTender.value.id)) {
+      if (currentTenderSubpage.value === 'costs') {
         return 'Kosten'
+      }
+
+      if (currentTenderSubpage.value === 'settings') {
+        return 'Settings'
       }
     }
 
