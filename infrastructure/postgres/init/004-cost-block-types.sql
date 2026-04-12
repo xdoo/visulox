@@ -1,0 +1,3 @@
+ALTER TABLE kostenbloecke
+  ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'project';
+

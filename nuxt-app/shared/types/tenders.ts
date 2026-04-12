@@ -7,6 +7,12 @@ export interface TenderPriceCategoryInput {
   name: string
 }
 
+export type TenderCostBlockType =
+  | 'license_one_time'
+  | 'project'
+  | 'vendor_operating'
+  | 'infrastructure'
+
 export interface TenderVendorInput {
   name: string
 }
@@ -44,6 +50,12 @@ export interface TenderSettings {
   chartPalette: string[]
 }
 
+export interface TenderCostBlock {
+  id: string
+  name: string
+  type: TenderCostBlockType
+}
+
 export interface TenderSectionQuestionsByVendor {
   vendorId: string
   questions: SectionQuestion[]
@@ -62,6 +74,7 @@ export interface TenderDetail {
   settings: TenderSettings
   vendors: TenderVendor[]
   sections: TenderSection[]
+  costBlocks: TenderCostBlock[]
 }
 
 export interface SectionQuestion {
@@ -89,4 +102,14 @@ export interface UpdateTenderSettingsRequest {
 
 export interface UpdateTenderSettingsResponse {
   settings: TenderSettings
+}
+
+export interface CreateTenderCostBlockRequest {
+  name: string
+  type: TenderCostBlockType
+}
+
+export interface UpdateTenderCostBlockRequest {
+  name: string
+  type: TenderCostBlockType
 }
