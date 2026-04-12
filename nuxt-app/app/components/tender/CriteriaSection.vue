@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { TenderSection } from '../../../shared/types/tenders'
+import type { TenderSection, TenderSettings } from '../../../shared/types/tenders'
 
 const props = defineProps<{
   section: TenderSection
   vendorId: string
-  maxPoints: number
+  scoreRange: TenderSettings['scoreRange']
 }>()
 
 const vendorQuestions = computed(() => {
@@ -27,7 +27,7 @@ const { formatPercentage, formatWeightedPoints } = useCriteriaQuestionFormatting
 const { fulfillmentLabel, fulfillmentBadgeColor } = useCriteriaSectionFulfillment(
   computed(() => vendorQuestions.value),
   computed(() => props.section.weight),
-  computed(() => props.maxPoints)
+  computed(() => props.scoreRange)
 )
 </script>
 

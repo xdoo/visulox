@@ -38,15 +38,12 @@ useSeoMeta({
 
     <TenderVendorTabs v-else :vendors="tender?.vendors || []">
       <template #overview>
-        <UCard>
-          <template #header>
-            <h3 class="font-semibold">Gesamtübersicht</h3>
-          </template>
-
-          <p class="ui-text-muted">
-            Gesamtsicht auf den Kriterienkatalog der Ausschreibung {{ tender?.name }}.
-          </p>
-        </UCard>
+        <TenderOverviewCard
+          :vendors="tender?.vendors || []"
+          :sections="tender?.sections || []"
+          :score-range="tender?.settings.scoreRange || [0, 10]"
+          :palette="tender?.settings.chartPalette"
+        />
       </template>
 
       <template #vendor="{ vendor }">
@@ -55,13 +52,13 @@ useSeoMeta({
             v-if="vendor"
             :vendor="vendor"
             :sections="tender?.sections || []"
-            :max-points="tender?.settings.scoreRange[1] || 10"
+            :score-range="tender?.settings.scoreRange || [0, 10]"
           />
 
           <TenderCriteriaSections
             :sections="tender?.sections || []"
             :vendor-id="vendor?.id || ''"
-            :max-points="tender?.settings.scoreRange[1] || 10"
+            :score-range="tender?.settings.scoreRange || [0, 10]"
           />
         </div>
       </template>

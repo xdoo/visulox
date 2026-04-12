@@ -11,6 +11,14 @@ const props = defineProps<{
   data: ChartDataItem[]
 }>()
 
+const isVisible = ref(false)
+
+onMounted(() => {
+  nextTick(() => {
+    isVisible.value = true
+  })
+})
+
 const option = computed<ECOption>(() => {
   const categories = props.data.map(d => d.name)
   const weightData = props.data.map(d => ({
@@ -143,7 +151,7 @@ const option = computed<ECOption>(() => {
 <template>
   <div class="h-[400px] w-full overflow-hidden">
     <ClientOnly>
-      <VChart :option="option" autoresize />
+      <VChart v-if="isVisible" :option="option" autoresize />
     </ClientOnly>
   </div>
 </template>

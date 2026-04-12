@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { TenderSection } from '../../../shared/types/tenders'
+import type { TenderSection, TenderSettings } from '../../../shared/types/tenders'
 
 const props = defineProps<{
   sections: TenderSection[]
   vendorId: string
-  maxPoints: number
+  scoreRange: TenderSettings['scoreRange']
 }>()
 
 const hasSections = computed(() => props.sections.length > 0)
@@ -25,7 +25,7 @@ const hasSections = computed(() => props.sections.length > 0)
         :key="section.id"
         :section="section"
         :vendor-id="vendorId"
-        :max-points="maxPoints"
+        :score-range="scoreRange"
       />
     </div>
   </div>

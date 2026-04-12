@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { TenderSection, TenderVendor } from '../../../shared/types/tenders'
+import type { TenderSection, TenderSettings, TenderVendor } from '../../../shared/types/tenders'
 import { calculateSectionFulfillmentPercentage } from '../../composables/useCriteriaSectionFulfillment'
 
 const props = defineProps<{
   vendor: TenderVendor
   sections: TenderSection[]
-  maxPoints: number
+  scoreRange: TenderSettings['scoreRange']
 }>()
 
 const chartData = computed(() => {
@@ -16,7 +16,7 @@ const chartData = computed(() => {
     const fulfillment = calculateSectionFulfillmentPercentage(
       questions,
       section.weight,
-      props.maxPoints
+      props.scoreRange
     )
 
     return {
