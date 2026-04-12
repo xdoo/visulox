@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { ECOption } from '#echarts'
+import type {
+  DefaultLabelFormatterCallbackParams,
+  EChartsOption,
+  TooltipComponentFormatterCallbackParams
+} from 'echarts'
 import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
 
 interface SectionScore {
@@ -32,12 +36,16 @@ onMounted(() => {
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 
+function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
+  return Array.isArray(params) ? params : [params]
+}
+
 // Sort vendors by total score descending
 const sortedScores = computed(() => {
   return [...props.scores].sort((a, b) => b.totalScore - a.totalScore)
 })
 
-const option = computed<ECOption>(() => {
+const option = computed<EChartsOption>(() => {
   const vendorNames = sortedScores.value.map(s => s.vendorName)
   const sections = sortedScores.value[0]?.sectionScores.map(ss => ({
     id: ss.sectionId,
@@ -148,17 +156,28 @@ const option = computed<ECOption>(() => {
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      formatter: (params: any[]) => {
-        const vendorIndex = params[0].dataIndex
+      formatter: (params: TooltipComponentFormatterCallbackParams) => {
+        const tooltipParams = toTooltipParams(params)
+        const firstParam = tooltipParams[0]
+
+        if (!firstParam) {
+          return ''
+        }
+
+        const vendorIndex = firstParam.dataIndex
         const vendor = sortedScores.value[vendorIndex]
-        
+
+        if (!vendor) {
+          return ''
+        }
+
         let result = `<div class="font-sans p-1">`
         result += `<div class="font-bold mb-2 border-b pb-1 text-lg">${vendor.vendorName}</div>`
-        
-        params.forEach((p) => {
+
+        tooltipParams.forEach((p: DefaultLabelFormatterCallbackParams) => {
           if (p.seriesName === 'Max') return
           
-          const ss = p.data.meta
+          const ss = (p.data as { meta?: SectionScore } | undefined)?.meta
           if (!ss) return
 
           result += `
