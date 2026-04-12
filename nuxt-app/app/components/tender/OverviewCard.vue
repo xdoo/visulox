@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import type { TenderSection, TenderVendor } from '../../../shared/types/tenders'
-import { calculateSectionFulfillmentPercentage } from '../../composables/useCriteriaSectionFulfillment'
+import type { TenderSection, TenderSettings, TenderVendor } from '../../../shared/types/tenders'
+import {
+  calculateSectionContributionPercentage,
+  calculateSectionFulfillmentPercentage
+} from '../../composables/useCriteriaSectionFulfillment'
 
 const props = defineProps<{
   vendors: TenderVendor[]
   sections: TenderSection[]
-  maxPoints: number
+  scoreRange: TenderSettings['scoreRange']
   palette?: string[]
 }>()
 
@@ -19,10 +22,14 @@ const vendorScores = computed(() => {
       const fulfillment = calculateSectionFulfillmentPercentage(
         questions,
         section.weight,
-        props.maxPoints
+        props.scoreRange
       ) || 0
 
-      const contribution = (section.weight * fulfillment) / 100
+      const contribution = calculateSectionContributionPercentage(
+        questions,
+        section.weight,
+        props.scoreRange
+      ) || 0
       totalScore += contribution
 
       return {

@@ -41,7 +41,7 @@ useSeoMeta({
         <TenderOverviewCard
           :vendors="tender?.vendors || []"
           :sections="tender?.sections || []"
-          :max-points="tender?.settings.scoreRange[1] || 10"
+          :score-range="tender?.settings.scoreRange || [0, 10]"
           :palette="tender?.settings.chartPalette"
         />
       </template>
@@ -52,13 +52,13 @@ useSeoMeta({
             v-if="vendor"
             :vendor="vendor"
             :sections="tender?.sections || []"
-            :max-points="tender?.settings.scoreRange[1] || 10"
+            :score-range="tender?.settings.scoreRange || [0, 10]"
           />
 
           <TenderCriteriaSections
             :sections="tender?.sections || []"
             :vendor-id="vendor?.id || ''"
-            :max-points="tender?.settings.scoreRange[1] || 10"
+            :score-range="tender?.settings.scoreRange || [0, 10]"
           />
         </div>
       </template>
