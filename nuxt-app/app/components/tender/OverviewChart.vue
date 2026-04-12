@@ -74,22 +74,25 @@ const option = computed<ECOption>(() => {
         show: true,
         position: 'insideRight',
         align: 'right',
-        padding: [0, 8, 0, 8],
+        distance: 0,
+        padding: [0, 4, 0, 4],
         color: '#ffffff',
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 'normal',
         textBorderColor: 'rgba(32, 32, 32, 0.4)',
         textBorderWidth: 2,
         formatter: (params: any) => {
           const fulfillment = params.data?.meta?.fulfillment
-          const contribution = params.data?.value || 0
 
-          if (typeof fulfillment !== 'number' || contribution < 8) {
+          if (typeof fulfillment !== 'number') {
             return ''
           }
 
           return `${Math.round(fulfillment)}%`
         }
+      },
+      labelLayout: {
+        hideOverlap: false
       },
       // Data must be in the same order as vendorNames
       data: sortedScores.value.map(vs => {
