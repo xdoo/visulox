@@ -71,6 +71,7 @@ const option = computed<ECOption>(() => {
     yAxis: {
       type: 'category',
       data: categories,
+      inverse: true,
       axisTick: { show: false },
       axisLine: { show: false },
       axisLabel: {
