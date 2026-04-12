@@ -123,4 +123,34 @@ describe('POST /api/sections/:id/questions', () => {
     expect(query).toHaveBeenLastCalledWith('ROLLBACK')
     expect(release).toHaveBeenCalledTimes(1)
   })
+
+  it('rejects uploads with duplicate question numbers before inserting', async () => {
+    const query = vi.fn()
+    const release = vi.fn()
+
+    getPostgresClient.mockResolvedValue({ query, release })
+    readBody.mockResolvedValue({
+      vendorId: '11',
+      questions: [
+        { nr: '1.1', frage: 'Frage A', punkte: 10, anteil: 0.3 },
+        { nr: '1.1', frage: 'Frage B', punkte: 20, anteil: 0.2 }
+      ]
+    })
+
+    const { default: handler } = await import('../server/api/sections/[id]/questions.post')
+
+    await expect(handler({
+      context: {
+        params: {
+          id: '7'
+        }
+      }
+    } as never)).rejects.toMatchObject({
+      statusCode: 400,
+      statusMessage: 'Question nr "1.1" is duplicated'
+    })
+
+    expect(query).not.toHaveBeenCalled()
+    expect(release).not.toHaveBeenCalled()
+  })
 })
