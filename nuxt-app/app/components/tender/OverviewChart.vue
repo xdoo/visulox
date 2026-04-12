@@ -84,7 +84,7 @@ const option = computed<ECOption>(() => {
         formatter: (params: any) => {
           const fulfillment = params.data?.meta?.fulfillment
 
-          if (typeof fulfillment !== 'number') {
+          if (typeof fulfillment !== 'number' || fulfillment < 20) {
             return ''
           }
 
