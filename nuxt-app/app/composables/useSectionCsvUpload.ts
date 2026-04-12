@@ -37,6 +37,22 @@ export function normalizeQuestionSharesForSectionWeight(
   return null
 }
 
+export function findDuplicateQuestionNumber(questions: Pick<CriteriaCsvQuestionRow, 'nr'>[]) {
+  const seenNumbers = new Set<string>()
+
+  for (const question of questions) {
+    const normalizedNumber = question.nr.trim()
+
+    if (seenNumbers.has(normalizedNumber)) {
+      return normalizedNumber
+    }
+
+    seenNumbers.add(normalizedNumber)
+  }
+
+  return null
+}
+
 export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
   const csvFile = ref<File | null>(null)
   const csvError = ref('')
@@ -120,6 +136,12 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
   }
 
   function validateQuestionsAgainstSectionWeight(questions: CriteriaCsvQuestionRow[]) {
+    const duplicateNumber = findDuplicateQuestionNumber(questions)
+
+    if (duplicateNumber) {
+      throw new Error(`Die Fragennummer "${duplicateNumber}" kommt in der CSV mehrfach vor.`)
+    }
+
     const normalizedQuestions = normalizeQuestionSharesForSectionWeight(questions, options.sectionWeight)
 
     if (!normalizedQuestions) {

@@ -77,6 +77,20 @@ function normalizeQuestion(input: Partial<SectionQuestionInput>, index: number):
   }
 }
 
+function findDuplicateQuestionNumber(questions: SectionQuestionInput[]) {
+  const seenNumbers = new Set<string>()
+
+  for (const question of questions) {
+    if (seenNumbers.has(question.nr)) {
+      return question.nr
+    }
+
+    seenNumbers.add(question.nr)
+  }
+
+  return null
+}
+
 function mapQuestionRow(row: SavedSectionQuestionRow): SectionQuestion {
   return {
     id: String(row.id),
@@ -169,6 +183,15 @@ export default defineEventHandler(async (event): Promise<SaveSectionQuestionsRes
   }
 
   const questions = questionsInput.map((question, index) => normalizeQuestion(question, index))
+  const duplicateNumber = findDuplicateQuestionNumber(questions)
+
+  if (duplicateNumber) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Question nr "${duplicateNumber}" is duplicated`
+    })
+  }
+
   const config = useRuntimeConfig(event)
   const client = await getPostgresClient(config.databaseUrl)
 

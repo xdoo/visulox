@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  findDuplicateQuestionNumber,
   formatPercentageValue,
   normalizeQuestionSharesForSectionWeight
 } from '../app/composables/useSectionCsvUpload'
@@ -36,6 +37,14 @@ describe('useSectionCsvUpload helpers', () => {
     const questions = [createQuestion(1), createQuestion(2)]
 
     expect(normalizeQuestionSharesForSectionWeight(questions, 10)).toBeNull()
+  })
+
+  it('detects duplicate question numbers', () => {
+    expect(findDuplicateQuestionNumber([
+      { ...createQuestion(0.1), nr: '1.1' },
+      { ...createQuestion(0.2), nr: '1.2' },
+      { ...createQuestion(0.3), nr: '1.1' }
+    ])).toBe('1.1')
   })
 
   it('formats percentage values without trailing zeros', () => {
