@@ -12,6 +12,31 @@ interface UseSectionCsvUploadOptions {
 
 type CsvQuestionRowTuple = [string, string, string, string]
 
+export function formatPercentageValue(value: number) {
+  return value.toFixed(2).replace(/\.?0+$/, '')
+}
+
+export function normalizeQuestionSharesForSectionWeight(
+  questions: CriteriaCsvQuestionRow[],
+  sectionWeight: number
+) {
+  const totalAnteil = questions.reduce((sum, question) => sum + question.anteil, 0)
+  const totalPercentageFromFraction = totalAnteil * 100
+
+  if (Math.abs(totalPercentageFromFraction - sectionWeight) <= 0.0001) {
+    return questions
+  }
+
+  if (Math.abs(totalAnteil - sectionWeight) <= 0.0001) {
+    return questions.map(question => ({
+      ...question,
+      anteil: question.anteil / 100
+    }))
+  }
+
+  return null
+}
+
 export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
   const csvFile = ref<File | null>(null)
   const csvError = ref('')
@@ -95,14 +120,18 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
   }
 
   function validateQuestionsAgainstSectionWeight(questions: CriteriaCsvQuestionRow[]) {
-    const totalAnteil = questions.reduce((sum, question) => sum + question.anteil, 0)
-    const totalPercentage = totalAnteil * 100
+    const normalizedQuestions = normalizeQuestionSharesForSectionWeight(questions, options.sectionWeight)
 
-    if (Math.abs(totalPercentage - options.sectionWeight) > 0.0001) {
+    if (!normalizedQuestions) {
+      const totalAnteil = questions.reduce((sum, question) => sum + question.anteil, 0)
+      const totalPercentage = totalAnteil * 100
+
       throw new Error(
-        `Die Summe der Spalte Anteil ergibt ${totalPercentage.toFixed(2).replace(/\.?0+$/, '')}% und entspricht nicht dem Abschnittsgewicht von ${options.sectionWeight}%.`
+        `Die Summe der Spalte Anteil ergibt ${formatPercentageValue(totalPercentage)}% und entspricht nicht dem Abschnittsgewicht von ${options.sectionWeight}%.`
       )
     }
+
+    return normalizedQuestions
   }
 
   async function handleCsvSelection(file: File | null | undefined) {
@@ -122,8 +151,8 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
     try {
       const csvContent = await file.text()
       const questions = parseCsvQuestions(csvContent)
-      validateQuestionsAgainstSectionWeight(questions)
-      options.onUploaded(questions)
+      const normalizedQuestions = validateQuestionsAgainstSectionWeight(questions)
+      options.onUploaded(normalizedQuestions)
     } catch (error) {
       csvError.value = error instanceof Error ? error.message : 'Die CSV-Datei konnte nicht gelesen werden.'
       options.onError(csvError.value)
