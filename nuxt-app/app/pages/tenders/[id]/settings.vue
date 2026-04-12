@@ -96,7 +96,11 @@ useSeoMeta({
             </div>
           </div>
 
-          <TenderSettingsCostsCard v-else />
+          <TenderSettingsCostsCard
+            v-else
+            :tender-id="tenderId"
+            :cost-blocks="tender?.costBlocks || []"
+          />
         </template>
       </UTabs>
     </div>

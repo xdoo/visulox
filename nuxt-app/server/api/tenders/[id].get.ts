@@ -3,9 +3,11 @@ import { useRuntimeConfig } from '#imports'
 
 import { getPostgresClient } from '../../utils/postgres'
 import { normalizeTenderSettingsRow } from '../../utils/tender-general-settings'
+import { mapTenderCostBlockRow } from '../../utils/tender-cost-blocks'
 
 import type {
   SectionQuestion,
+  TenderCostBlock,
   TenderDetail,
   TenderSection,
   TenderSectionQuestionsByVendor,
@@ -26,6 +28,12 @@ interface TenderSettingsRow {
 interface VendorRow {
   id: string | number
   name: string
+}
+
+interface CostBlockRow {
+  id: string | number
+  name: string
+  type: string
 }
 
 interface SectionRow {
@@ -94,6 +102,13 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
       name: row.name
     }))
 
+    const costBlocksResult = await client.query<CostBlockRow>(
+      'SELECT id, name, type FROM kostenbloecke WHERE ausschreibung_id = $1 ORDER BY id ASC',
+      [tenderId]
+    )
+
+    const costBlocks: TenderCostBlock[] = costBlocksResult.rows.map(mapTenderCostBlockRow)
+
     const sectionsResult = await client.query<SectionRow>(
       'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
       [tenderId]
@@ -151,7 +166,8 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
       name: tender.name,
       settings,
       vendors,
-      sections
+      sections,
+      costBlocks
     }
   } finally {
     client.release()
