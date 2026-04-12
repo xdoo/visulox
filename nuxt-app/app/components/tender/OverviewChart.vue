@@ -61,7 +61,7 @@ const option = computed<ECOption>(() => {
 
   // Add one series per section
   sections.forEach((section, index) => {
-    series.push({
+    const sectionSeries: any = {
       name: section.name,
       type: 'bar',
       stack: 'total',
@@ -69,6 +69,27 @@ const option = computed<ECOption>(() => {
       itemStyle: {
         color: chartPalette.value[index % chartPalette.value.length],
         borderRadius: index === 0 ? [4, 0, 0, 4] : (index === sections.length - 1 ? [0, 4, 4, 0] : 0)
+      },
+      label: {
+        show: true,
+        position: 'insideRight',
+        align: 'right',
+        padding: [0, 8, 0, 8],
+        color: '#ffffff',
+        fontSize: 12,
+        fontWeight: 'normal',
+        textBorderColor: 'rgba(32, 32, 32, 0.4)',
+        textBorderWidth: 2,
+        formatter: (params: any) => {
+          const fulfillment = params.data?.meta?.fulfillment
+          const contribution = params.data?.value || 0
+
+          if (typeof fulfillment !== 'number' || contribution < 8) {
+            return ''
+          }
+
+          return `${Math.round(fulfillment)}%`
+        }
       },
       // Data must be in the same order as vendorNames
       data: sortedScores.value.map(vs => {
@@ -78,24 +99,40 @@ const option = computed<ECOption>(() => {
           meta: ss // keep full info for tooltip
         }
       })
-    })
+    }
+
+    series.push(sectionSeries)
   })
 
-  // Add total labels at the end of the stack
-  if (series.length > 1) {
-    const lastSeries = series[series.length - 1]
-    lastSeries.label = {
+  series.push({
+    name: 'Gesamt',
+    type: 'bar',
+    stack: 'total',
+    z: 3,
+    silent: true,
+    itemStyle: {
+      color: 'transparent'
+    },
+    emphasis: {
+      disabled: true
+    },
+    tooltip: {
+      show: false
+    },
+    label: {
       show: true,
       position: 'right',
+      distance: 8,
       fontSize: 14,
       fontWeight: 'bold',
-      color: 'var(--ui-text-muted)',
-      formatter: (params: any) => {
-        const vendor = sortedScores.value[params.dataIndex]
-        return `${Math.round(vendor.totalScore)}%`
-      }
-    }
-  }
+      color: '#111111',
+      formatter: (params: any) => `${Math.round(params.data.totalScore)}%`
+    },
+    data: sortedScores.value.map((vendor) => ({
+      value: 0,
+      totalScore: vendor.totalScore
+    }))
+  })
 
   return {
     grid: {
@@ -151,7 +188,8 @@ const option = computed<ECOption>(() => {
       top: 0,
       type: 'scroll',
       itemWidth: 10,
-      itemHeight: 10
+      itemHeight: 10,
+      data: sections.map(section => section.name)
     },
     xAxis: {
       type: 'value',
