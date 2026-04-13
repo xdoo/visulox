@@ -28,7 +28,7 @@ interface ChartDataPoint {
 const props = defineProps<{
   kind: VendorCostOverviewRowKind
   rows: VendorCostOverviewRow[]
-  palette?: string[]
+  palette?: typeof defaultTenderChartPalette
 }>()
 
 const isVisible = ref(false)
@@ -64,7 +64,7 @@ const option = computed<EChartsOption>(() => {
       stack: 'total',
       z: 2,
       itemStyle: {
-        color: chartPalette.value[index % chartPalette.value.length],
+        color: chartPalette.value[index % chartPalette.value.length].fillColor,
         borderRadius: index === 0 ? [4, 0, 0, 4] : (index === costBlockOrder.length - 1 ? [0, 4, 4, 0] : 0)
       },
       label: {
@@ -72,7 +72,7 @@ const option = computed<EChartsOption>(() => {
         position: 'insideRight',
         align: 'right',
         padding: [0, 4, 0, 4],
-        color: '#ffffff',
+        color: chartPalette.value[index % chartPalette.value.length].textColor,
         fontSize: 11,
         fontWeight: 'normal',
         textBorderColor: 'rgba(32, 32, 32, 0.35)',

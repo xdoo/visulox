@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const open = defineModel<boolean>('open', { required: true })
-const color = defineModel<string>('color', { required: true })
+const fillColor = defineModel<string>('fillColor', { required: true })
+const textColor = defineModel<string>('textColor', { required: true })
 
 defineEmits<{
   submit: []
@@ -15,17 +16,37 @@ defineEmits<{
   >
     <template #body>
       <div class="space-y-4">
-        <div class="flex justify-center">
-          <UColorPicker v-model="color" />
-        </div>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="space-y-3">
+            <p class="text-sm font-medium">Farbe</p>
+            <div class="flex justify-center">
+              <UColorPicker v-model="fillColor" />
+            </div>
 
-        <UFormField label="Farb-Code">
-          <UInput
-            v-model="color"
-            class="w-full"
-            placeholder="#0D57A6"
-          />
-        </UFormField>
+            <UFormField label="Farb-Code">
+              <UInput
+                v-model="fillColor"
+                class="w-full"
+                placeholder="#0D57A6"
+              />
+            </UFormField>
+          </div>
+
+          <div class="space-y-3">
+            <p class="text-sm font-medium">Schriftfarbe</p>
+            <div class="flex justify-center">
+              <UColorPicker v-model="textColor" />
+            </div>
+
+            <UFormField label="Schriftfarbe">
+              <UInput
+                v-model="textColor"
+                class="w-full"
+                placeholder="#FFFFFF"
+              />
+            </UFormField>
+          </div>
+        </div>
       </div>
     </template>
 

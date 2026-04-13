@@ -45,10 +45,15 @@ export interface TenderVendor {
   name: string
 }
 
+export interface TenderChartPaletteEntry {
+  fillColor: string
+  textColor: string
+}
+
 export interface TenderSettings {
   scoreRange: [number, number]
   considerationYears: number
-  chartPalette: string[]
+  chartPalette: TenderChartPaletteEntry[]
 }
 
 export interface TenderCostBlock {

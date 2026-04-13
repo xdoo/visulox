@@ -43,9 +43,17 @@ describe('PATCH /api/tenders/:id/settings', () => {
         rows: [{
           score_min: 0,
           score_max: 20,
-          consideration_years: 12,
-          chart_palette: ['#0D57A6', '#B47D00']
+          consideration_years: 12
         }]
+      })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({
+        rows: [
+          { fill_color: '#0D57A6', text_color: '#FFFFFF' },
+          { fill_color: '#B47D00', text_color: '#111111' }
+        ]
       })
       .mockResolvedValueOnce({ rows: [] })
     const release = vi.fn()
@@ -54,7 +62,10 @@ describe('PATCH /api/tenders/:id/settings', () => {
     readBody.mockResolvedValue({
       scoreRange: [0, 20],
       considerationYears: 12,
-      chartPalette: ['#0D57A6', '#B47D00']
+      chartPalette: [
+        { fillColor: '#0D57A6', textColor: '#FFFFFF' },
+        { fillColor: '#B47D00', textColor: '#111111' }
+      ]
     })
 
     const { default: handler } = await import('../server/api/tenders/[id]/settings.patch')
@@ -69,19 +80,40 @@ describe('PATCH /api/tenders/:id/settings', () => {
     expect(query).toHaveBeenNthCalledWith(1, 'BEGIN')
     expect(query).toHaveBeenNthCalledWith(2, 'SELECT id FROM ausschreibungen WHERE id = $1 LIMIT 1', ['7'])
     expect(query).toHaveBeenNthCalledWith(3,
-      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, consideration_years, chart_palette)
-       VALUES ($1, $2, $3, $4, $5::text[])
+      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, consideration_years)
+       VALUES ($1, $2, $3, $4)
        ON CONFLICT (ausschreibung_id)
-       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, consideration_years = EXCLUDED.consideration_years, chart_palette = EXCLUDED.chart_palette
-       RETURNING score_min, score_max, consideration_years, chart_palette`,
-      ['7', 0, 20, 12, ['#0D57A6', '#B47D00']]
+       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, consideration_years = EXCLUDED.consideration_years
+       RETURNING score_min, score_max, consideration_years`,
+      ['7', 0, 20, 12]
     )
-    expect(query).toHaveBeenNthCalledWith(4, 'COMMIT')
+    expect(query).toHaveBeenNthCalledWith(4, 'DELETE FROM ausschreibung_chart_palette WHERE ausschreibung_id = $1', ['7'])
+    expect(query).toHaveBeenNthCalledWith(5,
+      `INSERT INTO ausschreibung_chart_palette (ausschreibung_id, position, fill_color, text_color)
+         VALUES ($1, $2, $3, $4)`,
+      ['7', 0, '#0D57A6', '#FFFFFF']
+    )
+    expect(query).toHaveBeenNthCalledWith(6,
+      `INSERT INTO ausschreibung_chart_palette (ausschreibung_id, position, fill_color, text_color)
+         VALUES ($1, $2, $3, $4)`,
+      ['7', 1, '#B47D00', '#111111']
+    )
+    expect(query).toHaveBeenNthCalledWith(7,
+      `SELECT fill_color, text_color
+         FROM ausschreibung_chart_palette
+         WHERE ausschreibung_id = $1
+         ORDER BY position ASC`,
+      ['7']
+    )
+    expect(query).toHaveBeenNthCalledWith(8, 'COMMIT')
     expect(response).toEqual({
       settings: {
         scoreRange: [0, 20],
         considerationYears: 12,
-        chartPalette: ['#0D57A6', '#B47D00']
+        chartPalette: [
+          { fillColor: '#0D57A6', textColor: '#FFFFFF' },
+          { fillColor: '#B47D00', textColor: '#111111' }
+        ]
       }
     })
     expect(release).toHaveBeenCalledTimes(1)
@@ -91,7 +123,7 @@ describe('PATCH /api/tenders/:id/settings', () => {
     readBody.mockResolvedValue({
       scoreRange: [10, 10],
       considerationYears: 10,
-      chartPalette: ['#0D57A6']
+      chartPalette: [{ fillColor: '#0D57A6', textColor: '#FFFFFF' }]
     })
 
     const { default: handler } = await import('../server/api/tenders/[id]/settings.patch')
@@ -112,7 +144,7 @@ describe('PATCH /api/tenders/:id/settings', () => {
     readBody.mockResolvedValue({
       scoreRange: [0, 10],
       considerationYears: 0,
-      chartPalette: ['#0D57A6']
+      chartPalette: [{ fillColor: '#0D57A6', textColor: '#FFFFFF' }]
     })
 
     const { default: handler } = await import('../server/api/tenders/[id]/settings.patch')

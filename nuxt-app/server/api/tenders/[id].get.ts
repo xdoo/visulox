@@ -24,7 +24,11 @@ interface TenderSettingsRow {
   score_min: string | number
   score_max: string | number
   consideration_years: string | number
-  chart_palette: string[] | null
+}
+
+interface TenderChartPaletteRow {
+  fill_color: string
+  text_color: string
 }
 
 interface VendorRow {
@@ -95,11 +99,22 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     }
 
     const tenderSettingsResult = await client.query<TenderSettingsRow>(
-      'SELECT score_min, score_max, consideration_years, chart_palette FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1',
+      'SELECT score_min, score_max, consideration_years FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1',
       [tenderId]
     )
 
-    const settings = normalizeTenderSettingsRow(tenderSettingsResult.rows[0] || null)
+    const tenderChartPaletteResult = await client.query<TenderChartPaletteRow>(
+      `SELECT fill_color, text_color
+         FROM ausschreibung_chart_palette
+         WHERE ausschreibung_id = $1
+         ORDER BY position ASC`,
+      [tenderId]
+    )
+
+    const settings = normalizeTenderSettingsRow(
+      tenderSettingsResult.rows[0] || null,
+      tenderChartPaletteResult.rows
+    )
 
     const vendorsResult = await client.query<VendorRow>(
       'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC',

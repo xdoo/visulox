@@ -3,12 +3,13 @@ import type { TableColumn } from '@nuxt/ui'
 import type { PaletteDialogRow } from '../../composables/useTenderGeneralSettingsDialogs'
 
 interface PaletteRow {
-  color: string
+  fillColor: string
+  textColor: string
   index: number
 }
 
 const props = defineProps<{
-  chartPalette: string[]
+  chartPalette: PaletteDialogRow[]
 }>()
 
 const emit = defineEmits<{
@@ -29,8 +30,12 @@ const paletteColumns: TableColumn<PaletteRow>[] = [
     }
   },
   {
-    accessorKey: 'color',
-    header: 'Farb-Code'
+    accessorKey: 'fillColor',
+    header: 'Farbe'
+  },
+  {
+    id: 'textColor',
+    header: 'Schriftfarbe'
   },
   {
     id: 'actions',
@@ -46,7 +51,8 @@ const paletteColumns: TableColumn<PaletteRow>[] = [
 
 const paletteRows = computed<PaletteRow[]>(() => {
   return props.chartPalette.map((color, index) => ({
-    color,
+    fillColor: color.fillColor,
+    textColor: color.textColor,
     index
   }))
 })
@@ -82,14 +88,24 @@ const paletteRows = computed<PaletteRow[]>(() => {
       >
         <template #preview-cell="{ row }">
           <span
-            class="inline-block size-4 rounded-full border ui-border"
-            :style="{ backgroundColor: row.original.color }"
-          />
+            class="inline-flex size-7 items-center justify-center rounded-full border ui-border text-[10px] font-semibold"
+            :style="{ backgroundColor: row.original.fillColor, color: row.original.textColor }"
+          >
+            Aa
+          </span>
         </template>
 
         <template #color-cell="{ row }">
           <UInput
-            :model-value="row.original.color"
+            :model-value="row.original.fillColor"
+            class="w-full"
+            disabled
+          />
+        </template>
+
+        <template #textColor-cell="{ row }">
+          <UInput
+            :model-value="row.original.textColor"
             class="w-full"
             disabled
           />
@@ -119,4 +135,3 @@ const paletteRows = computed<PaletteRow[]>(() => {
     </div>
   </UCard>
 </template>
-
