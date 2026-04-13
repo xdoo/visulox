@@ -5,7 +5,10 @@ import type {
   TenderVendor,
   TenderVendorCostItem
 } from '../../../shared/types/tenders'
-import { buildVendorCostOverviewRows } from '../../composables/useTenderCostOverview'
+import {
+  buildCombinedVendorCostOverviewRows,
+  buildVendorCostOverviewRows
+} from '../../composables/useTenderCostOverview'
 
 const props = defineProps<{
   vendors: TenderVendor[]
@@ -24,9 +27,11 @@ const overviewRows = computed(() => buildVendorCostOverviewRows(
 
 const projectRows = computed(() => overviewRows.value.filter((row) => row.kind === 'project'))
 const runRows = computed(() => overviewRows.value.filter((row) => row.kind === 'run'))
+const combinedRows = computed(() => buildCombinedVendorCostOverviewRows(overviewRows.value))
 const hasProjectCosts = computed(() => projectRows.value.some((row) => row.total > 0))
 const hasRunCosts = computed(() => runRows.value.some((row) => row.total > 0))
-const hasAnyCosts = computed(() => hasProjectCosts.value || hasRunCosts.value)
+const hasCombinedCosts = computed(() => combinedRows.value.some((row) => row.total > 0))
+const hasAnyCosts = computed(() => hasProjectCosts.value || hasRunCosts.value || hasCombinedCosts.value)
 </script>
 
 <template>
@@ -44,7 +49,35 @@ const hasAnyCosts = computed(() => hasProjectCosts.value || hasRunCosts.value)
         Vergleich der Projektkosten sowie der Run-Kosten über den Betrachtungszeitraum von {{ props.considerationYears }} Jahren.
       </p>
 
-      <div v-if="hasAnyCosts" class="grid gap-6 xl:grid-cols-2">
+      <div v-if="hasAnyCosts" class="space-y-6">
+        <UCard class="rounded-lg border ui-border bg-gray-50/50">
+          <template #header>
+            <div class="space-y-1">
+              <h4 class="font-semibold">
+                Gesamtkosten
+              </h4>
+              <p class="text-sm ui-text-muted">
+                Gesamtvergleich aller Anbieter mit gestapelten Projekt- und Run-Kosten. Die Run-Kosten werden über {{ props.considerationYears }} Jahre betrachtet.
+              </p>
+            </div>
+          </template>
+
+          <TenderCostOverviewChart
+            v-if="hasCombinedCosts"
+            kind="combined"
+            :rows="combinedRows"
+            :palette="props.palette"
+          />
+
+          <div
+            v-else
+            class="flex h-64 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400"
+          >
+            Es wurden noch keine Gesamtkosten erfasst.
+          </div>
+        </UCard>
+
+        <div class="grid gap-6 xl:grid-cols-2">
         <UCard class="rounded-lg border ui-border bg-gray-50/50">
           <template #header>
             <div class="space-y-1">
@@ -98,6 +131,7 @@ const hasAnyCosts = computed(() => hasProjectCosts.value || hasRunCosts.value)
             Es wurden noch keine Run-Kosten erfasst.
           </div>
         </UCard>
+        </div>
       </div>
 
       <div

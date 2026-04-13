@@ -8,7 +8,7 @@ import type {
   TenderVendorCostItem
 } from '../../shared/types/tenders'
 
-export type VendorCostOverviewRowKind = 'project' | 'run'
+export type VendorCostOverviewRowKind = 'project' | 'run' | 'combined'
 
 export interface VendorCostOverviewSegment {
   costBlockId: string
@@ -141,4 +141,57 @@ export function buildVendorCostOverviewRows(
 
     return rightVendorTotal - leftVendorTotal
   })
+}
+
+export function buildCombinedVendorCostOverviewRows(rows: VendorCostOverviewRow[]) {
+  const rowsByVendor = new Map<string, VendorCostOverviewRow[]>()
+
+  rows.forEach((row) => {
+    const vendorRows = rowsByVendor.get(row.vendorId) || []
+    vendorRows.push(row)
+    rowsByVendor.set(row.vendorId, vendorRows)
+  })
+
+  return Array.from(rowsByVendor.entries())
+    .map<VendorCostOverviewRow>(([vendorId, vendorRows]) => {
+      const projectRow = vendorRows.find((row) => row.kind === 'project')
+      const runRow = vendorRows.find((row) => row.kind === 'run')
+
+      const vendorName = projectRow?.vendorName || runRow?.vendorName || ''
+      const considerationYears = runRow?.considerationYears || projectRow?.considerationYears || 0
+      const annualTotal = (projectRow?.annualTotal || 0) + (runRow?.annualTotal || 0)
+      const total = (projectRow?.total || 0) + (runRow?.total || 0)
+
+      return {
+        id: `${vendorId}-combined`,
+        vendorId,
+        vendorName,
+        kind: 'combined',
+        label: vendorName,
+        total: roundCostValue(total),
+        annualTotal: roundCostValue(annualTotal),
+        considerationYears,
+        segments: [
+          ...(projectRow
+            ? [{
+                costBlockId: `${vendorId}-project-total`,
+                name: 'Projekt',
+                type: 'project' as const,
+                value: projectRow.total,
+                annualValue: projectRow.annualTotal
+              }]
+            : []),
+          ...(runRow
+            ? [{
+                costBlockId: `${vendorId}-run-total`,
+                name: 'Run',
+                type: 'vendor_operating' as const,
+                value: runRow.total,
+                annualValue: runRow.annualTotal
+              }]
+            : [])
+        ]
+      }
+    })
+    .sort((left, right) => right.total - left.total)
 }

@@ -165,9 +165,9 @@ const option = computed<EChartsOption>(() => {
         }
 
         let result = `<div class="font-sans p-1">`
-        result += `<div class="font-bold mb-2 border-b pb-1 text-lg">${row.vendorName} · ${props.kind === 'project' ? 'Projekt' : 'Run'}</div>`
+        result += `<div class="font-bold mb-2 border-b pb-1 text-lg">${row.vendorName} · ${props.kind === 'project' ? 'Projekt' : props.kind === 'run' ? 'Run' : 'Gesamt'}</div>`
 
-        if (props.kind === 'run') {
+        if (props.kind !== 'project') {
           result += `
             <div class="mb-2 text-sm">
               <div class="flex justify-between gap-4"><span>Jährliche Summe:</span><b>${formatCostChartMillionValue(row.annualTotal)} €</b></div>
@@ -194,8 +194,8 @@ const option = computed<EChartsOption>(() => {
                 ${meta.segmentName}
               </div>
               <div class="pl-4 text-sm grid grid-cols-2 gap-x-4">
-                <span class="text-gray-500">Wert:</span> <b>${formatCostChartMillionValue(props.kind === 'run' ? meta.annualValue : (typeof param.value === 'number' ? param.value : Number(param.value)))} €${props.kind === 'run' ? ' / Jahr' : ''}</b>
-                ${props.kind === 'run'
+                <span class="text-gray-500">Wert:</span> <b>${formatCostChartMillionValue(props.kind === 'project' ? (typeof param.value === 'number' ? param.value : Number(param.value)) : meta.annualValue)} €${props.kind === 'project' ? '' : ' / Jahr'}</b>
+                ${props.kind !== 'project'
                   ? `<span class="text-gray-500">Über ${meta.row.considerationYears} Jahre:</span> <b>${formatCostChartMillionValue(typeof param.value === 'number' ? param.value : Number(param.value))} €</b>`
                   : ''}
               </div>
