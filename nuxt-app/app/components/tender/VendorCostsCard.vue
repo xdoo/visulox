@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { TenderCostBlock, TenderVendor, TenderVendorCostItem } from '../../../shared/types/tenders'
+import { useVendorCostSummaries } from '../../composables/useVendorCostSummaries'
 
 const props = defineProps<{
   tenderId: string
@@ -30,23 +30,12 @@ const {
   () => props.considerationYears
 )
 
-const projectSummaries = computed(() => [
-  {
-    label: 'Gesamtsumme',
-    value: projectTotal.value
-  }
-])
-
-const runSummaries = computed(() => [
-  {
-    label: 'Jährliche Summe',
-    value: runTotal.value
-  },
-  {
-    label: `Gesamtsumme über ${props.considerationYears} Jahre`,
-    value: runTotalOverConsiderationYears.value
-  }
-])
+const { projectSummaries, runSummaries } = useVendorCostSummaries(
+  () => projectTotal.value,
+  () => runTotal.value,
+  () => runTotalOverConsiderationYears.value,
+  () => props.considerationYears
+)
 </script>
 
 <template>

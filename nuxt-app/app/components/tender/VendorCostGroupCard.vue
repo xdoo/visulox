@@ -1,27 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import { tenderCostBlockTypeLabels } from '../../../shared/constants/cost-blocks'
-import { formatVendorCostInputValue } from '../../composables/useTenderVendorCosts'
 import type { VendorCostRow } from '../../composables/useTenderVendorCosts'
-
-interface VendorCostSummary {
-  label: string
-  value: number
-}
+import type { VendorCostSummaryItem } from '../../composables/useVendorCostSummaries'
+import { useVendorCostGroupInputs } from '../../composables/useVendorCostGroupInputs'
 
 const props = defineProps<{
   title: string
   description: string
   rows: VendorCostRow[]
-  summaries: VendorCostSummary[]
+  summaries: VendorCostSummaryItem[]
 }>()
 
 defineEmits<{
   updateAmount: [costBlockId: string, value: string]
 }>()
 
-const focusedCostBlockId = ref('')
+const {
+  focusCostBlock,
+  clearFocusedCostBlock,
+  getInputValue,
+  getSummaryValue,
+  handleEnter
+} = useVendorCostGroupInputs()
 
 const columns: TableColumn<VendorCostRow>[] = [
   {
@@ -43,36 +44,6 @@ const columns: TableColumn<VendorCostRow>[] = [
     }
   }
 ]
-
-function getInputValue(row: VendorCostRow) {
-  return focusedCostBlockId.value === row.costBlockId
-    ? row.amount
-    : formatVendorCostInputValue(row.amount)
-}
-
-function getSummaryValue(value: number) {
-  return formatVendorCostInputValue(String(value))
-}
-
-function handleEnter(event: KeyboardEvent) {
-  const currentInput = event.currentTarget as HTMLInputElement | null
-
-  if (!currentInput) {
-    return
-  }
-
-  const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-vendor-cost-input="true"]'))
-  const currentIndex = inputs.indexOf(currentInput)
-  const nextInput = currentIndex >= 0 ? inputs[currentIndex + 1] : null
-
-  if (!nextInput) {
-    return
-  }
-
-  event.preventDefault()
-  nextInput.focus()
-  nextInput.select()
-}
 </script>
 
 <template>
@@ -111,8 +82,8 @@ function handleEnter(event: KeyboardEvent) {
             placeholder="0"
             class="w-full text-right"
             data-vendor-cost-input="true"
-            @focus="focusedCostBlockId = row.original.costBlockId"
-            @blur="focusedCostBlockId = ''"
+            @focus="focusCostBlock(row.original.costBlockId)"
+            @blur="clearFocusedCostBlock"
             @keydown.enter="handleEnter"
             @update:model-value="$emit('updateAmount', row.original.costBlockId, String($event ?? ''))"
           />
