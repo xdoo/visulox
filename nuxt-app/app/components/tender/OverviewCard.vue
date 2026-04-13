@@ -10,7 +10,7 @@ const props = defineProps<{
   vendors: TenderVendor[]
   sections: TenderSection[]
   scoreRange: TenderSettings['scoreRange']
-  palette?: string[]
+  palette?: TenderSettings['chartPalette']
 }>()
 
 const chartRef = ref<{ downloadPng: (filename: string) => void, downloadSvg: (filename: string) => void } | null>(null)

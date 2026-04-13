@@ -1,18 +1,25 @@
 import { ref } from 'vue'
+import { defaultTenderChartPalette } from '../../shared/constants/tender-settings'
 
 export interface PaletteDialogRow {
-  color: string
+  fillColor: string
+  textColor: string
   index: number
 }
 
-export function useTenderGeneralSettingsDialogs(scoreRange: () => [number, number], considerationYears: () => number) {
+export function useTenderGeneralSettingsDialogs(
+  scoreRange: () => [number, number],
+  considerationYears: () => number,
+  chartPaletteLength: () => number
+) {
   const isScoreModalOpen = ref(false)
   const editingScoreRange = ref<[number, number]>([...scoreRange()] as [number, number])
   const isConsiderationYearsModalOpen = ref(false)
   const editingConsiderationYears = ref(considerationYears())
   const isColorModalOpen = ref(false)
   const editingPaletteIndex = ref<number | null>(null)
-  const editingPaletteColor = ref('')
+  const editingPaletteFillColor = ref('')
+  const editingPaletteTextColor = ref('#FFFFFF')
 
   function openScoreModal() {
     editingScoreRange.value = [...scoreRange()] as [number, number]
@@ -34,7 +41,17 @@ export function useTenderGeneralSettingsDialogs(scoreRange: () => [number, numbe
 
   function openPaletteModal(row: PaletteDialogRow) {
     editingPaletteIndex.value = row.index
-    editingPaletteColor.value = row.color
+    editingPaletteFillColor.value = row.fillColor
+    editingPaletteTextColor.value = row.textColor
+    isColorModalOpen.value = true
+  }
+
+  function openCreatePaletteModal() {
+    const defaultEntry = defaultTenderChartPalette[chartPaletteLength() % defaultTenderChartPalette.length]
+
+    editingPaletteIndex.value = null
+    editingPaletteFillColor.value = defaultEntry?.fillColor || '#0D57A6'
+    editingPaletteTextColor.value = defaultEntry?.textColor || '#FFFFFF'
     isColorModalOpen.value = true
   }
 
@@ -49,11 +66,13 @@ export function useTenderGeneralSettingsDialogs(scoreRange: () => [number, numbe
     editingConsiderationYears,
     isColorModalOpen,
     editingPaletteIndex,
-    editingPaletteColor,
+    editingPaletteFillColor,
+    editingPaletteTextColor,
     openScoreModal,
     closeScoreModal,
     openConsiderationYearsModal,
     closeConsiderationYearsModal,
+    openCreatePaletteModal,
     openPaletteModal,
     closePaletteModal
   }

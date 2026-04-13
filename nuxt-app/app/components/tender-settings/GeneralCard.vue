@@ -32,14 +32,16 @@ const {
   editingConsiderationYears,
   isColorModalOpen,
   editingPaletteIndex,
-  editingPaletteColor,
+  editingPaletteFillColor,
+  editingPaletteTextColor,
   openScoreModal,
   closeScoreModal,
   openConsiderationYearsModal,
   closeConsiderationYearsModal,
+  openCreatePaletteModal,
   openPaletteModal,
   closePaletteModal
-} = useTenderGeneralSettingsDialogs(() => scoreRange.value, () => considerationYears.value)
+} = useTenderGeneralSettingsDialogs(() => scoreRange.value, () => considerationYears.value, () => chartPalette.value.length)
 
 async function saveScoreRange() {
   scoreRange.value = [...editingScoreRange.value] as [number, number]
@@ -54,11 +56,17 @@ async function saveConsiderationYears() {
 }
 
 async function savePaletteColor() {
-  if (editingPaletteIndex.value === null) {
-    return
+  const nextEntry = {
+    fillColor: editingPaletteFillColor.value,
+    textColor: editingPaletteTextColor.value
   }
 
-  updatePaletteColor(editingPaletteIndex.value, editingPaletteColor.value)
+  if (editingPaletteIndex.value === null) {
+    addPaletteColor(nextEntry)
+  } else {
+    updatePaletteColor(editingPaletteIndex.value, nextEntry)
+  }
+
   closePaletteModal()
   await save()
 }
@@ -95,7 +103,7 @@ async function savePaletteColor() {
 
     <TenderSettingsPaletteCard
       :chart-palette="chartPalette"
-      @add="addPaletteColor"
+      @add="openCreatePaletteModal"
       @edit="openPaletteModal"
       @remove="removePaletteColor"
     />
@@ -116,7 +124,8 @@ async function savePaletteColor() {
 
     <TenderSettingsPaletteColorModal
       v-model:open="isColorModalOpen"
-      v-model:color="editingPaletteColor"
+      v-model:fill-color="editingPaletteFillColor"
+      v-model:text-color="editingPaletteTextColor"
       @submit="savePaletteColor"
     />
 

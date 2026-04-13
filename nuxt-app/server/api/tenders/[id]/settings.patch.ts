@@ -12,7 +12,6 @@ interface TenderSettingsRow {
   score_min: string | number
   score_max: string | number
   consideration_years: string | number
-  chart_palette: string[] | null
 }
 
 const hexColorPattern = /^#(?:[0-9a-fA-F]{6})$/
@@ -23,7 +22,10 @@ function normalizeRequest(body: Partial<UpdateTenderSettingsRequest> | null | un
     : [...defaultTenderSettings.scoreRange] as [number, number]
 
   const chartPalette = Array.isArray(body?.chartPalette)
-    ? body.chartPalette.map(color => String(color || '').trim())
+    ? body.chartPalette.map((entry, index) => ({
+        fillColor: String(entry?.fillColor || '').trim() || defaultTenderSettings.chartPalette[index]?.fillColor || '#000000',
+        textColor: String(entry?.textColor || '').trim() || '#FFFFFF'
+      }))
     : [...defaultTenderSettings.chartPalette]
   const considerationYears = Number(body?.considerationYears ?? defaultTenderSettings.considerationYears)
 
@@ -51,7 +53,7 @@ function validateRequest(payload: UpdateTenderSettingsRequest) {
     })
   }
 
-  if (payload.chartPalette.some(color => !hexColorPattern.test(color))) {
+  if (payload.chartPalette.some(entry => !hexColorPattern.test(entry.fillColor) || !hexColorPattern.test(entry.textColor))) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Die Farbpalette enthält ungültige Farbwerte.'
@@ -95,18 +97,44 @@ export default defineEventHandler(async (event): Promise<UpdateTenderSettingsRes
     }
 
     const result = await client.query<TenderSettingsRow>(
-      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, consideration_years, chart_palette)
-       VALUES ($1, $2, $3, $4, $5::text[])
+      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, consideration_years)
+       VALUES ($1, $2, $3, $4)
        ON CONFLICT (ausschreibung_id)
-       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, consideration_years = EXCLUDED.consideration_years, chart_palette = EXCLUDED.chart_palette
-       RETURNING score_min, score_max, consideration_years, chart_palette`,
-      [tenderId, payload.scoreRange[0], payload.scoreRange[1], payload.considerationYears, payload.chartPalette]
+       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, consideration_years = EXCLUDED.consideration_years
+       RETURNING score_min, score_max, consideration_years`,
+      [
+        tenderId,
+        payload.scoreRange[0],
+        payload.scoreRange[1],
+        payload.considerationYears
+      ]
+    )
+
+    await client.query(
+      'DELETE FROM ausschreibung_chart_palette WHERE ausschreibung_id = $1',
+      [tenderId]
+    )
+
+    for (const [index, entry] of payload.chartPalette.entries()) {
+      await client.query(
+        `INSERT INTO ausschreibung_chart_palette (ausschreibung_id, position, fill_color, text_color)
+         VALUES ($1, $2, $3, $4)`,
+        [tenderId, index, entry.fillColor, entry.textColor]
+      )
+    }
+
+    const paletteResult = await client.query<{ fill_color: string, text_color: string }>(
+      `SELECT fill_color, text_color
+         FROM ausschreibung_chart_palette
+         WHERE ausschreibung_id = $1
+         ORDER BY position ASC`,
+      [tenderId]
     )
 
     await client.query('COMMIT')
 
     return {
-      settings: normalizeTenderSettingsRow(result.rows[0] || null)
+      settings: normalizeTenderSettingsRow(result.rows[0] || null, paletteResult.rows)
     }
   } catch (error) {
     await client.query('ROLLBACK')

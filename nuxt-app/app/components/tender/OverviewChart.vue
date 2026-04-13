@@ -24,7 +24,7 @@ interface VendorScore {
 
 const props = defineProps<{
   scores: VendorScore[]
-  palette?: string[]
+  palette?: typeof defaultTenderChartPalette
 }>()
 
 const isVisible = ref(false)
@@ -77,7 +77,7 @@ const option = computed<EChartsOption>(() => {
       stack: 'total',
       z: 2,
       itemStyle: {
-        color: chartPalette.value[index % chartPalette.value.length],
+        color: chartPalette.value[index % chartPalette.value.length].fillColor,
         borderRadius: index === 0 ? [4, 0, 0, 4] : (index === sections.length - 1 ? [0, 4, 4, 0] : 0)
       },
       label: {
@@ -86,11 +86,9 @@ const option = computed<EChartsOption>(() => {
         align: 'right',
         distance: 0,
         padding: [0, 4, 0, 4],
-        color: '#ffffff',
+        color: chartPalette.value[index % chartPalette.value.length].textColor,
         fontSize: 11,
         fontWeight: 'normal',
-        textBorderColor: 'rgba(32, 32, 32, 0.4)',
-        textBorderWidth: 2,
         formatter: (params: any) => {
           const fulfillment = params.data?.meta?.fulfillment
 

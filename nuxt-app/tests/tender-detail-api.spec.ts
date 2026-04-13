@@ -43,9 +43,14 @@ describe('GET /api/tenders/:id', () => {
         rows: [{
           score_min: 0,
           score_max: 15,
-          consideration_years: 10,
-          chart_palette: ['#0D57A6', '#B47D00']
+          consideration_years: 10
         }]
+      })
+      .mockResolvedValueOnce({
+        rows: [
+          { fill_color: '#0D57A6', text_color: '#FFFFFF' },
+          { fill_color: '#B47D00', text_color: '#111111' }
+        ]
       })
       .mockResolvedValueOnce({
         rows: [
@@ -89,18 +94,25 @@ describe('GET /api/tenders/:id', () => {
     } as never)
 
     expect(query).toHaveBeenNthCalledWith(1, 'SELECT id, name FROM ausschreibungen WHERE id = $1 LIMIT 1', ['2'])
-    expect(query).toHaveBeenNthCalledWith(2, 'SELECT score_min, score_max, consideration_years, chart_palette FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1', ['2'])
-    expect(query).toHaveBeenNthCalledWith(3, 'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
-    expect(query).toHaveBeenNthCalledWith(4, 'SELECT id, name, type FROM kostenbloecke WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
-    expect(query).toHaveBeenNthCalledWith(5,
+    expect(query).toHaveBeenNthCalledWith(2, 'SELECT score_min, score_max, consideration_years FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1', ['2'])
+    expect(query).toHaveBeenNthCalledWith(3,
+      `SELECT fill_color, text_color
+         FROM ausschreibung_chart_palette
+         WHERE ausschreibung_id = $1
+         ORDER BY position ASC`,
+      ['2']
+    )
+    expect(query).toHaveBeenNthCalledWith(4, 'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(5, 'SELECT id, name, type FROM kostenbloecke WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(6,
       `SELECT id, anbieter_id, kostenblock_id, amount
          FROM anbieter_kostenpositionen
          WHERE anbieter_id = ANY($1::bigint[])
          ORDER BY id ASC`,
       [['11', '12']]
     )
-    expect(query).toHaveBeenNthCalledWith(6, 'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
-    expect(query).toHaveBeenNthCalledWith(7,
+    expect(query).toHaveBeenNthCalledWith(7, 'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(8,
       `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte
          FROM abschnittsfragen
          WHERE abschnitt_id = ANY($1::bigint[])
@@ -113,7 +125,10 @@ describe('GET /api/tenders/:id', () => {
       settings: {
         scoreRange: [0, 15],
         considerationYears: 10,
-        chartPalette: ['#0D57A6', '#B47D00']
+        chartPalette: [
+          { fillColor: '#0D57A6', textColor: '#FFFFFF' },
+          { fillColor: '#B47D00', textColor: '#111111' }
+        ]
       },
       vendors: [
         { id: '11', name: 'Acme AG' },
