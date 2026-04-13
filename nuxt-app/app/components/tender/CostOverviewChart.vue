@@ -9,6 +9,7 @@ import {
   formatCostChartMillionValue,
   formatCostChartValue
 } from '../../composables/useTenderCostOverview'
+import { useChartImageDownload } from '../../composables/useChartImageDownload'
 import type {
   VendorCostOverviewRow,
   VendorCostOverviewRowKind
@@ -31,6 +32,7 @@ const props = defineProps<{
 }>()
 
 const isVisible = ref(false)
+const { chartRef, downloadPng, downloadSvg } = useChartImageDownload()
 
 onMounted(() => {
   nextTick(() => {
@@ -245,12 +247,22 @@ const option = computed<EChartsOption>(() => {
     series
   }
 })
+
+defineExpose({
+  downloadPng,
+  downloadSvg
+})
 </script>
 
 <template>
   <div class="h-[420px] w-full overflow-hidden">
     <ClientOnly>
-      <VChart v-if="isVisible" :option="option" autoresize />
+      <VChart
+        v-if="isVisible"
+        ref="chartRef"
+        :option="option"
+        autoresize
+      />
     </ClientOnly>
   </div>
 </template>

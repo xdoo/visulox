@@ -5,6 +5,7 @@ import type {
   TooltipComponentFormatterCallbackParams
 } from 'echarts'
 import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
+import { useChartImageDownload } from '../../composables/useChartImageDownload'
 
 interface SectionScore {
   sectionId: string
@@ -27,6 +28,7 @@ const props = defineProps<{
 }>()
 
 const isVisible = ref(false)
+const { chartRef, downloadPng, downloadSvg } = useChartImageDownload()
 
 onMounted(() => {
   nextTick(() => {
@@ -237,12 +239,22 @@ const option = computed<EChartsOption>(() => {
     series
   }
 })
+
+defineExpose({
+  downloadPng,
+  downloadSvg
+})
 </script>
 
 <template>
   <div class="h-[400px] w-full overflow-hidden">
     <ClientOnly>
-      <VChart v-if="isVisible" :option="option" autoresize />
+      <VChart
+        v-if="isVisible"
+        ref="chartRef"
+        :option="option"
+        autoresize
+      />
     </ClientOnly>
   </div>
 </template>
