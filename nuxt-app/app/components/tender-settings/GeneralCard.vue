@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import TenderSettingsConsiderationYearsModal from './ConsiderationYearsModal.vue'
+import TenderSettingsConsiderationYearsRow from './ConsiderationYearsRow.vue'
+import TenderSettingsPaletteCard from './PaletteCard.vue'
+import TenderSettingsPaletteColorModal from './PaletteColorModal.vue'
+import TenderSettingsScoreModal from './ScoreModal.vue'
+import TenderSettingsScoreRangeRow from './ScoreRangeRow.vue'
+
 import type { TenderSettings } from '../../../shared/types/tenders'
 
 const props = defineProps<{
