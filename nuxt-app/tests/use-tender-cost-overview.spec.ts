@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  formatCostChartMillionValue,
   buildVendorCostOverviewRows,
   formatCostChartValue
 } from '../app/composables/useTenderCostOverview'
@@ -83,5 +84,6 @@ describe('useTenderCostOverview', () => {
 
   it('formats chart values using german number formatting', () => {
     expect(formatCostChartValue(1234567.89)).toBe('1.234.567,89')
+    expect(formatCostChartMillionValue(1234567.89)).toBe('1,2 Mio.')
   })
 })

@@ -5,7 +5,10 @@ import type {
   TooltipComponentFormatterCallbackParams
 } from 'echarts'
 import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
-import { formatCostChartValue } from '../../composables/useTenderCostOverview'
+import {
+  formatCostChartMillionValue,
+  formatCostChartValue
+} from '../../composables/useTenderCostOverview'
 import type {
   VendorCostOverviewRow,
   VendorCostOverviewRowKind
@@ -50,20 +53,7 @@ const option = computed<EChartsOption>(() => {
   const maxTotal = Math.max(...props.rows.map((row) => row.total), 0)
   const chartMax = maxTotal > 0 ? maxTotal * 1.1 : 1
 
-  const series: EChartsOption['series'] = [
-    {
-      name: 'Max',
-      type: 'bar',
-      barGap: '-100%',
-      z: 1,
-      silent: true,
-      itemStyle: {
-        color: 'rgba(108, 159, 203, 0.08)',
-        borderRadius: 4
-      },
-      data: categories.map(() => chartMax)
-    }
-  ]
+  const series: EChartsOption['series'] = []
 
   costBlockOrder.forEach((costBlock, index) => {
     series?.push({
@@ -92,7 +82,7 @@ const option = computed<EChartsOption>(() => {
             return ''
           }
 
-          return value < chartMax * 0.08 ? '' : formatCostChartValue(value)
+          return value < chartMax * 0.08 ? '' : formatCostChartMillionValue(value)
         }
       },
       labelLayout: {
@@ -139,7 +129,7 @@ const option = computed<EChartsOption>(() => {
       color: '#111111',
       formatter: (params: DefaultLabelFormatterCallbackParams) => {
         const total = (params.data as ChartDataPoint | undefined)?.total
-        return typeof total === 'number' ? `${formatCostChartValue(total)} €` : ''
+        return typeof total === 'number' ? `${formatCostChartMillionValue(total)} €` : ''
       }
     },
     data: props.rows.map<ChartDataPoint>((row) => ({
@@ -180,14 +170,14 @@ const option = computed<EChartsOption>(() => {
         if (props.kind === 'run') {
           result += `
             <div class="mb-2 text-sm">
-              <div class="flex justify-between gap-4"><span>Jährliche Summe:</span><b>${formatCostChartValue(row.annualTotal)} €</b></div>
+              <div class="flex justify-between gap-4"><span>Jährliche Summe:</span><b>${formatCostChartMillionValue(row.annualTotal)} €</b></div>
               <div class="flex justify-between gap-4"><span>Betrachtungszeitraum:</span><b>${row.considerationYears} Jahre</b></div>
             </div>
           `
         }
 
         tooltipParams.forEach((param: DefaultLabelFormatterCallbackParams) => {
-          if (param.seriesName === 'Max' || param.seriesName === 'Gesamt') {
+          if (param.seriesName === 'Gesamt') {
             return
           }
 
@@ -204,9 +194,9 @@ const option = computed<EChartsOption>(() => {
                 ${meta.segmentName}
               </div>
               <div class="pl-4 text-sm grid grid-cols-2 gap-x-4">
-                <span class="text-gray-500">Wert:</span> <b>${formatCostChartValue(props.kind === 'run' ? meta.annualValue : (typeof param.value === 'number' ? param.value : Number(param.value)))} €${props.kind === 'run' ? ' / Jahr' : ''}</b>
+                <span class="text-gray-500">Wert:</span> <b>${formatCostChartMillionValue(props.kind === 'run' ? meta.annualValue : (typeof param.value === 'number' ? param.value : Number(param.value)))} €${props.kind === 'run' ? ' / Jahr' : ''}</b>
                 ${props.kind === 'run'
-                  ? `<span class="text-gray-500">Über ${meta.row.considerationYears} Jahre:</span> <b>${formatCostChartValue(typeof param.value === 'number' ? param.value : Number(param.value))} €</b>`
+                  ? `<span class="text-gray-500">Über ${meta.row.considerationYears} Jahre:</span> <b>${formatCostChartMillionValue(typeof param.value === 'number' ? param.value : Number(param.value))} €</b>`
                   : ''}
               </div>
             </div>
@@ -216,7 +206,7 @@ const option = computed<EChartsOption>(() => {
         result += `
           <div class="mt-2 pt-2 border-t flex justify-between items-center font-bold text-lg">
             <span>Gesamt:</span>
-            <span>${formatCostChartValue(row.total)} €</span>
+            <span>${formatCostChartMillionValue(row.total)} €</span>
           </div>
         `
         result += `</div>`

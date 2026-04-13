@@ -41,6 +41,13 @@ export function formatCostChartValue(value: number) {
   }).format(roundCostValue(value))
 }
 
+export function formatCostChartMillionValue(value: number) {
+  return `${new Intl.NumberFormat('de-DE', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  }).format(roundCostValue(value / 1_000_000))} Mio.`
+}
+
 export function buildVendorCostOverviewRows(
   vendors: TenderVendor[],
   costBlocks: TenderCostBlock[],
