@@ -11,6 +11,7 @@ import type {
   TenderDetail,
   TenderSection,
   TenderSectionQuestionsByVendor,
+  TenderVendorCostItem,
   TenderVendor
 } from '../../../shared/types/tenders'
 
@@ -35,6 +36,13 @@ interface CostBlockRow {
   id: string | number
   name: string
   type: string
+}
+
+interface VendorCostItemRow {
+  id: string | number
+  anbieter_id: string | number
+  kostenblock_id: string | number
+  amount: string | number | null
 }
 
 interface SectionRow {
@@ -110,6 +118,22 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
 
     const costBlocks: TenderCostBlock[] = costBlocksResult.rows.map(mapTenderCostBlockRow)
 
+    const vendorIds = vendors.map((vendor) => vendor.id)
+    const vendorCostItems: TenderVendorCostItem[] = vendorIds.length > 0
+      ? (await client.query<VendorCostItemRow>(
+        `SELECT id, anbieter_id, kostenblock_id, amount
+         FROM anbieter_kostenpositionen
+         WHERE anbieter_id = ANY($1::bigint[])
+         ORDER BY id ASC`,
+        [vendorIds]
+      )).rows.map((row) => ({
+        id: String(row.id),
+        vendorId: String(row.anbieter_id),
+        costBlockId: String(row.kostenblock_id),
+        amount: row.amount === null ? null : toNumber(row.amount)
+      }))
+      : []
+
     const sectionsResult = await client.query<SectionRow>(
       'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
       [tenderId]
@@ -168,7 +192,8 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
       settings,
       vendors,
       sections,
-      costBlocks
+      costBlocks,
+      vendorCostItems
     }
   } finally {
     client.release()
