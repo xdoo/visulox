@@ -6,8 +6,7 @@ const props = defineProps<{
   vendors: TenderVendor[]
 }>()
 
-const route = useRoute()
-const activeTab = useState<string | number>(`tender-vendor-tab:${route.path}`, () => 'overview')
+const activeTab = ref<string | number>('overview')
 
 const items = computed<TabsItem[]>(() => {
   return [
@@ -35,6 +34,18 @@ function getVendorForItemValue(value: string | number | undefined) {
 
   return findVendorByTabValue(value)
 }
+
+watch(() => props.vendors, (vendors) => {
+  if (activeTab.value === 'overview') {
+    return
+  }
+
+  const hasActiveVendor = vendors.some(vendor => vendor.id === String(activeTab.value))
+
+  if (!hasActiveVendor) {
+    activeTab.value = 'overview'
+  }
+}, { immediate: true })
 </script>
 
 <template>

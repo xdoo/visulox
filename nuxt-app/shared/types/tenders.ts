@@ -57,6 +57,13 @@ export interface TenderCostBlock {
   type: TenderCostBlockType
 }
 
+export interface TenderVendorCostItem {
+  id: string
+  vendorId: string
+  costBlockId: string
+  amount: number | null
+}
+
 export interface TenderSectionQuestionsByVendor {
   vendorId: string
   questions: SectionQuestion[]
@@ -76,6 +83,7 @@ export interface TenderDetail {
   vendors: TenderVendor[]
   sections: TenderSection[]
   costBlocks: TenderCostBlock[]
+  vendorCostItems: TenderVendorCostItem[]
 }
 
 export interface SectionQuestion {
@@ -114,4 +122,17 @@ export interface CreateTenderCostBlockRequest {
 export interface UpdateTenderCostBlockRequest {
   name: string
   type: TenderCostBlockType
+}
+
+export interface SaveVendorCostItemInput {
+  costBlockId: string
+  amount: number | null
+}
+
+export interface SaveVendorCostItemsRequest {
+  items: SaveVendorCostItemInput[]
+}
+
+export interface SaveVendorCostItemsResponse {
+  items: TenderVendorCostItem[]
 }

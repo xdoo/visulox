@@ -50,17 +50,14 @@ useSeoMeta({
       </template>
 
       <template #vendor="{ vendor }">
-        <UCard>
-          <template #header>
-            <h3 class="font-semibold">
-              {{ vendor?.name || 'Anbieter' }}
-            </h3>
-          </template>
-
-          <p class="ui-text-muted">
-            Kostenansicht für {{ vendor?.name || 'den ausgewählten Anbieter' }}.
-          </p>
-        </UCard>
+        <TenderVendorCostsCard
+          v-if="vendor"
+          :tender-id="tenderId"
+          :vendor="vendor"
+          :cost-blocks="tender?.costBlocks || []"
+          :vendor-cost-items="tender?.vendorCostItems || []"
+          :consideration-years="tender?.settings.considerationYears || 10"
+        />
       </template>
     </TenderVendorTabs>
   </div>

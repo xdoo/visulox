@@ -60,6 +60,11 @@ describe('GET /api/tenders/:id', () => {
       })
       .mockResolvedValueOnce({
         rows: [
+          { id: 51, anbieter_id: 11, kostenblock_id: 41, amount: '1200.50' }
+        ]
+      })
+      .mockResolvedValueOnce({
+        rows: [
           { id: 21, name: 'Qualitaet', weight: 60 },
           { id: 22, name: 'Preis', weight: 40 }
         ]
@@ -87,8 +92,15 @@ describe('GET /api/tenders/:id', () => {
     expect(query).toHaveBeenNthCalledWith(2, 'SELECT score_min, score_max, consideration_years, chart_palette FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1', ['2'])
     expect(query).toHaveBeenNthCalledWith(3, 'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(4, 'SELECT id, name, type FROM kostenbloecke WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
-    expect(query).toHaveBeenNthCalledWith(5, 'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
-    expect(query).toHaveBeenNthCalledWith(6,
+    expect(query).toHaveBeenNthCalledWith(5,
+      `SELECT id, anbieter_id, kostenblock_id, amount
+         FROM anbieter_kostenpositionen
+         WHERE anbieter_id = ANY($1::bigint[])
+         ORDER BY id ASC`,
+      [['11', '12']]
+    )
+    expect(query).toHaveBeenNthCalledWith(6, 'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(7,
       `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte
          FROM abschnittsfragen
          WHERE abschnitt_id = ANY($1::bigint[])
@@ -109,6 +121,9 @@ describe('GET /api/tenders/:id', () => {
       ],
       costBlocks: [
         { id: '41', name: 'Lizenzen', type: 'license_one_time' }
+      ],
+      vendorCostItems: [
+        { id: '51', vendorId: '11', costBlockId: '41', amount: 1200.5 }
       ],
       sections: [
         {
