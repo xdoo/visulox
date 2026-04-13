@@ -56,6 +56,7 @@ useSeoMeta({
           :vendor="vendor"
           :cost-blocks="tender?.costBlocks || []"
           :vendor-cost-items="tender?.vendorCostItems || []"
+          :consideration-years="tender?.settings.considerationYears || 10"
         />
       </template>
     </TenderVendorTabs>

@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 
 import {
+  calculateVendorCostTotal,
   formatVendorCostInputValue,
   formatVendorCostAmount,
   getVendorCostGroup,
@@ -53,6 +54,15 @@ describe('useTenderVendorCosts', () => {
     ])
   })
 
+  it('calculates group totals from valid row amounts', () => {
+    expect(calculateVendorCostTotal([
+      { costBlockId: '41', name: 'Projektteam', type: 'project', amount: '1.000,5' },
+      { costBlockId: '42', name: 'Lizenz', type: 'license_one_time', amount: '250' },
+      { costBlockId: '43', name: 'Optional', type: 'project', amount: '' },
+      { costBlockId: '44', name: 'Fehlerhaft', type: 'project', amount: 'abc' }
+    ])).toBe(1250.5)
+  })
+
   it('exposes grouped rows and change tracking', () => {
     const vendor = ref({ id: '11', name: 'Acme' })
     const costBlocks = ref([
@@ -67,15 +77,21 @@ describe('useTenderVendorCosts', () => {
       '1',
       computed(() => vendor.value),
       computed(() => costBlocks.value),
-      computed(() => vendorCostItems.value)
+      computed(() => vendorCostItems.value),
+      computed(() => 10)
     )
 
     expect(state.projectRows.value).toHaveLength(1)
     expect(state.runRows.value).toHaveLength(1)
+    expect(state.projectTotal.value).toBe(1000)
+    expect(state.runTotal.value).toBe(0)
+    expect(state.runTotalOverConsiderationYears.value).toBe(0)
     expect(state.canSave.value).toBe(false)
 
     state.updateAmount('42', '250')
 
     expect(state.canSave.value).toBe(true)
+    expect(state.runTotal.value).toBe(250)
+    expect(state.runTotalOverConsiderationYears.value).toBe(2500)
   })
 })

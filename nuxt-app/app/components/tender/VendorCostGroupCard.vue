@@ -5,10 +5,16 @@ import { tenderCostBlockTypeLabels } from '../../../shared/constants/cost-blocks
 import { formatVendorCostInputValue } from '../../composables/useTenderVendorCosts'
 import type { VendorCostRow } from '../../composables/useTenderVendorCosts'
 
+interface VendorCostSummary {
+  label: string
+  value: number
+}
+
 const props = defineProps<{
   title: string
   description: string
   rows: VendorCostRow[]
+  summaries: VendorCostSummary[]
 }>()
 
 defineEmits<{
@@ -42,6 +48,10 @@ function getInputValue(row: VendorCostRow) {
   return focusedCostBlockId.value === row.costBlockId
     ? row.amount
     : formatVendorCostInputValue(row.amount)
+}
+
+function getSummaryValue(value: number) {
+  return formatVendorCostInputValue(String(value))
 }
 
 function handleEnter(event: KeyboardEvent) {
@@ -113,5 +123,27 @@ function handleEnter(event: KeyboardEvent) {
         </UFieldGroup>
       </template>
     </UTable>
+
+    <div
+      v-if="props.rows.length > 0"
+      class="mt-4 flex items-center justify-between border-t ui-border pl-4 pr-[25px] pt-4"
+    >
+      <div class="w-full space-y-2">
+        <div
+          v-for="summary in props.summaries"
+          :key="summary.label"
+          class="flex items-center justify-between"
+        >
+          <div class="text-sm font-medium">
+            {{ summary.label }}
+          </div>
+
+          <div class="flex items-center gap-2 text-base font-semibold">
+            <span>{{ getSummaryValue(summary.value) }}</span>
+            <UIcon name="i-lucide-euro" class="size-4 ui-text-muted" />
+          </div>
+        </div>
+      </div>
+    </div>
   </UCard>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { TenderCostBlock, TenderVendor, TenderVendorCostItem } from '../../../shared/types/tenders'
 
 const props = defineProps<{
@@ -6,6 +7,7 @@ const props = defineProps<{
   vendor: TenderVendor
   costBlocks: TenderCostBlock[]
   vendorCostItems: TenderVendorCostItem[]
+  considerationYears: number
 }>()
 
 const {
@@ -13,6 +15,9 @@ const {
   isSaving,
   projectRows,
   runRows,
+  projectTotal,
+  runTotal,
+  runTotalOverConsiderationYears,
   canSave,
   hasInvalidAmounts,
   updateAmount,
@@ -21,8 +26,27 @@ const {
   props.tenderId,
   () => props.vendor,
   () => props.costBlocks,
-  () => props.vendorCostItems
+  () => props.vendorCostItems,
+  () => props.considerationYears
 )
+
+const projectSummaries = computed(() => [
+  {
+    label: 'Gesamtsumme',
+    value: projectTotal.value
+  }
+])
+
+const runSummaries = computed(() => [
+  {
+    label: 'Jährliche Summe',
+    value: runTotal.value
+  },
+  {
+    label: `Gesamtsumme über ${props.considerationYears} Jahre`,
+    value: runTotalOverConsiderationYears.value
+  }
+])
 </script>
 
 <template>
@@ -61,6 +85,7 @@ const {
         title="Projektkosten"
         description="Einmalkosten und projektbezogene Kostenblöcke."
         :rows="projectRows"
+        :summaries="projectSummaries"
         @update-amount="updateAmount"
       />
 
@@ -68,6 +93,7 @@ const {
         title="Run-Kosten"
         description="Laufende betriebliche oder infrastrukturelle Kostenblöcke."
         :rows="runRows"
+        :summaries="runSummaries"
         @update-amount="updateAmount"
       />
     </div>

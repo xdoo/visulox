@@ -47,6 +47,16 @@ export function formatVendorCostInputValue(value: string) {
   }).format(parsedAmount)
 }
 
+export function calculateVendorCostTotal(rows: VendorCostRow[]) {
+  const total = rows.reduce((sum, row) => {
+    const amount = parseVendorCostAmount(row.amount)
+
+    return amount === null || Number.isNaN(amount) ? sum : sum + amount
+  }, 0)
+
+  return Number(total.toFixed(2))
+}
+
 export function parseVendorCostAmount(value: string) {
   const sanitizedValue = value
     .trim()
@@ -93,7 +103,8 @@ export function useTenderVendorCosts(
   tenderId: string,
   vendor: MaybeRefOrGetter<TenderVendor | null>,
   costBlocks: MaybeRefOrGetter<TenderCostBlock[]>,
-  vendorCostItems: MaybeRefOrGetter<TenderVendorCostItem[]>
+  vendorCostItems: MaybeRefOrGetter<TenderVendorCostItem[]>,
+  considerationYears: MaybeRefOrGetter<number>
 ) {
   const putFetcher = globalThis.$fetch as PutFetcher
   const { errorMessage, runMutation, clearError } = useTenderSettingsMutation(tenderId)
@@ -108,6 +119,9 @@ export function useTenderVendorCosts(
 
   const projectRows = computed(() => rows.value.filter((row) => getVendorCostGroup(row.type) === 'project'))
   const runRows = computed(() => rows.value.filter((row) => getVendorCostGroup(row.type) === 'run'))
+  const projectTotal = computed(() => calculateVendorCostTotal(projectRows.value))
+  const runTotal = computed(() => calculateVendorCostTotal(runRows.value))
+  const runTotalOverConsiderationYears = computed(() => Number((runTotal.value * toValue(considerationYears)).toFixed(2)))
 
   const hasInvalidAmounts = computed(() => {
     return rows.value.some((row) => Number.isNaN(parseVendorCostAmount(row.amount)))
@@ -173,6 +187,9 @@ export function useTenderVendorCosts(
     isSaving,
     projectRows,
     runRows,
+    projectTotal,
+    runTotal,
+    runTotalOverConsiderationYears,
     canSave,
     hasInvalidAmounts,
     updateAmount,
