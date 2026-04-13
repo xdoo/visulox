@@ -22,6 +22,7 @@ interface TenderRow {
 interface TenderSettingsRow {
   score_min: string | number
   score_max: string | number
+  consideration_years: string | number
   chart_palette: string[] | null
 }
 
@@ -86,7 +87,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     }
 
     const tenderSettingsResult = await client.query<TenderSettingsRow>(
-      'SELECT score_min, score_max, chart_palette FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1',
+      'SELECT score_min, score_max, consideration_years, chart_palette FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1',
       [tenderId]
     )
 

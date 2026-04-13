@@ -11,6 +11,7 @@ import type { UpdateTenderSettingsRequest, UpdateTenderSettingsResponse } from '
 interface TenderSettingsRow {
   score_min: string | number
   score_max: string | number
+  consideration_years: string | number
   chart_palette: string[] | null
 }
 
@@ -24,9 +25,11 @@ function normalizeRequest(body: Partial<UpdateTenderSettingsRequest> | null | un
   const chartPalette = Array.isArray(body?.chartPalette)
     ? body.chartPalette.map(color => String(color || '').trim())
     : [...defaultTenderSettings.chartPalette]
+  const considerationYears = Number(body?.considerationYears ?? defaultTenderSettings.considerationYears)
 
   return {
     scoreRange,
+    considerationYears,
     chartPalette
   }
 }
@@ -52,6 +55,13 @@ function validateRequest(payload: UpdateTenderSettingsRequest) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Die Farbpalette enthält ungültige Farbwerte.'
+    })
+  }
+
+  if (!Number.isFinite(payload.considerationYears) || payload.considerationYears < 1) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Der Betrachtungszeitraum ist ungültig.'
     })
   }
 }
@@ -85,12 +95,12 @@ export default defineEventHandler(async (event): Promise<UpdateTenderSettingsRes
     }
 
     const result = await client.query<TenderSettingsRow>(
-      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, chart_palette)
-       VALUES ($1, $2, $3, $4::text[])
+      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, consideration_years, chart_palette)
+       VALUES ($1, $2, $3, $4, $5::text[])
        ON CONFLICT (ausschreibung_id)
-       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, chart_palette = EXCLUDED.chart_palette
-       RETURNING score_min, score_max, chart_palette`,
-      [tenderId, payload.scoreRange[0], payload.scoreRange[1], payload.chartPalette]
+       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, consideration_years = EXCLUDED.consideration_years, chart_palette = EXCLUDED.chart_palette
+       RETURNING score_min, score_max, consideration_years, chart_palette`,
+      [tenderId, payload.scoreRange[0], payload.scoreRange[1], payload.considerationYears, payload.chartPalette]
     )
 
     await client.query('COMMIT')

@@ -5,9 +5,11 @@ export interface PaletteDialogRow {
   index: number
 }
 
-export function useTenderGeneralSettingsDialogs(scoreRange: () => [number, number]) {
+export function useTenderGeneralSettingsDialogs(scoreRange: () => [number, number], considerationYears: () => number) {
   const isScoreModalOpen = ref(false)
   const editingScoreRange = ref<[number, number]>([...scoreRange()] as [number, number])
+  const isConsiderationYearsModalOpen = ref(false)
+  const editingConsiderationYears = ref(considerationYears())
   const isColorModalOpen = ref(false)
   const editingPaletteIndex = ref<number | null>(null)
   const editingPaletteColor = ref('')
@@ -19,6 +21,15 @@ export function useTenderGeneralSettingsDialogs(scoreRange: () => [number, numbe
 
   function closeScoreModal() {
     isScoreModalOpen.value = false
+  }
+
+  function openConsiderationYearsModal() {
+    editingConsiderationYears.value = considerationYears()
+    isConsiderationYearsModalOpen.value = true
+  }
+
+  function closeConsiderationYearsModal() {
+    isConsiderationYearsModalOpen.value = false
   }
 
   function openPaletteModal(row: PaletteDialogRow) {
@@ -34,11 +45,15 @@ export function useTenderGeneralSettingsDialogs(scoreRange: () => [number, numbe
   return {
     isScoreModalOpen,
     editingScoreRange,
+    isConsiderationYearsModalOpen,
+    editingConsiderationYears,
     isColorModalOpen,
     editingPaletteIndex,
     editingPaletteColor,
     openScoreModal,
     closeScoreModal,
+    openConsiderationYearsModal,
+    closeConsiderationYearsModal,
     openPaletteModal,
     closePaletteModal
   }

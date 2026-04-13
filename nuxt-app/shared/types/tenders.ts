@@ -47,6 +47,7 @@ export interface TenderVendor {
 
 export interface TenderSettings {
   scoreRange: [number, number]
+  considerationYears: number
   chartPalette: string[]
 }
 
@@ -97,6 +98,7 @@ export interface SaveSectionQuestionsResponse {
 
 export interface UpdateTenderSettingsRequest {
   scoreRange: [number, number]
+  considerationYears: number
   chartPalette: string[]
 }
 
