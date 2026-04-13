@@ -11,5 +11,6 @@ export const defaultTenderChartPalette = [
 
 export const defaultTenderSettings: TenderSettings = {
   scoreRange: [0, 10],
+  considerationYears: 10,
   chartPalette: defaultTenderChartPalette
 }

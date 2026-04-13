@@ -12,16 +12,19 @@ export function normalizePaletteColor(value: string) {
 export function useTenderGeneralSettings(tenderId: string, settings: () => TenderSettings) {
   const { errorMessage, updateTenderSettings, clearError } = useTenderGeneralSettingsMutations(tenderId)
   const scoreRange = ref<[number, number]>([...settings().scoreRange] as [number, number])
+  const considerationYears = ref(settings().considerationYears)
   const chartPalette = ref<string[]>([...settings().chartPalette])
   const isSaving = ref(false)
 
   watch(settings, (nextSettings) => {
     scoreRange.value = [...nextSettings.scoreRange] as [number, number]
+    considerationYears.value = nextSettings.considerationYears
     chartPalette.value = [...nextSettings.chartPalette]
   }, { immediate: true, deep: true })
 
   const normalizedSettings = computed<TenderSettings>(() => ({
     scoreRange: [...scoreRange.value] as [number, number],
+    considerationYears: Number(considerationYears.value),
     chartPalette: chartPalette.value.map(normalizePaletteColor)
   }))
 
@@ -29,6 +32,10 @@ export function useTenderGeneralSettings(tenderId: string, settings: () => Tende
     const [scoreMin, scoreMax] = normalizedSettings.value.scoreRange
 
     if (scoreMin >= scoreMax) {
+      return false
+    }
+
+    if (!Number.isFinite(normalizedSettings.value.considerationYears) || normalizedSettings.value.considerationYears < 1) {
       return false
     }
 
@@ -66,6 +73,7 @@ export function useTenderGeneralSettings(tenderId: string, settings: () => Tende
   return {
     errorMessage,
     scoreRange,
+    considerationYears,
     chartPalette,
     isSaving,
     canSave,

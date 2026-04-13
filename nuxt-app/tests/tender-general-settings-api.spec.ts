@@ -43,6 +43,7 @@ describe('PATCH /api/tenders/:id/settings', () => {
         rows: [{
           score_min: 0,
           score_max: 20,
+          consideration_years: 12,
           chart_palette: ['#0D57A6', '#B47D00']
         }]
       })
@@ -52,6 +53,7 @@ describe('PATCH /api/tenders/:id/settings', () => {
     getPostgresClient.mockResolvedValue({ query, release })
     readBody.mockResolvedValue({
       scoreRange: [0, 20],
+      considerationYears: 12,
       chartPalette: ['#0D57A6', '#B47D00']
     })
 
@@ -67,17 +69,18 @@ describe('PATCH /api/tenders/:id/settings', () => {
     expect(query).toHaveBeenNthCalledWith(1, 'BEGIN')
     expect(query).toHaveBeenNthCalledWith(2, 'SELECT id FROM ausschreibungen WHERE id = $1 LIMIT 1', ['7'])
     expect(query).toHaveBeenNthCalledWith(3,
-      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, chart_palette)
-       VALUES ($1, $2, $3, $4::text[])
+      `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, consideration_years, chart_palette)
+       VALUES ($1, $2, $3, $4, $5::text[])
        ON CONFLICT (ausschreibung_id)
-       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, chart_palette = EXCLUDED.chart_palette
-       RETURNING score_min, score_max, chart_palette`,
-      ['7', 0, 20, ['#0D57A6', '#B47D00']]
+       DO UPDATE SET score_min = EXCLUDED.score_min, score_max = EXCLUDED.score_max, consideration_years = EXCLUDED.consideration_years, chart_palette = EXCLUDED.chart_palette
+       RETURNING score_min, score_max, consideration_years, chart_palette`,
+      ['7', 0, 20, 12, ['#0D57A6', '#B47D00']]
     )
     expect(query).toHaveBeenNthCalledWith(4, 'COMMIT')
     expect(response).toEqual({
       settings: {
         scoreRange: [0, 20],
+        considerationYears: 12,
         chartPalette: ['#0D57A6', '#B47D00']
       }
     })
@@ -87,6 +90,7 @@ describe('PATCH /api/tenders/:id/settings', () => {
   it('rejects invalid score ranges', async () => {
     readBody.mockResolvedValue({
       scoreRange: [10, 10],
+      considerationYears: 10,
       chartPalette: ['#0D57A6']
     })
 
@@ -101,6 +105,27 @@ describe('PATCH /api/tenders/:id/settings', () => {
     } as never)).rejects.toMatchObject({
       statusCode: 400,
       statusMessage: 'Die Bewertungsskala ist ungültig.'
+    })
+  })
+
+  it('rejects invalid consideration years', async () => {
+    readBody.mockResolvedValue({
+      scoreRange: [0, 10],
+      considerationYears: 0,
+      chartPalette: ['#0D57A6']
+    })
+
+    const { default: handler } = await import('../server/api/tenders/[id]/settings.patch')
+
+    await expect(handler({
+      context: {
+        params: {
+          id: '7'
+        }
+      }
+    } as never)).rejects.toMatchObject({
+      statusCode: 400,
+      statusMessage: 'Der Betrachtungszeitraum ist ungültig.'
     })
   })
 })

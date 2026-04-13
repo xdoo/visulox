@@ -40,10 +40,12 @@ describe('useTenderGeneralSettings', () => {
 
     const state = runInScope(() => useTenderGeneralSettings('7', () => ({
       scoreRange: [0, 10],
+      considerationYears: 10,
       chartPalette: ['#0D57A6']
     })))
 
     state.scoreRange.value = [2, 18]
+    state.considerationYears.value = 12
     state.updatePaletteColor(0, '#b47d00')
     state.addPaletteColor()
     state.updatePaletteColor(1, '083B73')
@@ -52,6 +54,7 @@ describe('useTenderGeneralSettings', () => {
 
     expect(updateTenderSettingsMock).toHaveBeenCalledWith({
       scoreRange: [2, 18],
+      considerationYears: 12,
       chartPalette: ['#B47D00', '#083B73']
     })
   })

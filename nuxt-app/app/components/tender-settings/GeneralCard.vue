@@ -11,6 +11,7 @@ const props = defineProps<{
 const {
   errorMessage,
   scoreRange,
+  considerationYears,
   chartPalette,
   isSaving,
   updatePaletteColor,
@@ -27,14 +28,18 @@ interface PaletteRow {
 const {
   isScoreModalOpen,
   editingScoreRange,
+  isConsiderationYearsModalOpen,
+  editingConsiderationYears,
   isColorModalOpen,
   editingPaletteIndex,
   editingPaletteColor,
   openScoreModal,
   closeScoreModal,
+  openConsiderationYearsModal,
+  closeConsiderationYearsModal,
   openPaletteModal,
   closePaletteModal
-} = useTenderGeneralSettingsDialogs(() => scoreRange.value)
+} = useTenderGeneralSettingsDialogs(() => scoreRange.value, () => considerationYears.value)
 
 const paletteColumns: TableColumn<PaletteRow>[] = [
   {
@@ -76,6 +81,12 @@ async function saveScoreRange() {
   await save()
 }
 
+async function saveConsiderationYears() {
+  considerationYears.value = editingConsiderationYears.value
+  closeConsiderationYearsModal()
+  await save()
+}
+
 async function savePaletteColor() {
   if (editingPaletteIndex.value === null) {
     return
@@ -91,12 +102,33 @@ async function savePaletteColor() {
   <div class="grid gap-6 xl:grid-cols-2">
     <UCard>
       <template #header>
-        <div class="flex items-start justify-between gap-4">
-          <div class="space-y-1">
-            <h3 class="font-semibold">Bewertungsskala</h3>
-            <p class="text-sm ui-text-muted">
-              Legen Sie fest, in welchem Bereich Bewertungen für diese Ausschreibung erfolgen.
-            </p>
+        <div class="space-y-1">
+          <h3 class="font-semibold">Allgemeine Bewertungsparameter</h3>
+          <p class="text-sm ui-text-muted">
+            Legen Sie zentrale Rahmenwerte für Bewertung und Betrachtungszeitraum dieser Ausschreibung fest.
+          </p>
+        </div>
+      </template>
+
+      <div class="space-y-4">
+        <div class="flex items-start justify-between gap-4 rounded-lg border ui-border p-4">
+          <div class="flex-1 space-y-4">
+            <div class="space-y-1">
+              <h4 class="font-medium">Bewertungsskala</h4>
+              <p class="text-sm ui-text-muted">
+                Legen Sie fest, in welchem Bereich Bewertungen für diese Ausschreibung erfolgen.
+              </p>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <UFormField label="Von">
+                <UInput :model-value="String(scoreRange[0])" disabled />
+              </UFormField>
+
+              <UFormField label="Bis">
+                <UInput :model-value="String(scoreRange[1])" disabled />
+              </UFormField>
+            </div>
           </div>
 
           <UTooltip text="Bewertungsskala bearbeiten">
@@ -109,21 +141,34 @@ async function savePaletteColor() {
             />
           </UTooltip>
         </div>
-      </template>
 
-      <div class="space-y-4">
-        <div class="grid gap-4 md:grid-cols-2">
-          <UFormField label="Von">
-            <UInput :model-value="String(scoreRange[0])" disabled />
-          </UFormField>
+        <div class="flex items-start justify-between gap-4 rounded-lg border ui-border p-4">
+          <div class="flex-1 space-y-4">
+            <div class="space-y-1">
+              <h4 class="font-medium">Betrachtungszeitraum</h4>
+              <p class="text-sm ui-text-muted">
+                Legen Sie fest, über wie viele Jahre nach Projektende die Kosten betrachtet werden.
+              </p>
+            </div>
 
-          <UFormField label="Bis">
-            <UInput :model-value="String(scoreRange[1])" disabled />
-          </UFormField>
+            <UFormField label="Zeitraum">
+              <UInput :model-value="`${considerationYears} Jahre`" disabled />
+            </UFormField>
+          </div>
+
+          <UTooltip text="Betrachtungszeitraum bearbeiten">
+            <UButton
+              icon="i-lucide-calendar-range"
+              color="neutral"
+              variant="outline"
+              aria-label="Betrachtungszeitraum bearbeiten"
+              @click="openConsiderationYearsModal"
+            />
+          </UTooltip>
         </div>
 
         <p class="text-sm ui-text-muted">
-          Die Grenzen der Bewertungsskala werden im Bearbeitungsdialog über einen Slider angepasst.
+          Bewertungsskala und Betrachtungszeitraum werden jeweils in einem eigenen Bearbeitungsdialog per Slider angepasst.
         </p>
       </div>
     </UCard>
@@ -199,6 +244,13 @@ async function savePaletteColor() {
       v-model:score-range="editingScoreRange"
       :is-saving="isSaving"
       @submit="saveScoreRange"
+    />
+
+    <TenderSettingsConsiderationYearsModal
+      v-model:open="isConsiderationYearsModalOpen"
+      v-model:consideration-years="editingConsiderationYears"
+      :is-saving="isSaving"
+      @submit="saveConsiderationYears"
     />
 
     <TenderSettingsPaletteColorModal
