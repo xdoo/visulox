@@ -50,7 +50,7 @@ const hasAnyCosts = computed(() => hasProjectCosts.value || hasRunCosts.value ||
       </p>
 
       <div v-if="hasAnyCosts" class="space-y-6">
-        <UCard class="rounded-lg border ui-border bg-gray-50/50">
+        <UCard>
           <template #header>
             <div class="space-y-1">
               <h4 class="font-semibold">
@@ -62,12 +62,13 @@ const hasAnyCosts = computed(() => hasProjectCosts.value || hasRunCosts.value ||
             </div>
           </template>
 
-          <TenderCostOverviewChart
-            v-if="hasCombinedCosts"
-            kind="combined"
-            :rows="combinedRows"
-            :palette="props.palette"
-          />
+          <div v-if="hasCombinedCosts" class="rounded-lg border ui-border p-4 bg-gray-50/50">
+            <TenderCostOverviewChart
+              kind="combined"
+              :rows="combinedRows"
+              :palette="props.palette"
+            />
+          </div>
 
           <div
             v-else
@@ -78,59 +79,61 @@ const hasAnyCosts = computed(() => hasProjectCosts.value || hasRunCosts.value ||
         </UCard>
 
         <div class="grid gap-6 xl:grid-cols-2">
-        <UCard class="rounded-lg border ui-border bg-gray-50/50">
-          <template #header>
-            <div class="space-y-1">
-              <h4 class="font-semibold">
-                Projektkosten
-              </h4>
-              <p class="text-sm ui-text-muted">
-                Einmalige Projekt- und Lizenzkosten im direkten Anbieter-Vergleich.
-              </p>
+          <UCard>
+            <template #header>
+              <div class="space-y-1">
+                <h4 class="font-semibold">
+                  Projektkosten
+                </h4>
+                <p class="text-sm ui-text-muted">
+                  Einmalige Projekt- und Lizenzkosten im direkten Anbieter-Vergleich.
+                </p>
+              </div>
+            </template>
+
+            <div v-if="hasProjectCosts" class="rounded-lg border ui-border p-4 bg-gray-50/50">
+              <TenderCostOverviewChart
+                kind="project"
+                :rows="projectRows"
+                :palette="props.palette"
+              />
             </div>
-          </template>
 
-          <TenderCostOverviewChart
-            v-if="hasProjectCosts"
-            kind="project"
-            :rows="projectRows"
-            :palette="props.palette"
-          />
-
-          <div
-            v-else
-            class="flex h-64 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400"
-          >
-            Es wurden noch keine Projektkosten erfasst.
-          </div>
-        </UCard>
-
-        <UCard class="rounded-lg border ui-border bg-gray-50/50">
-          <template #header>
-            <div class="space-y-1">
-              <h4 class="font-semibold">
-                Run-Kosten
-              </h4>
-              <p class="text-sm ui-text-muted">
-                Laufende Kosten über {{ props.considerationYears }} Jahre im Anbieter-Vergleich.
-              </p>
+            <div
+              v-else
+              class="flex h-64 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400"
+            >
+              Es wurden noch keine Projektkosten erfasst.
             </div>
-          </template>
+          </UCard>
 
-          <TenderCostOverviewChart
-            v-if="hasRunCosts"
-            kind="run"
-            :rows="runRows"
-            :palette="props.palette"
-          />
+          <UCard>
+            <template #header>
+              <div class="space-y-1">
+                <h4 class="font-semibold">
+                  Run-Kosten
+                </h4>
+                <p class="text-sm ui-text-muted">
+                  Laufende Kosten über {{ props.considerationYears }} Jahre im Anbieter-Vergleich.
+                </p>
+              </div>
+            </template>
 
-          <div
-            v-else
-            class="flex h-64 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400"
-          >
-            Es wurden noch keine Run-Kosten erfasst.
-          </div>
-        </UCard>
+            <div v-if="hasRunCosts" class="rounded-lg border ui-border p-4 bg-gray-50/50">
+              <TenderCostOverviewChart
+                kind="run"
+                :rows="runRows"
+                :palette="props.palette"
+              />
+            </div>
+
+            <div
+              v-else
+              class="flex h-64 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400"
+            >
+              Es wurden noch keine Run-Kosten erfasst.
+            </div>
+          </UCard>
         </div>
       </div>
 

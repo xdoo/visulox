@@ -50,7 +50,7 @@ const hasQuestions = computed(() => {
         Visualisierung der Erfüllung pro Sektion für {{ props.vendor.name }}. Die Balkenlänge (blau) entspricht dem gewichteten Beitrag zur Gesamtwertung.
       </p>
 
-      <div v-if="hasQuestions" class="rounded-lg border ui-border p-4">
+      <div v-if="hasQuestions" class="rounded-lg border ui-border p-4 bg-gray-50/50">
         <TenderFulfillmentChart :data="chartData" />
       </div>
 
