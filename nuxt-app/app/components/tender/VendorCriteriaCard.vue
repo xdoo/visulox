@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { TenderSection, TenderSettings, TenderVendor } from '../../../shared/types/tenders'
 import { calculateSectionFulfillmentPercentage } from '../../composables/useCriteriaSectionFulfillment'
 
@@ -7,6 +8,8 @@ const props = defineProps<{
   sections: TenderSection[]
   scoreRange: TenderSettings['scoreRange']
 }>()
+
+const chartRef = ref<{ downloadPng: (filename: string) => void, downloadSvg: (filename: string) => void } | null>(null)
 
 const chartData = computed(() => {
   return props.sections.map(section => {
@@ -33,6 +36,16 @@ const hasQuestions = computed(() => {
     return (vendorEntry?.questions.length || 0) > 0
   })
 })
+
+function downloadChart() {
+  const filename = `${props.vendor.name.toLowerCase().replace(/\s+/g, '-')}-bewertung.png`
+  chartRef.value?.downloadPng(filename)
+}
+
+function downloadChartSvg() {
+  const filename = `${props.vendor.name.toLowerCase().replace(/\s+/g, '-')}-bewertung.svg`
+  chartRef.value?.downloadSvg(filename)
+}
 </script>
 
 <template>
@@ -42,6 +55,34 @@ const hasQuestions = computed(() => {
         <h3 class="font-semibold">
           {{ props.vendor.name }} - Bewertung
         </h3>
+
+        <div class="flex items-center gap-2">
+          <UTooltip text="Diagramm als PNG herunterladen">
+            <UButton
+              icon="i-lucide-image-down"
+              color="neutral"
+              variant="outline"
+              aria-label="PNG herunterladen"
+              :disabled="!hasQuestions"
+              @click="downloadChart"
+            >
+              PNG
+            </UButton>
+          </UTooltip>
+
+          <UTooltip text="Diagramm als SVG herunterladen">
+            <UButton
+              icon="i-lucide-image-down"
+              color="neutral"
+              variant="outline"
+              aria-label="SVG herunterladen"
+              :disabled="!hasQuestions"
+              @click="downloadChartSvg"
+            >
+              SVG
+            </UButton>
+          </UTooltip>
+        </div>
       </div>
     </template>
 
@@ -50,8 +91,8 @@ const hasQuestions = computed(() => {
         Visualisierung der Erfüllung pro Sektion für {{ props.vendor.name }}. Die Balkenlänge (blau) entspricht dem gewichteten Beitrag zur Gesamtwertung.
       </p>
 
-      <div v-if="hasQuestions" class="rounded-lg border ui-border p-4">
-        <TenderFulfillmentChart :data="chartData" />
+      <div v-if="hasQuestions" class="rounded-lg border ui-border p-4 bg-gray-50/50">
+        <TenderFulfillmentChart ref="chartRef" :data="chartData" />
       </div>
 
       <div

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { TenderSection, TenderSettings, TenderVendor } from '../../../shared/types/tenders'
 import {
   calculateSectionContributionPercentage,
@@ -11,6 +12,8 @@ const props = defineProps<{
   scoreRange: TenderSettings['scoreRange']
   palette?: string[]
 }>()
+
+const chartRef = ref<{ downloadPng: (filename: string) => void, downloadSvg: (filename: string) => void } | null>(null)
 
 const vendorScores = computed(() => {
   return props.vendors.map(vendor => {
@@ -55,6 +58,14 @@ const hasAnyQuestions = computed(() => {
     section.questionsByVendor.some(entry => entry.questions.length > 0)
   )
 })
+
+function downloadChart() {
+  chartRef.value?.downloadPng('anbietervergleich.png')
+}
+
+function downloadChartSvg() {
+  chartRef.value?.downloadSvg('anbietervergleich.svg')
+}
 </script>
 
 <template>
@@ -64,6 +75,34 @@ const hasAnyQuestions = computed(() => {
         <h3 class="font-semibold text-lg">
           Anbietervergleich
         </h3>
+
+        <div class="flex items-center gap-2">
+          <UTooltip text="Diagramm als PNG herunterladen">
+            <UButton
+              icon="i-lucide-image-down"
+              color="neutral"
+              variant="outline"
+              aria-label="PNG herunterladen"
+              :disabled="!hasAnyQuestions"
+              @click="downloadChart"
+            >
+              PNG
+            </UButton>
+          </UTooltip>
+
+          <UTooltip text="Diagramm als SVG herunterladen">
+            <UButton
+              icon="i-lucide-image-down"
+              color="neutral"
+              variant="outline"
+              aria-label="SVG herunterladen"
+              :disabled="!hasAnyQuestions"
+              @click="downloadChartSvg"
+            >
+              SVG
+            </UButton>
+          </UTooltip>
+        </div>
       </div>
     </template>
 
@@ -73,7 +112,7 @@ const hasAnyQuestions = computed(() => {
       </p>
 
       <div v-if="hasAnyQuestions" class="rounded-lg border ui-border p-4 bg-gray-50/50">
-        <TenderOverviewChart :scores="vendorScores" :palette="palette" />
+        <TenderOverviewChart ref="chartRef" :scores="vendorScores" :palette="palette" />
       </div>
 
       <div
