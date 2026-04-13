@@ -75,8 +75,6 @@ const option = computed<EChartsOption>(() => {
         color: chartPalette.value[index % chartPalette.value.length].textColor,
         fontSize: 11,
         fontWeight: 'normal',
-        textBorderColor: 'rgba(32, 32, 32, 0.35)',
-        textBorderWidth: 2,
         formatter: (params: DefaultLabelFormatterCallbackParams) => {
           const value = typeof params.value === 'number' ? params.value : Number(params.value)
 

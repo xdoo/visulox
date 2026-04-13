@@ -89,8 +89,6 @@ const option = computed<EChartsOption>(() => {
         color: chartPalette.value[index % chartPalette.value.length].textColor,
         fontSize: 11,
         fontWeight: 'normal',
-        textBorderColor: 'rgba(32, 32, 32, 0.4)',
-        textBorderWidth: 2,
         formatter: (params: any) => {
           const fulfillment = params.data?.meta?.fulfillment
 
