@@ -19,8 +19,8 @@ export interface TenderValueScoreRow {
   utilityPercentage: number
   normalizedUtility: number
   totalCost: number | null
-  costFactor: number | null
-  valueScore: number | null
+  normalizedCost: number | null
+  score: number | null
   rank: number | null
   hasQuestions: boolean
 }
@@ -40,7 +40,7 @@ export function formatValueScore(value: number | null) {
   }).format(value)
 }
 
-export function formatCostFactor(value: number | null) {
+export function formatNormalizedCost(value: number | null) {
   if (value === null) {
     return 'Nicht berechenbar'
   }
@@ -71,8 +71,8 @@ export function buildTenderValueScoreRows(
   const combinedCostRows = buildCombinedVendorCostOverviewRows(costRows)
   const totalCostByVendorId = new Map(combinedCostRows.map((row) => [row.vendorId, row.total]))
 
-  const maxCost = Math.max(
-    0,
+  const cheapestCost = Math.min(
+    Number.POSITIVE_INFINITY,
     ...combinedCostRows
       .map((row) => row.total)
       .filter((total) => Number.isFinite(total) && total > 0)
@@ -98,9 +98,9 @@ export function buildTenderValueScoreRows(
 
     const normalizedUtility = roundValue(utilityPercentage / 100)
     const totalCost = totalCostByVendorId.get(vendor.id) || 0
-    const hasValidCost = Number.isFinite(totalCost) && totalCost > 0 && maxCost > 0
-    const costFactor = hasValidCost ? roundValue(maxCost / totalCost) : null
-    const valueScore = costFactor === null ? null : roundValue(normalizedUtility * costFactor)
+    const hasValidCost = Number.isFinite(totalCost) && totalCost > 0 && Number.isFinite(cheapestCost)
+    const normalizedCost = hasValidCost ? roundValue(cheapestCost / totalCost) : null
+    const score = normalizedCost === null ? null : roundValue((0.5 * normalizedUtility) + (0.5 * normalizedCost))
 
     return {
       vendorId: vendor.id,
@@ -108,28 +108,28 @@ export function buildTenderValueScoreRows(
       utilityPercentage: roundValue(utilityPercentage, 2),
       normalizedUtility,
       totalCost: hasValidCost ? roundValue(totalCost, 2) : null,
-      costFactor,
-      valueScore,
+      normalizedCost,
+      score,
       rank: null,
       hasQuestions
     }
   })
 
   const sortedRows = [...rows].sort((left, right) => {
-    if (left.valueScore === null && right.valueScore === null) {
+    if (left.score === null && right.score === null) {
       return left.vendorName.localeCompare(right.vendorName, 'de')
     }
 
-    if (left.valueScore === null) {
+    if (left.score === null) {
       return 1
     }
 
-    if (right.valueScore === null) {
+    if (right.score === null) {
       return -1
     }
 
-    if (right.valueScore !== left.valueScore) {
-      return right.valueScore - left.valueScore
+    if (right.score !== left.score) {
+      return right.score - left.score
     }
 
     if (right.utilityPercentage !== left.utilityPercentage) {
@@ -141,6 +141,6 @@ export function buildTenderValueScoreRows(
 
   return sortedRows.map((row, index) => ({
     ...row,
-    rank: row.valueScore === null ? null : index + 1
+    rank: row.score === null ? null : index + 1
   }))
 }

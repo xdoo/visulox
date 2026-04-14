@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildTenderValueScoreRows,
-  formatCostFactor,
+  formatNormalizedCost,
   formatUtilityPercentage,
   formatValueScore,
   formatValueScoreCost
@@ -87,8 +87,8 @@ describe('useTenderValueScore', () => {
         utilityPercentage: 62,
         normalizedUtility: 0.62,
         totalCost: 4_000_000,
-        costFactor: 1.5,
-        valueScore: 0.93,
+        normalizedCost: 1,
+        score: 0.81,
         rank: 1,
         hasQuestions: true
       },
@@ -98,8 +98,8 @@ describe('useTenderValueScore', () => {
         utilityPercentage: 79.2,
         normalizedUtility: 0.792,
         totalCost: 6_000_000,
-        costFactor: 1,
-        valueScore: 0.792,
+        normalizedCost: 0.6667,
+        score: 0.7293,
         rank: 2,
         hasQuestions: true
       },
@@ -109,8 +109,8 @@ describe('useTenderValueScore', () => {
         utilityPercentage: 0,
         normalizedUtility: 0,
         totalCost: null,
-        costFactor: null,
-        valueScore: null,
+        normalizedCost: null,
+        score: null,
         rank: null,
         hasQuestions: false
       }
@@ -119,7 +119,7 @@ describe('useTenderValueScore', () => {
 
   it('formats display values for the table', () => {
     expect(formatUtilityPercentage(78.3)).toBe('78%')
-    expect(formatCostFactor(1.654)).toBe('1,65')
+    expect(formatNormalizedCost(0.8879)).toBe('0,89')
     expect(formatValueScore(0.9275)).toBe('0,93')
     expect(formatValueScoreCost(10000000)).toBe('10.000.000 €')
     expect(formatValueScore(null)).toBe('Nicht berechenbar')

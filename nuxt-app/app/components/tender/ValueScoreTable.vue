@@ -4,7 +4,7 @@ import type { TableColumn } from '@nuxt/ui'
 
 import {
   buildTenderValueScoreRows,
-  formatCostFactor,
+  formatNormalizedCost,
   formatUtilityPercentage,
   formatValueScore,
   formatValueScoreCost
@@ -63,8 +63,8 @@ const columns: TableColumn<ReturnType<typeof buildTenderValueScoreRows>[number]>
     }
   },
   {
-    accessorKey: 'costFactor',
-    header: 'Kostenfaktor',
+    accessorKey: 'normalizedCost',
+    header: 'Kosten normiert',
     meta: {
       class: {
         th: 'w-32 text-right',
@@ -73,8 +73,8 @@ const columns: TableColumn<ReturnType<typeof buildTenderValueScoreRows>[number]>
     }
   },
   {
-    accessorKey: 'valueScore',
-    header: 'Value Score',
+    accessorKey: 'score',
+    header: 'Score',
     meta: {
       class: {
         th: 'w-32 text-right',
@@ -93,8 +93,8 @@ const rows = computed(() => buildTenderValueScoreRows(
   props.considerationYears
 ))
 
-const hasRankableRows = computed(() => rows.value.some((row) => row.valueScore !== null))
-const hasMissingCostRows = computed(() => rows.value.some((row) => row.valueScore === null))
+const hasRankableRows = computed(() => rows.value.some((row) => row.score !== null))
+const hasMissingCostRows = computed(() => rows.value.some((row) => row.score === null))
 </script>
 
 <template>
@@ -118,7 +118,7 @@ const hasMissingCostRows = computed(() => rows.value.some((row) => row.valueScor
         :ui="{
           icon: 'size-11'
         }"
-        description="Value Score = Nutzen x Kostenfaktor. Der Nutzen basiert auf der gewichteten Kriterienerfüllung, der Kostenfaktor auf dem Verhältnis aus maximalen Gesamtkosten zu den Kosten des jeweiligen Anbieters."
+        description="Score = 0,5 x Nutzen_norm + 0,5 x Kosten_norm. Der Nutzen wird aus der gewichteten Kriterienerfüllung auf 0 bis 1 normiert. Die Kosten werden relativ zum günstigsten Anbieter normiert."
         title="Berechnungslogik"
       />
 
@@ -154,12 +154,12 @@ const hasMissingCostRows = computed(() => rows.value.some((row) => row.valueScor
           {{ formatValueScoreCost(row.original.totalCost) }}
         </template>
 
-        <template #costFactor-cell="{ row }">
-          {{ formatCostFactor(row.original.costFactor) }}
+        <template #normalizedCost-cell="{ row }">
+          {{ formatNormalizedCost(row.original.normalizedCost) }}
         </template>
 
-        <template #valueScore-cell="{ row }">
-          {{ formatValueScore(row.original.valueScore) }}
+        <template #score-cell="{ row }">
+          {{ formatValueScore(row.original.score) }}
         </template>
       </UTable>
     </div>
