@@ -112,11 +112,31 @@ export interface SaveSectionQuestionsResponse {
 export interface UpdateTenderSettingsRequest {
   scoreRange: [number, number]
   considerationYears: number
-  chartPalette: string[]
+  chartPalette: TenderChartPaletteEntry[]
 }
 
 export interface UpdateTenderSettingsResponse {
   settings: TenderSettings
+}
+
+export interface UpdateTenderRequest {
+  name: string
+}
+
+export interface UpdateTenderResponse {
+  tender: TenderListItem
+}
+
+export interface CloneTenderRequest {
+  name: string
+}
+
+export interface CloneTenderResponse {
+  tender: TenderListItem
+}
+
+export interface DeleteTenderResponse {
+  tender: TenderListItem
 }
 
 export interface CreateTenderCostBlockRequest {

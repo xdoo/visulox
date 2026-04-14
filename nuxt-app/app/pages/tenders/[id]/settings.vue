@@ -71,6 +71,7 @@ useSeoMeta({
           <TenderSettingsGeneralCard
             v-if="item.value === 'general'"
             :tender-id="tenderId"
+            :tender-name="tender?.name || ''"
             :settings="tender?.settings || defaultTenderSettings"
           />
 

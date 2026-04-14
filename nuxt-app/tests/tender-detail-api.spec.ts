@@ -93,7 +93,7 @@ describe('GET /api/tenders/:id', () => {
       }
     } as never)
 
-    expect(query).toHaveBeenNthCalledWith(1, 'SELECT id, name FROM ausschreibungen WHERE id = $1 LIMIT 1', ['2'])
+    expect(query).toHaveBeenNthCalledWith(1, 'SELECT id, name FROM ausschreibungen WHERE id = $1 AND deleted_at IS NULL LIMIT 1', ['2'])
     expect(query).toHaveBeenNthCalledWith(2, 'SELECT score_min, score_max, consideration_years FROM ausschreibung_settings WHERE ausschreibung_id = $1 LIMIT 1', ['2'])
     expect(query).toHaveBeenNthCalledWith(3,
       `SELECT fill_color, text_color

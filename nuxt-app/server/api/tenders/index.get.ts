@@ -16,7 +16,7 @@ export default defineEventHandler(async (event): Promise<TenderListItem[]> => {
 
   try {
     const result = await client.query<TenderNavigationRow>(
-      'SELECT id, name FROM ausschreibungen ORDER BY created_at DESC, id DESC'
+      'SELECT id, name FROM ausschreibungen WHERE deleted_at IS NULL ORDER BY created_at DESC, id DESC'
     )
 
     return result.rows.map(row => ({
