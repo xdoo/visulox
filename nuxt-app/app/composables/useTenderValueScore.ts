@@ -20,7 +20,9 @@ export interface TenderValueScoreRow {
   normalizedUtility: number
   totalCost: number | null
   normalizedCost: number | null
-  score: number | null
+  balancedScore: number | null
+  costFocusScore: number | null
+  utilityFocusScore: number | null
   rank: number | null
   hasQuestions: boolean
 }
@@ -38,6 +40,30 @@ export function formatValueScore(value: number | null) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(value)
+}
+
+export function calculateWeightedScore(
+  normalizedUtility: number,
+  normalizedCost: number | null,
+  utilityWeight: number,
+  costWeight: number
+) {
+  if (normalizedCost === null) {
+    return null
+  }
+
+  return roundValue((utilityWeight * normalizedUtility) + (costWeight * normalizedCost))
+}
+
+export function getHighestScoreValue(
+  rows: TenderValueScoreRow[],
+  key: 'balancedScore' | 'costFocusScore' | 'utilityFocusScore'
+) {
+  const scores = rows
+    .map((row) => row[key])
+    .filter((value): value is number => value !== null)
+
+  return scores.length > 0 ? Math.max(...scores) : null
 }
 
 export function formatNormalizedCost(value: number | null) {
@@ -100,7 +126,9 @@ export function buildTenderValueScoreRows(
     const totalCost = totalCostByVendorId.get(vendor.id) || 0
     const hasValidCost = Number.isFinite(totalCost) && totalCost > 0 && Number.isFinite(cheapestCost)
     const normalizedCost = hasValidCost ? roundValue(cheapestCost / totalCost) : null
-    const score = normalizedCost === null ? null : roundValue((0.5 * normalizedUtility) + (0.5 * normalizedCost))
+    const balancedScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.5, 0.5)
+    const costFocusScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.4, 0.6)
+    const utilityFocusScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.6, 0.4)
 
     return {
       vendorId: vendor.id,
@@ -109,27 +137,29 @@ export function buildTenderValueScoreRows(
       normalizedUtility,
       totalCost: hasValidCost ? roundValue(totalCost, 2) : null,
       normalizedCost,
-      score,
+      balancedScore,
+      costFocusScore,
+      utilityFocusScore,
       rank: null,
       hasQuestions
     }
   })
 
   const sortedRows = [...rows].sort((left, right) => {
-    if (left.score === null && right.score === null) {
+    if (left.balancedScore === null && right.balancedScore === null) {
       return left.vendorName.localeCompare(right.vendorName, 'de')
     }
 
-    if (left.score === null) {
+    if (left.balancedScore === null) {
       return 1
     }
 
-    if (right.score === null) {
+    if (right.balancedScore === null) {
       return -1
     }
 
-    if (right.score !== left.score) {
-      return right.score - left.score
+    if (right.balancedScore !== left.balancedScore) {
+      return right.balancedScore - left.balancedScore
     }
 
     if (right.utilityPercentage !== left.utilityPercentage) {
@@ -141,6 +171,6 @@ export function buildTenderValueScoreRows(
 
   return sortedRows.map((row, index) => ({
     ...row,
-    rank: row.score === null ? null : index + 1
+    rank: row.balancedScore === null ? null : index + 1
   }))
 }
