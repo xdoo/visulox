@@ -21,7 +21,7 @@ type Queryable = Pick<PoolClient, 'query'>
 
 export async function loadTender(client: Queryable, tenderId: string) {
   const result = await client.query<TenderRow>(
-    'SELECT id FROM ausschreibungen WHERE id = $1 LIMIT 1',
+    'SELECT id FROM ausschreibungen WHERE id = $1 AND deleted_at IS NULL LIMIT 1',
     [tenderId]
   )
 

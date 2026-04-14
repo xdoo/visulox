@@ -85,7 +85,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
 
   try {
     const tenderResult = await client.query<TenderRow>(
-      'SELECT id, name FROM ausschreibungen WHERE id = $1 LIMIT 1',
+      'SELECT id, name FROM ausschreibungen WHERE id = $1 AND deleted_at IS NULL LIMIT 1',
       [tenderId]
     )
 

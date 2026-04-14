@@ -78,7 +78,7 @@ describe('PATCH /api/tenders/:id/settings', () => {
     } as never)
 
     expect(query).toHaveBeenNthCalledWith(1, 'BEGIN')
-    expect(query).toHaveBeenNthCalledWith(2, 'SELECT id FROM ausschreibungen WHERE id = $1 LIMIT 1', ['7'])
+    expect(query).toHaveBeenNthCalledWith(2, 'SELECT id FROM ausschreibungen WHERE id = $1 AND deleted_at IS NULL LIMIT 1', ['7'])
     expect(query).toHaveBeenNthCalledWith(3,
       `INSERT INTO ausschreibung_settings (ausschreibung_id, score_min, score_max, consideration_years)
        VALUES ($1, $2, $3, $4)

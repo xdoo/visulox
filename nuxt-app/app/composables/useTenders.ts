@@ -36,11 +36,23 @@ export function useTenders(fetcher: FetchTenders = $fetch as FetchTenders) {
     items.value = [item, ...items.value.filter(existingItem => existingItem.id !== item.id)]
   }
 
+  function updateTender(item: TenderListItem) {
+    items.value = items.value.map((existingItem) => (
+      existingItem.id === item.id ? item : existingItem
+    ))
+  }
+
+  function removeTender(tenderId: string) {
+    items.value = items.value.filter((item) => item.id !== tenderId)
+  }
+
   return {
     items,
     latestTenderName,
     loadTenders,
     addTender,
+    updateTender,
+    removeTender,
     getTenderPath,
     findTenderById
   }
