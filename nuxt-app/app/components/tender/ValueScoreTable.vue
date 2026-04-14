@@ -114,8 +114,12 @@ const hasMissingCostRows = computed(() => rows.value.some((row) => row.valueScor
       <UAlert
         color="neutral"
         variant="subtle"
-        title="Berechnungslogik"
+        icon="i-lucide-calculator"
+        :ui="{
+          icon: 'size-11'
+        }"
         description="Value Score = Nutzen x Kostenfaktor. Der Nutzen basiert auf der gewichteten Kriterienerfüllung, der Kostenfaktor auf dem Verhältnis aus maximalen Gesamtkosten zu den Kosten des jeweiligen Anbieters."
+        title="Berechnungslogik"
       />
 
       <UAlert
