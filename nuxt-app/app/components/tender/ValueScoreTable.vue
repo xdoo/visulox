@@ -7,7 +7,8 @@ import {
   formatNormalizedCost,
   formatUtilityPercentage,
   formatValueScore,
-  formatValueScoreCost
+  formatValueScoreCost,
+  getHighestScoreValue
 } from '../../composables/useTenderValueScore'
 
 import type {
@@ -73,12 +74,32 @@ const columns: TableColumn<ReturnType<typeof buildTenderValueScoreRows>[number]>
     }
   },
   {
-    accessorKey: 'score',
-    header: 'Score',
+    accessorKey: 'balancedScore',
+    header: 'Score (Balanced)',
     meta: {
       class: {
-        th: 'w-32 text-right',
-        td: 'w-32 text-right font-semibold'
+        th: 'w-36 text-right',
+        td: 'w-36 text-right'
+      }
+    }
+  },
+  {
+    accessorKey: 'costFocusScore',
+    header: 'Score (Kostenfokus)',
+    meta: {
+      class: {
+        th: 'w-40 text-right',
+        td: 'w-40 text-right'
+      }
+    }
+  },
+  {
+    accessorKey: 'utilityFocusScore',
+    header: 'Score (Nutzenfokus)',
+    meta: {
+      class: {
+        th: 'w-40 text-right',
+        td: 'w-40 text-right'
       }
     }
   }
@@ -93,8 +114,18 @@ const rows = computed(() => buildTenderValueScoreRows(
   props.considerationYears
 ))
 
-const hasRankableRows = computed(() => rows.value.some((row) => row.score !== null))
-const hasMissingCostRows = computed(() => rows.value.some((row) => row.score === null))
+const hasRankableRows = computed(() => rows.value.some((row) => row.balancedScore !== null))
+const hasMissingCostRows = computed(() => rows.value.some((row) => row.balancedScore === null))
+const highestBalancedScore = computed(() => getHighestScoreValue(rows.value, 'balancedScore'))
+const highestCostFocusScore = computed(() => getHighestScoreValue(rows.value, 'costFocusScore'))
+const highestUtilityFocusScore = computed(() => getHighestScoreValue(rows.value, 'utilityFocusScore'))
+
+function getScoreClass(
+  value: number | null,
+  highestValue: number | null
+) {
+  return value !== null && highestValue !== null && value === highestValue ? 'font-semibold' : ''
+}
 </script>
 
 <template>
@@ -118,7 +149,7 @@ const hasMissingCostRows = computed(() => rows.value.some((row) => row.score ===
         :ui="{
           icon: 'size-11'
         }"
-        description="Score = 0,5 x Nutzen_norm + 0,5 x Kosten_norm. Der Nutzen wird aus der gewichteten Kriterienerfüllung auf 0 bis 1 normiert. Die Kosten werden relativ zum günstigsten Anbieter normiert."
+        description="Score (Balanced) = 0,5 x Nutzen_norm + 0,5 x Kosten_norm. Zusätzlich werden ein Kostenfokus mit 40/60 und ein Nutzenfokus mit 60/40 berechnet. Sortiert wird weiterhin nur nach dem Balanced Score."
         title="Berechnungslogik"
       />
 
@@ -158,8 +189,22 @@ const hasMissingCostRows = computed(() => rows.value.some((row) => row.score ===
           {{ formatNormalizedCost(row.original.normalizedCost) }}
         </template>
 
-        <template #score-cell="{ row }">
-          {{ formatValueScore(row.original.score) }}
+        <template #balancedScore-cell="{ row }">
+          <span :class="getScoreClass(row.original.balancedScore, highestBalancedScore)">
+            {{ formatValueScore(row.original.balancedScore) }}
+          </span>
+        </template>
+
+        <template #costFocusScore-cell="{ row }">
+          <span :class="getScoreClass(row.original.costFocusScore, highestCostFocusScore)">
+            {{ formatValueScore(row.original.costFocusScore) }}
+          </span>
+        </template>
+
+        <template #utilityFocusScore-cell="{ row }">
+          <span :class="getScoreClass(row.original.utilityFocusScore, highestUtilityFocusScore)">
+            {{ formatValueScore(row.original.utilityFocusScore) }}
+          </span>
         </template>
       </UTable>
     </div>
