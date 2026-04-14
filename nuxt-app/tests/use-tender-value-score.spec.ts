@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildTenderValueScoreRows,
+  buildTenderValueBubblePoints,
+  calculateBubbleSize,
   calculateWeightedScore,
   formatNormalizedCost,
   formatUtilityPercentage,
   formatValueScore,
   formatValueScoreCost,
+  getBubbleScoreRange,
   getHighestScoreValue
 } from '../app/composables/useTenderValueScore'
 
@@ -171,5 +174,73 @@ describe('useTenderValueScore', () => {
     expect(getHighestScoreValue(rows, 'balancedScore')).toBe(0.9)
     expect(getHighestScoreValue(rows, 'costFocusScore')).toBe(0.92)
     expect(getHighestScoreValue(rows, 'utilityFocusScore')).toBe(0.91)
+  })
+
+  it('builds bubble chart points and scales bubble sizes linearly', () => {
+    const rows = [
+      {
+        vendorId: '1',
+        vendorName: 'Alpha',
+        utilityPercentage: 80,
+        normalizedUtility: 0.8,
+        totalCost: 100,
+        normalizedCost: 1,
+        balancedScore: 0.9,
+        costFocusScore: 0.92,
+        utilityFocusScore: 0.88,
+        rank: 1,
+        hasQuestions: true
+      },
+      {
+        vendorId: '2',
+        vendorName: 'Beta',
+        utilityPercentage: 70,
+        normalizedUtility: 0.7,
+        totalCost: 120,
+        normalizedCost: 0.85,
+        balancedScore: 0.75,
+        costFocusScore: 0.73,
+        utilityFocusScore: 0.77,
+        rank: 2,
+        hasQuestions: true
+      },
+      {
+        vendorId: '3',
+        vendorName: 'Gamma',
+        utilityPercentage: 0,
+        normalizedUtility: 0,
+        totalCost: null,
+        normalizedCost: null,
+        balancedScore: null,
+        costFocusScore: null,
+        utilityFocusScore: null,
+        rank: null,
+        hasQuestions: false
+      }
+    ]
+
+    const points = buildTenderValueBubblePoints(rows)
+
+    expect(points).toEqual([
+      {
+        vendorId: '1',
+        vendorName: 'Alpha',
+        value: [1, 0.8, 0.9, 'Alpha']
+      },
+      {
+        vendorId: '2',
+        vendorName: 'Beta',
+        value: [0.85, 0.7, 0.75, 'Beta']
+      }
+    ])
+
+    expect(getBubbleScoreRange(points)).toEqual({
+      min: 0.75,
+      max: 0.9
+    })
+    expect(calculateBubbleSize(0.75, 0.75, 0.9)).toBe(40)
+    expect(calculateBubbleSize(0.9, 0.75, 0.9)).toBe(120)
+    expect(calculateBubbleSize(0.825, 0.75, 0.9)).toBe(80)
+    expect(calculateBubbleSize(0.8, 0.8, 0.8)).toBe(80)
   })
 })

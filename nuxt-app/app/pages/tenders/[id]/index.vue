@@ -1,7 +1,24 @@
 <script setup lang="ts">
+import { buildTenderValueScoreRows } from '../../../composables/useTenderValueScore'
+
 const route = useRoute()
 const tenderId = computed(() => String(route.params.id || ''))
 const { data: tender, status, error } = await useTenderDetail(tenderId)
+
+const valueScoreRows = computed(() => {
+  if (!tender.value) {
+    return []
+  }
+
+  return buildTenderValueScoreRows(
+    tender.value.vendors,
+    tender.value.sections,
+    tender.value.settings.scoreRange,
+    tender.value.costBlocks,
+    tender.value.vendorCostItems,
+    tender.value.settings.considerationYears
+  )
+})
 
 useSeoMeta({
   title: () => tender.value?.name || 'Ausschreibung'
@@ -33,14 +50,17 @@ useSeoMeta({
       Lade Ausschreibungsdetails ...
     </div>
 
-    <TenderValueScoreTable
-      v-else-if="tender"
-      :vendors="tender.vendors"
-      :sections="tender.sections"
-      :score-range="tender.settings.scoreRange"
-      :cost-blocks="tender.costBlocks"
-      :vendor-cost-items="tender.vendorCostItems"
-      :consideration-years="tender.settings.considerationYears"
-    />
+    <div v-else-if="tender" class="space-y-6">
+      <TenderValueScoreBubbleCard
+        :rows="valueScoreRows"
+        :consideration-years="tender.settings.considerationYears"
+        :palette="tender.settings.chartPalette"
+      />
+
+      <TenderValueScoreTable
+        :rows="valueScoreRows"
+        :consideration-years="tender.settings.considerationYears"
+      />
+    </div>
   </div>
 </template>
