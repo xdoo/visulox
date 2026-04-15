@@ -13,12 +13,12 @@ const items = computed<TabsItem[]>(() => {
     {
       label: 'Gesamtübersicht',
       value: 'overview',
-      icon: 'i-heroicons-squares-2x2'
+      icon: 'i-lucide-layout-grid'
     },
     ...props.vendors.map(vendor => ({
       label: vendor.name,
       value: vendor.id,
-      icon: 'i-heroicons-user'
+      icon: 'i-lucide-user'
     }))
   ]
 })

@@ -21,24 +21,24 @@ export function useTendersNavigation() {
 
   const overviewLinks = computed<NavigationMenuItem[]>(() => [{
     label: 'Ausschreibungen',
-    icon: 'i-heroicons-home',
+    icon: 'i-lucide-house',
     to: '/'
   }])
 
   const tenderLinks = computed<NavigationMenuItem[]>(() => {
     return tenders.value.map((item) => ({
       label: item.name,
-      icon: 'i-heroicons-document-text',
+      icon: 'i-lucide-file-text',
       to: getTenderPath(item.id),
       children: [
         {
           label: 'Kriterienkatalog',
-          icon: 'i-heroicons-list-bullet',
+          icon: 'i-lucide-list-checks',
           to: getTenderCriteriaPath(item.id)
         },
         {
           label: 'Kosten',
-          icon: 'i-heroicons-currency-euro',
+          icon: 'i-lucide-badge-euro',
           to: getTenderCostsPath(item.id)
         },
         {
@@ -76,7 +76,7 @@ export function useTendersNavigation() {
 
   const breadcrumbItems = computed(() => {
     const items: Array<{ label: string, icon?: string, to: string }> = [
-      { label: 'Home', icon: 'i-heroicons-home', to: '/' }
+      { label: 'Home', icon: 'i-lucide-house', to: '/' }
     ]
 
     if (route.path === '/settings') {
