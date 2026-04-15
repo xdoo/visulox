@@ -46,6 +46,22 @@ function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params : [params]
 }
 
+function getSegmentPaletteIndex(segmentName: string, fallbackIndex: number) {
+  if (props.kind !== 'combined') {
+    return fallbackIndex
+  }
+
+  if (segmentName === 'Projekt') {
+    return 0
+  }
+
+  if (segmentName === 'Run') {
+    return 1
+  }
+
+  return fallbackIndex
+}
+
 const option = computed<EChartsOption>(() => {
   const categories = props.rows.map((row) => row.vendorName)
   const costBlockOrder = Array.from(new Map(
@@ -58,13 +74,15 @@ const option = computed<EChartsOption>(() => {
   const series: EChartsOption['series'] = []
 
   costBlockOrder.forEach((costBlock, index) => {
+    const paletteIndex = getSegmentPaletteIndex(costBlock.name, index)
+
     series?.push({
       name: costBlock.name,
       type: 'bar',
       stack: 'total',
       z: 2,
       itemStyle: {
-        color: chartPalette.value[index % chartPalette.value.length].fillColor,
+        color: chartPalette.value[paletteIndex % chartPalette.value.length].fillColor,
         borderRadius: index === 0 ? [4, 0, 0, 4] : (index === costBlockOrder.length - 1 ? [0, 4, 4, 0] : 0)
       },
       label: {
@@ -72,7 +90,7 @@ const option = computed<EChartsOption>(() => {
         position: 'insideRight',
         align: 'right',
         padding: [0, 4, 0, 4],
-        color: chartPalette.value[index % chartPalette.value.length].textColor,
+        color: chartPalette.value[paletteIndex % chartPalette.value.length].textColor,
         fontSize: 11,
         fontWeight: 'normal',
         formatter: (params: DefaultLabelFormatterCallbackParams) => {
