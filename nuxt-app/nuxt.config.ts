@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   ],
   echarts: {
     renderer: ['svg', 'canvas'],
-    charts: ['BarChart', 'LineChart', 'PieChart', 'RadarChart'],
+    charts: ['BarChart', 'LineChart', 'PieChart', 'RadarChart', 'ScatterChart'],
     components: ['DatasetComponent', 'GridComponent', 'TooltipComponent', 'LegendComponent', 'TitleComponent', 'VisualMapComponent'],
   },
   app: {

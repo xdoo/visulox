@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 
 import {
-  buildTenderValueScoreRows,
   formatNormalizedCost,
   formatUtilityPercentage,
   formatValueScore,
@@ -11,24 +10,14 @@ import {
   getHighestScoreValue
 } from '../../composables/useTenderValueScore'
 
-import type {
-  TenderCostBlock,
-  TenderSection,
-  TenderSettings,
-  TenderVendor,
-  TenderVendorCostItem
-} from '../../../shared/types/tenders'
+import type { TenderValueScoreRow } from '../../composables/useTenderValueScore'
 
 const props = defineProps<{
-  vendors: TenderVendor[]
-  sections: TenderSection[]
-  scoreRange: TenderSettings['scoreRange']
-  costBlocks: TenderCostBlock[]
-  vendorCostItems: TenderVendorCostItem[]
-  considerationYears: TenderSettings['considerationYears']
+  rows: TenderValueScoreRow[]
+  considerationYears: number
 }>()
 
-const columns: TableColumn<ReturnType<typeof buildTenderValueScoreRows>[number]>[] = [
+const columns: TableColumn<TenderValueScoreRow>[] = [
   {
     accessorKey: 'rank',
     header: 'Rang',
@@ -105,20 +94,11 @@ const columns: TableColumn<ReturnType<typeof buildTenderValueScoreRows>[number]>
   }
 ]
 
-const rows = computed(() => buildTenderValueScoreRows(
-  props.vendors,
-  props.sections,
-  props.scoreRange,
-  props.costBlocks,
-  props.vendorCostItems,
-  props.considerationYears
-))
-
-const hasRankableRows = computed(() => rows.value.some((row) => row.balancedScore !== null))
-const hasMissingCostRows = computed(() => rows.value.some((row) => row.balancedScore === null))
-const highestBalancedScore = computed(() => getHighestScoreValue(rows.value, 'balancedScore'))
-const highestCostFocusScore = computed(() => getHighestScoreValue(rows.value, 'costFocusScore'))
-const highestUtilityFocusScore = computed(() => getHighestScoreValue(rows.value, 'utilityFocusScore'))
+const hasRankableRows = computed(() => props.rows.some((row) => row.balancedScore !== null))
+const hasMissingCostRows = computed(() => props.rows.some((row) => row.balancedScore === null))
+const highestBalancedScore = computed(() => getHighestScoreValue(props.rows, 'balancedScore'))
+const highestCostFocusScore = computed(() => getHighestScoreValue(props.rows, 'costFocusScore'))
+const highestUtilityFocusScore = computed(() => getHighestScoreValue(props.rows, 'utilityFocusScore'))
 
 function getScoreClass(
   value: number | null,
@@ -170,7 +150,7 @@ function getScoreClass(
 
       <UTable
         v-else
-        :data="rows"
+        :data="props.rows"
         :columns="columns"
       >
         <template #rank-cell="{ row }">

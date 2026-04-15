@@ -27,6 +27,12 @@ export interface TenderValueScoreRow {
   hasQuestions: boolean
 }
 
+export interface TenderValueBubblePoint {
+  vendorId: string
+  vendorName: string
+  value: [number, number, number, string]
+}
+
 function roundValue(value: number, digits = 4) {
   return Number(value.toFixed(digits))
 }
@@ -64,6 +70,50 @@ export function getHighestScoreValue(
     .filter((value): value is number => value !== null)
 
   return scores.length > 0 ? Math.max(...scores) : null
+}
+
+export function buildTenderValueBubblePoints(rows: TenderValueScoreRow[]) {
+  return rows
+    .filter((row): row is TenderValueScoreRow & { normalizedCost: number, balancedScore: number } => (
+      row.normalizedCost !== null && row.balancedScore !== null
+    ))
+    .map<TenderValueBubblePoint>((row) => ({
+      vendorId: row.vendorId,
+      vendorName: row.vendorName,
+      value: [row.normalizedCost, row.normalizedUtility, row.balancedScore, row.vendorName]
+    }))
+}
+
+export function getBubbleScoreRange(points: TenderValueBubblePoint[]) {
+  const scores = points.map((point) => point.value[2])
+
+  if (scores.length === 0) {
+    return null
+  }
+
+  return {
+    min: Math.min(...scores),
+    max: Math.max(...scores)
+  }
+}
+
+export function calculateBubbleSize(
+  score: number,
+  minScore: number,
+  maxScore: number,
+  baseSize = 40,
+  scaleRange = 80
+) {
+  if (!Number.isFinite(score)) {
+    return baseSize
+  }
+
+  if (maxScore <= minScore) {
+    return baseSize + (scaleRange / 2)
+  }
+
+  const normalizedScore = (score - minScore) / (maxScore - minScore)
+  return roundValue(baseSize + (normalizedScore * scaleRange), 2)
 }
 
 export function formatNormalizedCost(value: number | null) {
