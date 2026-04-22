@@ -38,10 +38,20 @@ function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
 }
 
 const option = computed<EChartsOption>(() => ({
+  title: {
+    text: 'Value Score Positionierung',
+    left: 0,
+    top: 0,
+    textStyle: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#111827'
+    }
+  },
   grid: {
     left: 80,
     right: 40,
-    top: 32,
+    top: 56,
     bottom: 56
   },
   tooltip: {

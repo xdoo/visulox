@@ -41,6 +41,10 @@ onMounted(() => {
 })
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
+const legendItemCount = computed(() => Array.from(new Map(
+  props.rows.flatMap((row) => row.segments.map((segment) => [segment.costBlockId, segment]))
+).values()).length)
+const chartHeight = computed(() => `${Math.max(420, 120 + (legendItemCount.value * 22))}px`)
 
 function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params : [params]
@@ -173,10 +177,24 @@ const option = computed<EChartsOption>(() => {
   })
 
   return {
+    title: {
+      text: props.kind === 'project'
+        ? 'Projektkosten'
+        : props.kind === 'run'
+          ? 'Run-Kosten'
+          : 'Gesamtkosten',
+      left: 0,
+      top: 0,
+      textStyle: {
+        fontSize: 14,
+        fontWeight: 600,
+        color: '#111827'
+      }
+    },
     grid: {
       left: 20,
-      right: 140,
-      top: 40,
+      right: 220,
+      top: 48,
       bottom: 20,
       containLabel: true
     },
@@ -248,8 +266,9 @@ const option = computed<EChartsOption>(() => {
     },
     legend: {
       show: true,
-      top: 0,
-      type: 'scroll',
+      top: 24,
+      right: 0,
+      orient: 'vertical',
       itemWidth: 10,
       itemHeight: 10,
       data: costBlockOrder.map((costBlock) => costBlock.name)
@@ -286,7 +305,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-[420px] w-full overflow-hidden">
+  <div class="w-full overflow-hidden" :style="{ height: chartHeight }">
     <ClientOnly>
       <VChart
         v-if="isVisible"
