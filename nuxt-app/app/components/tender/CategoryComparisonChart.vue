@@ -20,7 +20,7 @@ const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 
 const option = computed<ECOption>(() => ({
   title: {
-    text: `${props.row.sectionName} (${Math.round(props.row.sectionWeight)}%)`,
+    text: `${props.row.sectionName} (Gewicht ${Math.round(props.row.sectionWeight)}%)`,
     left: 0,
     top: 0,
     textStyle: {
