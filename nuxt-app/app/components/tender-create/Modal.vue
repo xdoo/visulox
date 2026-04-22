@@ -4,10 +4,10 @@ import { watch } from 'vue'
 const isOpen = defineModel<boolean>('open', { default: false })
 
 const items = [
-  { label: 'Basis', icon: 'i-heroicons-information-circle' },
-  { label: 'Kriterien', icon: 'i-heroicons-list-bullet' },
-  { label: 'Preisblatt', icon: 'i-heroicons-currency-euro' },
-  { label: 'Anbieter', icon: 'i-heroicons-user-group' }
+  { label: 'Basis', icon: 'i-lucide-info' },
+  { label: 'Kriterien', icon: 'i-lucide-list-checks' },
+  { label: 'Preisblatt', icon: 'i-lucide-badge-euro' },
+  { label: 'Anbieter', icon: 'i-lucide-users' }
 ]
 
 const {

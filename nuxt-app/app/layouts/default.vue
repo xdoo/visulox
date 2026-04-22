@@ -71,7 +71,7 @@ onKeyStroke(['N'], (e) => {
         <div class="flex items-center gap-2">
           <UTooltip text="Neue Ausschreibung anlegen" :kbds="['shift', 'n']">
             <UButton
-              icon="i-heroicons-plus-circle-20-solid"
+              icon="i-lucide-circle-plus"
               color="primary"
               variant="ghost"
               size="xl"
