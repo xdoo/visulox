@@ -62,6 +62,20 @@ function getSegmentPaletteIndex(segmentName: string, fallbackIndex: number) {
   return fallbackIndex
 }
 
+function getPaletteEntry(index: number) {
+  const palette = chartPalette.value
+  const fallbackEntry = defaultTenderChartPalette[0] ?? {
+    fillColor: '#0D57A6',
+    textColor: '#FFFFFF'
+  }
+
+  if (palette.length === 0) {
+    return fallbackEntry
+  }
+
+  return palette[index % palette.length] ?? fallbackEntry
+}
+
 const option = computed<EChartsOption>(() => {
   const categories = props.rows.map((row) => row.vendorName)
   const costBlockOrder = Array.from(new Map(
@@ -75,6 +89,7 @@ const option = computed<EChartsOption>(() => {
 
   costBlockOrder.forEach((costBlock, index) => {
     const paletteIndex = getSegmentPaletteIndex(costBlock.name, index)
+    const paletteEntry = getPaletteEntry(paletteIndex)
 
     series?.push({
       name: costBlock.name,
@@ -82,7 +97,7 @@ const option = computed<EChartsOption>(() => {
       stack: 'total',
       z: 2,
       itemStyle: {
-        color: chartPalette.value[paletteIndex % chartPalette.value.length].fillColor,
+        color: paletteEntry.fillColor,
         borderRadius: index === 0 ? [4, 0, 0, 4] : (index === costBlockOrder.length - 1 ? [0, 4, 4, 0] : 0)
       },
       label: {
@@ -90,7 +105,7 @@ const option = computed<EChartsOption>(() => {
         position: 'insideRight',
         align: 'right',
         padding: [0, 4, 0, 4],
-        color: chartPalette.value[paletteIndex % chartPalette.value.length].textColor,
+        color: paletteEntry.textColor,
         fontSize: 11,
         fontWeight: 'normal',
         formatter: (params: DefaultLabelFormatterCallbackParams) => {

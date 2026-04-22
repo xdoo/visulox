@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ECOption } from '#echarts'
+import type { EChartsOption } from 'echarts'
 import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
 import { useChartImageDownload } from '../../composables/useChartImageDownload'
 import type { SectionVendorComparisonRow } from '../../composables/useTenderCategoryComparison'
@@ -19,8 +19,9 @@ onMounted(() => {
 })
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
+const bestVendorColor = computed(() => chartPalette.value[0]?.fillColor ?? '#0D57A6')
 
-const option = computed<ECOption>(() => ({
+const option = computed<EChartsOption>(() => ({
   title: {
     text: `${props.row.sectionName} (Gewicht ${Math.round(props.row.sectionWeight)}%)`,
     left: 0,
@@ -90,7 +91,7 @@ const option = computed<ECOption>(() => ({
         fulfillment: vendor.fulfillment,
         itemStyle: {
           color: vendor.isBest
-            ? chartPalette.value[0]?.fillColor || defaultTenderChartPalette[0].fillColor
+            ? bestVendorColor.value
             : 'rgba(108, 159, 203, 0.35)',
           borderRadius: 4
         }

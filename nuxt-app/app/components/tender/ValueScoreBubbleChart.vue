@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type {
+  DefaultLabelFormatterCallbackParams,
   EChartsOption,
   TooltipComponentFormatterCallbackParams
 } from 'echarts'
@@ -30,6 +31,7 @@ onMounted(() => {
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 const points = computed(() => buildTenderValueBubblePoints(props.rows))
 const scoreRange = computed(() => getBubbleScoreRange(points.value))
+const bubbleColor = computed(() => chartPalette.value[0]?.fillColor ?? '#0D57A6')
 
 function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params[0] : params
@@ -46,6 +48,11 @@ const option = computed<EChartsOption>(() => ({
     trigger: 'item',
     formatter: (params: TooltipComponentFormatterCallbackParams) => {
       const point = toTooltipParams(params)
+
+      if (!point) {
+        return ''
+      }
+
       const data = Array.isArray(point.data) ? point.data : null
 
       if (!data) {
@@ -94,14 +101,17 @@ const option = computed<EChartsOption>(() => ({
       data: points.value.map((point) => ({
         value: point.value,
         itemStyle: {
-          color: chartPalette.value[0]?.fillColor || defaultTenderChartPalette[0].fillColor,
+          color: bubbleColor.value,
           opacity: 0.85
         }
       })),
       label: {
         show: true,
         position: 'top',
-        formatter: (params: { data?: { value?: [number, number, number, string] } }) => params.data?.value?.[3] || '',
+        formatter: (params: DefaultLabelFormatterCallbackParams) => {
+          const data = params.data as { value?: [number, number, number, string] } | undefined
+          return data?.value?.[3] || ''
+        },
         color: 'var(--ui-text)'
       },
       symbolSize: (data: [number, number, number, string]) => {
