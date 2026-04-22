@@ -42,6 +42,20 @@ function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params : [params]
 }
 
+function getPaletteEntry(index: number) {
+  const palette = chartPalette.value
+  const fallbackEntry = defaultTenderChartPalette[0] ?? {
+    fillColor: '#0D57A6',
+    textColor: '#FFFFFF'
+  }
+
+  if (palette.length === 0) {
+    return fallbackEntry
+  }
+
+  return palette[index % palette.length] ?? fallbackEntry
+}
+
 // Sort vendors by total score descending
 const sortedScores = computed(() => {
   return [...props.scores].sort((a, b) => b.totalScore - a.totalScore)
@@ -71,13 +85,15 @@ const option = computed<EChartsOption>(() => {
 
   // Add one series per section
   sections.forEach((section, index) => {
+    const paletteEntry = getPaletteEntry(index)
+
     const sectionSeries: any = {
       name: section.name,
       type: 'bar',
       stack: 'total',
       z: 2,
       itemStyle: {
-        color: chartPalette.value[index % chartPalette.value.length].fillColor,
+        color: paletteEntry.fillColor,
         borderRadius: index === 0 ? [4, 0, 0, 4] : (index === sections.length - 1 ? [0, 4, 4, 0] : 0)
       },
       label: {
@@ -86,7 +102,7 @@ const option = computed<EChartsOption>(() => {
         align: 'right',
         distance: 0,
         padding: [0, 4, 0, 4],
-        color: chartPalette.value[index % chartPalette.value.length].textColor,
+        color: paletteEntry.textColor,
         fontSize: 11,
         fontWeight: 'normal',
         formatter: (params: any) => {

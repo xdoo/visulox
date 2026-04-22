@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ECOption } from '#echarts'
+import type { EChartsOption } from 'echarts'
 import { useChartImageDownload } from '../../composables/useChartImageDownload'
 
 interface ChartDataItem {
@@ -21,7 +21,7 @@ onMounted(() => {
   })
 })
 
-const option = computed<ECOption>(() => {
+const option = computed<EChartsOption>(() => {
   const categories = props.data.map(d => d.name)
   const weightData = props.data.map(d => ({
     value: d.weight,
