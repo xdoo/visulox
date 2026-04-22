@@ -43,7 +43,7 @@ const option = computed<EChartsOption>(() => ({
     left: 0,
     top: 0,
     textStyle: {
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: 600,
       color: '#111827'
     }
