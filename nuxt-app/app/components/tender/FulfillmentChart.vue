@@ -35,10 +35,20 @@ const option = computed<EChartsOption>(() => {
   }))
 
   return {
+    title: {
+      text: 'Erfüllung pro Kategorie',
+      left: 0,
+      top: 0,
+      textStyle: {
+        fontSize: 16,
+        fontWeight: 600,
+        color: '#111827'
+      }
+    },
     grid: {
       left: 20,
       right: 80,
-      top: 20,
+      top: 48,
       bottom: 20,
       containLabel: true
     },

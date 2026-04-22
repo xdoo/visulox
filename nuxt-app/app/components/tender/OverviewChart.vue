@@ -37,6 +37,11 @@ onMounted(() => {
 })
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
+const legendItemCount = computed(() => {
+  const firstScore = sortedScores.value[0]
+  return firstScore?.sectionScores.length || 0
+})
+const chartHeight = computed(() => `${Math.max(400, 120 + (legendItemCount.value * 22))}px`)
 
 function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params : [params]
@@ -162,10 +167,20 @@ const option = computed<EChartsOption>(() => {
   })
 
   return {
+    title: {
+      text: 'Anbietervergleich nach Kategorien',
+      left: 0,
+      top: 0,
+      textStyle: {
+        fontSize: 16,
+        fontWeight: 600,
+        color: '#111827'
+      }
+    },
     grid: {
       left: 20,
-      right: 60,
-      top: 40,
+      right: 220,
+      top: 48,
       bottom: 20,
       containLabel: true
     },
@@ -223,8 +238,9 @@ const option = computed<EChartsOption>(() => {
     },
     legend: {
       show: true,
-      top: 0,
-      type: 'scroll',
+      top: 24,
+      right: 0,
+      orient: 'vertical',
       itemWidth: 10,
       itemHeight: 10,
       data: sections.map(section => section.name)
@@ -261,7 +277,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-[400px] w-full overflow-hidden">
+  <div class="w-full overflow-hidden" :style="{ height: chartHeight }">
     <ClientOnly>
       <VChart
         v-if="isVisible"
