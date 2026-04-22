@@ -38,12 +38,21 @@ useSeoMeta({
 
     <TenderVendorTabs v-else :vendors="tender?.vendors || []">
       <template #overview>
-        <TenderOverviewCard
-          :vendors="tender?.vendors || []"
-          :sections="tender?.sections || []"
-          :score-range="tender?.settings.scoreRange || [0, 10]"
-          :palette="tender?.settings.chartPalette"
-        />
+        <div class="space-y-6">
+          <TenderOverviewCard
+            :vendors="tender?.vendors || []"
+            :sections="tender?.sections || []"
+            :score-range="tender?.settings.scoreRange || [0, 10]"
+            :palette="tender?.settings.chartPalette"
+          />
+
+          <TenderCategoryComparisonOverview
+            :vendors="tender?.vendors || []"
+            :sections="tender?.sections || []"
+            :score-range="tender?.settings.scoreRange || [0, 10]"
+            :palette="tender?.settings.chartPalette"
+          />
+        </div>
       </template>
 
       <template #vendor="{ vendor }">
