@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ECOption } from '#echarts'
 import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
+import { useChartImageDownload } from '../../composables/useChartImageDownload'
 import type { SectionVendorComparisonRow } from '../../composables/useTenderCategoryComparison'
 
 const props = defineProps<{
@@ -9,6 +10,7 @@ const props = defineProps<{
 }>()
 
 const isVisible = ref(false)
+const { chartRef, downloadPng, downloadSvg } = useChartImageDownload()
 
 onMounted(() => {
   nextTick(() => {
@@ -107,6 +109,11 @@ const option = computed<ECOption>(() => ({
     }
   ]
 }))
+
+defineExpose({
+  downloadPng,
+  downloadSvg
+})
 </script>
 
 <template>
@@ -114,6 +121,7 @@ const option = computed<ECOption>(() => ({
     <ClientOnly>
       <VChart
         v-if="isVisible"
+        ref="chartRef"
         :option="option"
         autoresize
       />
