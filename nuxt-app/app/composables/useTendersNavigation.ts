@@ -5,6 +5,7 @@ import {
   getTenderCriteriaPath,
   getTenderPath,
   getTenderSettingsPath,
+  getTenderSummaryPath,
   resolveTenderSubpage
 } from './useTenderPaths'
 
@@ -40,6 +41,11 @@ export function useTendersNavigation() {
           label: 'Kosten',
           icon: 'i-lucide-badge-euro',
           to: getTenderCostsPath(item.id)
+        },
+        {
+          label: 'Zusammenfassung',
+          icon: 'i-lucide-file-chart-column',
+          to: getTenderSummaryPath(item.id)
         },
         {
           label: 'Settings',
@@ -97,6 +103,11 @@ export function useTendersNavigation() {
           label: 'Kosten',
           to: getTenderCostsPath(currentTender.value.id)
         })
+      } else if (currentTenderSubpage.value === 'summary') {
+        items.push({
+          label: 'Zusammenfassung',
+          to: getTenderSummaryPath(currentTender.value.id)
+        })
       } else if (currentTenderSubpage.value === 'settings') {
         items.push({
           label: 'Settings',
@@ -122,6 +133,10 @@ export function useTendersNavigation() {
 
       if (currentTenderSubpage.value === 'costs') {
         return 'Kosten'
+      }
+
+      if (currentTenderSubpage.value === 'summary') {
+        return 'Zusammenfassung'
       }
 
       if (currentTenderSubpage.value === 'settings') {

@@ -5,6 +5,7 @@ import {
   getTenderCriteriaPath,
   getTenderPath,
   getTenderSettingsPath,
+  getTenderSummaryPath,
   resolveTenderSubpage
 } from '../app/composables/useTenderPaths'
 
@@ -13,6 +14,7 @@ describe('useTenderPaths helpers', () => {
     expect(getTenderPath('7')).toBe('/tenders/7')
     expect(getTenderCriteriaPath('7')).toBe('/tenders/7/criteria')
     expect(getTenderCostsPath('7')).toBe('/tenders/7/costs')
+    expect(getTenderSummaryPath('7')).toBe('/tenders/7/summary')
     expect(getTenderSettingsPath('7')).toBe('/tenders/7/settings')
   })
 
@@ -20,6 +22,7 @@ describe('useTenderPaths helpers', () => {
     expect(resolveTenderSubpage('/tenders/7', '7')).toBe('overview')
     expect(resolveTenderSubpage('/tenders/7/criteria', '7')).toBe('criteria')
     expect(resolveTenderSubpage('/tenders/7/costs', '7')).toBe('costs')
+    expect(resolveTenderSubpage('/tenders/7/summary', '7')).toBe('summary')
     expect(resolveTenderSubpage('/tenders/7/settings', '7')).toBe('settings')
     expect(resolveTenderSubpage('/settings', '7')).toBeNull()
   })

@@ -1,4 +1,4 @@
-export type TenderSubpage = 'overview' | 'criteria' | 'costs' | 'settings'
+export type TenderSubpage = 'overview' | 'criteria' | 'costs' | 'summary' | 'settings'
 
 export function getTenderPath(id: string) {
   return `/tenders/${id}`
@@ -10,6 +10,10 @@ export function getTenderCriteriaPath(id: string) {
 
 export function getTenderCostsPath(id: string) {
   return `${getTenderPath(id)}/costs`
+}
+
+export function getTenderSummaryPath(id: string) {
+  return `${getTenderPath(id)}/summary`
 }
 
 export function getTenderSettingsPath(id: string) {
@@ -33,6 +37,10 @@ export function resolveTenderSubpage(path: string, tenderId: string): TenderSubp
 
   if (path === getTenderCostsPath(normalizedTenderId)) {
     return 'costs'
+  }
+
+  if (path === getTenderSummaryPath(normalizedTenderId)) {
+    return 'summary'
   }
 
   if (path === getTenderSettingsPath(normalizedTenderId)) {
