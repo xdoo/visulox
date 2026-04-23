@@ -133,24 +133,30 @@ const reportChapters = [
   },
   {
     number: '2',
+    id: 'chapter-methodik',
+    title: 'Methodik der Bewertung',
+    description: 'Dieses Kapitel erklärt die Struktur der Ausschreibung. Es ordnet Anbieter, Kriterienkatalog und Kostenarten ein, damit die folgenden Bewertungen nachvollziehbar gelesen werden können.'
+  },
+  {
+    number: '3',
     id: 'chapter-gesamtvergleich',
     title: 'Gesamtvergleich der Anbieter',
     description: 'Dieses Kapitel ordnet alle Anbieter gesamthaft ein. Es macht sichtbar, ob ein Anbieter nur wegen niedriger Kosten attraktiv wirkt, ob hohe Qualität höhere Kosten rechtfertigt oder ob ein Anbieter in beiden Dimensionen überzeugt.'
   },
   {
-    number: '3',
+    number: '4',
     id: 'chapter-fachliche-bewertung',
     title: 'Fachliche Bewertung',
     description: 'Dieses Kapitel zeigt die inhaltliche Leistungsfähigkeit der Anbieter. Für eine Managemententscheidung ist hier relevant, welcher Anbieter die fachlichen Anforderungen am besten erfüllt und in welchen Kriterienblöcken deutliche Stärken oder Schwächen bestehen.'
   },
   {
-    number: '4',
+    number: '5',
     id: 'chapter-kostenbewertung',
     title: 'Kostenbewertung',
     description: 'Dieses Kapitel betrachtet die wirtschaftliche Perspektive über den definierten Zeitraum. Es trennt einmalige Projektkosten von laufenden Run-Kosten und macht sichtbar, wodurch Kostenunterschiede zwischen den Anbietern entstehen.'
   },
   {
-    number: '5',
+    number: '6',
     id: 'chapter-anhang',
     title: 'Anhang',
     description: 'Dieses Kapitel enthält Detailauswertungen zur Nachvollziehbarkeit. Die Inhalte unterstützen die Prüfung einzelner Bewertungsbereiche, ohne die Management Summary mit Detailtiefe zu überladen.'
@@ -243,6 +249,17 @@ useSeoMeta({
 
       <section :id="reportChapters[1].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[1]" />
+        <ReportMethodology
+          :vendors="tender.vendors"
+          :sections="tender.sections"
+          :cost-blocks="tender.costBlocks"
+          :score-range="tender.settings.scoreRange"
+          :consideration-years="tender.settings.considerationYears"
+        />
+      </section>
+
+      <section :id="reportChapters[2].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[2]" />
         <div class="report-section-content">
           <ReportValueScoreComparison
             :rows="valueScoreRows"
@@ -267,8 +284,8 @@ useSeoMeta({
         </div>
       </section>
 
-      <section :id="reportChapters[2].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[2]" />
+      <section :id="reportChapters[3].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[3]" />
         <div class="report-section-content">
           <ReportChartBlock
             title="Gesamtbewertung der Kriterien"
@@ -294,8 +311,8 @@ useSeoMeta({
         </div>
       </section>
 
-      <section :id="reportChapters[3].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[3]" />
+      <section :id="reportChapters[4].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[4]" />
         <div class="report-section-content">
           <ReportChartBlock
             title="Gesamtkosten"
@@ -350,8 +367,8 @@ useSeoMeta({
         </div>
       </section>
 
-      <section :id="reportChapters[4].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[4]" />
+      <section :id="reportChapters[5].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[5]" />
         <div v-if="hasAnyQuestions" class="report-category-chart-grid">
           <ReportChartBlock
             v-for="row in categoryComparisonRows"
