@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 
-import { tenderCostBlockTypeLabels } from '../../../shared/constants/cost-blocks'
+import { tenderCostBlockTypeLabels } from '~~/shared/constants/cost-blocks'
 
 import type { CostBlockSettingsRow } from '../../composables/useTenderCostBlocksSettings'
 import type { TenderCostBlock } from '../../../shared/types/tenders'

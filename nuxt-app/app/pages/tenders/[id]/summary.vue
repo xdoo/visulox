@@ -5,6 +5,8 @@ const route = useRoute()
 const tenderId = computed(() => String(route.params.id || ''))
 const { data: tender, status, error } = await useTenderDetail(tenderId)
 
+const reportPdfUrl = computed(() => `/api/tenders/${tenderId.value}/report.pdf`)
+
 const valueScoreRows = computed(() => {
   if (!tender.value) {
     return []
@@ -31,12 +33,26 @@ useSeoMeta({
 <template>
   <div class="space-y-6">
     <div>
-      <h2 class="text-2xl font-bold tracking-tight">
-        Zusammenfassung
-      </h2>
-      <p class="ui-text-muted">
-        Management- und Reportübersicht für Ausschreibung {{ tender?.name || tenderId }}.
-      </p>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight">
+            Zusammenfassung
+          </h2>
+          <p class="ui-text-muted">
+            Management- und Reportübersicht für Ausschreibung {{ tender?.name || tenderId }}.
+          </p>
+        </div>
+
+        <UButton
+          :to="reportPdfUrl"
+          icon="i-lucide-file-down"
+          color="primary"
+          variant="solid"
+          target="_blank"
+        >
+          PDF herunterladen
+        </UButton>
+      </div>
     </div>
 
     <UAlert

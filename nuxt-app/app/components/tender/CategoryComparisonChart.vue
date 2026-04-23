@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { EChartsOption } from 'echarts'
-import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
+import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 import { useChartImageDownload } from '../../composables/useChartImageDownload'
 import type { SectionVendorComparisonRow } from '../../composables/useTenderCategoryComparison'
 

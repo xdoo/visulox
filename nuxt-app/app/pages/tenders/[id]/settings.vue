@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TabsItem } from '@nuxt/ui'
 
-import { defaultTenderSettings } from '../../../../shared/constants/tender-settings'
+import { defaultTenderSettings } from '~~/shared/constants/tender-settings'
 
 const route = useRoute()
 const tenderId = computed(() => String(route.params.id || ''))

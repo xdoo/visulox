@@ -4,7 +4,7 @@ import type {
   EChartsOption,
   TooltipComponentFormatterCallbackParams
 } from 'echarts'
-import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
+import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 import { useChartImageDownload } from '../../composables/useChartImageDownload'
 
 interface SectionScore {

@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { defaultTenderChartPalette } from '../../shared/constants/tender-settings'
+import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 
 export interface PaletteDialogRow {
   fillColor: string
