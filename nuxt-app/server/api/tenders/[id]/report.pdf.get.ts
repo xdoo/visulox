@@ -1,8 +1,36 @@
 import { createError, defineEventHandler, getRequestURL, setHeader } from 'h3'
 import { chromium } from 'playwright'
+import { useRuntimeConfig } from '#imports'
+
+import { getPostgresClient } from '../../../utils/postgres'
 
 function buildReportUrl(origin: string, tenderId: string) {
   return `${origin}/tenders/${encodeURIComponent(tenderId)}/report?pdf=1`
+}
+
+function sanitizeReportFilenamePart(value: string) {
+  return value
+    .trim()
+    .replace(/\s+/g, '_')
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, '')
+    .replace(/_+/g, '_')
+    || 'Ausschreibung'
+}
+
+async function loadTenderName(tenderId: string) {
+  const config = useRuntimeConfig()
+  const client = await getPostgresClient(config.databaseUrl)
+
+  try {
+    const result = await client.query<{ name: string }>(
+      'SELECT name FROM ausschreibungen WHERE id = $1 AND deleted_at IS NULL LIMIT 1',
+      [tenderId]
+    )
+
+    return result.rows[0]?.name
+  } finally {
+    client.release()
+  }
 }
 
 export default defineEventHandler(async (event) => {
@@ -15,6 +43,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const tenderName = await loadTenderName(tenderId)
+
+  if (!tenderName) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Ausschreibung wurde nicht gefunden.'
+    })
+  }
+
+  const filename = `Zusammenfassung_${sanitizeReportFilenamePart(tenderName)}.pdf`
   const requestUrl = getRequestURL(event)
   const browser = await chromium.launch({
     headless: true
@@ -54,7 +92,11 @@ export default defineEventHandler(async (event) => {
     })
 
     setHeader(event, 'Content-Type', 'application/pdf')
-    setHeader(event, 'Content-Disposition', `attachment; filename="ausschreibung-${tenderId}-report.pdf"`)
+    setHeader(
+      event,
+      'Content-Disposition',
+      `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
+    )
 
     return pdf
   } catch (error) {

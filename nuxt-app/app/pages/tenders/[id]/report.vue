@@ -122,6 +122,7 @@ const categoryComparisonRows = computed(() => {
 })
 
 const reportChartWidth = '700px'
+const reportPrimaryColor = computed(() => tender.value?.settings.chartPalette[0]?.fillColor || '#0D57A6')
 
 const reportChapters = [
   {
@@ -178,7 +179,10 @@ useSeoMeta({
 </script>
 
 <template>
-  <main class="report-page bg-white text-gray-950">
+  <main
+    class="report-page bg-white text-gray-950"
+    :style="{ '--report-primary-color': reportPrimaryColor }"
+  >
     <section class="report-cover">
       <p class="report-kicker">
         Ausschreibungsbewertung
@@ -517,6 +521,12 @@ useSeoMeta({
 .report-page :deep(.rounded-lg.border),
 .report-page :deep(.rounded-xl.border-2) {
   background: #f9fafb;
+}
+
+.report-page :deep(.text-primary),
+.report-page :deep(.text-primary-600),
+.report-page :deep(.text-primary-700) {
+  color: var(--report-primary-color) !important;
 }
 
 @media print {
