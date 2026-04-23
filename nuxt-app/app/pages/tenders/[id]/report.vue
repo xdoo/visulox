@@ -239,31 +239,32 @@ useSeoMeta({
 
       <section :id="reportChapters[0].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[0]" />
-        <TenderValueScoreTable
-          :rows="valueScoreRows"
-          :consideration-years="tender.settings.considerationYears"
-          plain
-          :show-calculation-icon="false"
-        />
       </section>
 
       <section :id="reportChapters[1].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[1]" />
-        <ReportChartBlock
-          title="Nutzen-Kosten-Positionierung"
-          description="Die Positionierung zeigt, welche Anbieter bei fachlichem Nutzen und normierten Kosten gleichzeitig stark abschneiden. Oben rechts liegen Anbieter mit hohem Nutzen und relativ niedrigen Kosten."
-        >
-          <TenderValueScoreBubbleChart
-            v-if="valueScoreChartHasData"
+        <div class="report-section-content">
+          <ReportValueScoreComparison
             :rows="valueScoreRows"
-            :palette="tender.settings.chartPalette"
-            renderer="svg"
-            :width="reportChartWidth"
+            :consideration-years="tender.settings.considerationYears"
           />
-          <p v-else class="report-empty-state">
-            Für das Bubble Chart werden sowohl gewichtete Kriterienerfüllung als auch valide Gesamtkosten benötigt.
-          </p>
-        </ReportChartBlock>
+
+          <ReportChartBlock
+            title="Nutzen-Kosten-Positionierung"
+            description="Die Positionierung zeigt, welche Anbieter bei fachlichem Nutzen und normierten Kosten gleichzeitig stark abschneiden. Oben rechts liegen Anbieter mit hohem Nutzen und relativ niedrigen Kosten. Die Größe der Bubbles entspricht dem Balanced Score: größere Bubbles stehen für eine stärkere kombinierte Bewertung aus Nutzen und Kosten."
+          >
+            <TenderValueScoreBubbleChart
+              v-if="valueScoreChartHasData"
+              :rows="valueScoreRows"
+              :palette="tender.settings.chartPalette"
+              renderer="svg"
+              :width="reportChartWidth"
+            />
+            <p v-else class="report-empty-state">
+              Für das Bubble Chart werden sowohl gewichtete Kriterienerfüllung als auch valide Gesamtkosten benötigt.
+            </p>
+          </ReportChartBlock>
+        </div>
       </section>
 
       <section :id="reportChapters[2].id" class="report-section">
