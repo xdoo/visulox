@@ -242,6 +242,8 @@ useSeoMeta({
         <TenderValueScoreTable
           :rows="valueScoreRows"
           :consideration-years="tender.settings.considerationYears"
+          plain
+          :show-calculation-icon="false"
         />
       </section>
 
