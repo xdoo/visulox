@@ -53,7 +53,9 @@ const chartStyle = computed(() => ({
 const legendItemCount = computed(() => Array.from(new Map(
   props.rows.flatMap((row) => row.segments.map((segment) => [segment.costBlockId, segment]))
 ).values()).length)
-const chartHeight = computed(() => `${Math.max(420, 120 + (legendItemCount.value * 22))}px`)
+const legendRowCount = computed(() => Math.max(1, Math.ceil(legendItemCount.value / 3)))
+const legendBottomSpace = computed(() => 28 + (legendRowCount.value * 22))
+const chartHeight = computed(() => `${Math.max(420, 360 + legendBottomSpace.value)}px`)
 
 function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params : [params]
@@ -202,9 +204,9 @@ const option = computed<EChartsOption>(() => {
     },
     grid: {
       left: 20,
-      right: 220,
+      right: 40,
       top: 48,
-      bottom: 20,
+      bottom: legendBottomSpace.value,
       containLabel: true
     },
     tooltip: {
@@ -275,11 +277,13 @@ const option = computed<EChartsOption>(() => {
     },
     legend: {
       show: true,
-      top: 24,
+      left: 'center',
       right: 0,
-      orient: 'vertical',
+      bottom: 0,
+      orient: 'horizontal',
       itemWidth: 10,
       itemHeight: 10,
+      width: '92%',
       data: costBlockOrder.map((costBlock) => costBlock.name)
     },
     xAxis: {
