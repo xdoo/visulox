@@ -7,6 +7,8 @@ import type { SectionVendorComparisonRow } from '../../composables/useTenderCate
 const props = defineProps<{
   row: SectionVendorComparisonRow
   palette?: typeof defaultTenderChartPalette
+  renderer?: 'canvas' | 'svg'
+  width?: string
 }>()
 
 const isVisible = ref(false)
@@ -20,6 +22,12 @@ onMounted(() => {
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 const bestVendorColor = computed(() => chartPalette.value[0]?.fillColor ?? '#0D57A6')
+const initOptions = computed(() => ({
+  renderer: props.renderer || 'canvas'
+}))
+const chartStyle = computed(() => ({
+  width: props.width || '100%'
+}))
 
 const option = computed<EChartsOption>(() => ({
   title: {
@@ -118,12 +126,13 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-[320px] w-full overflow-hidden">
+  <div class="h-[320px] overflow-hidden" :style="chartStyle">
     <ClientOnly>
       <VChart
         v-if="isVisible"
         ref="chartRef"
         :option="option"
+        :init-options="initOptions"
         autoresize
       />
     </ClientOnly>

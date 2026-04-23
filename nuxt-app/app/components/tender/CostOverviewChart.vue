@@ -29,6 +29,8 @@ const props = defineProps<{
   kind: VendorCostOverviewRowKind
   rows: VendorCostOverviewRow[]
   palette?: typeof defaultTenderChartPalette
+  renderer?: 'canvas' | 'svg'
+  width?: string
 }>()
 
 const isVisible = ref(false)
@@ -41,6 +43,13 @@ onMounted(() => {
 })
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
+const initOptions = computed(() => ({
+  renderer: props.renderer || 'canvas'
+}))
+const chartStyle = computed(() => ({
+  width: props.width || '100%',
+  height: chartHeight.value
+}))
 const legendItemCount = computed(() => Array.from(new Map(
   props.rows.flatMap((row) => row.segments.map((segment) => [segment.costBlockId, segment]))
 ).values()).length)
@@ -305,12 +314,13 @@ defineExpose({
 </script>
 
 <template>
-  <div class="w-full overflow-hidden" :style="{ height: chartHeight }">
+  <div class="overflow-hidden" :style="chartStyle">
     <ClientOnly>
       <VChart
         v-if="isVisible"
         ref="chartRef"
         :option="option"
+        :init-options="initOptions"
         autoresize
       />
     </ClientOnly>

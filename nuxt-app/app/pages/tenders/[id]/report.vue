@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import {
+  calculateSectionContributionPercentage,
+  calculateSectionFulfillmentPercentage
+} from '../../../composables/useCriteriaSectionFulfillment'
+import { buildSectionVendorComparisonRows } from '../../../composables/useTenderCategoryComparison'
+import {
+  buildCombinedVendorCostOverviewRows,
+  buildVendorCostOverviewRows
+} from '../../../composables/useTenderCostOverview'
 import { buildTenderValueScoreRows } from '../../../composables/useTenderValueScore'
 
 definePageMeta({
@@ -29,6 +38,90 @@ const valueScoreRows = computed(() => {
     tender.value.settings.considerationYears
   )
 })
+
+const valueScoreChartHasData = computed(() => {
+  return valueScoreRows.value.some((row) => row.balancedScore !== null && row.normalizedCost !== null)
+})
+
+const vendorScores = computed(() => {
+  if (!tender.value) {
+    return []
+  }
+
+  return tender.value.vendors.map(vendor => {
+    let totalScore = 0
+    const sectionScores = tender.value!.sections.map(section => {
+      const questions = section.questionsByVendor.find(entry => entry.vendorId === vendor.id)?.questions || []
+      const fulfillment = calculateSectionFulfillmentPercentage(
+        questions,
+        section.weight,
+        tender.value!.settings.scoreRange
+      ) || 0
+      const contribution = calculateSectionContributionPercentage(
+        questions,
+        section.weight,
+        tender.value!.settings.scoreRange
+      ) || 0
+
+      totalScore += contribution
+
+      return {
+        sectionId: section.id,
+        sectionName: section.name,
+        weight: section.weight,
+        fulfillment,
+        contribution
+      }
+    })
+
+    return {
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      totalScore,
+      sectionScores
+    }
+  })
+})
+
+const hasAnyQuestions = computed(() => {
+  return tender.value?.sections.some(section =>
+    section.questionsByVendor.some(entry => entry.questions.length > 0)
+  ) || false
+})
+
+const costOverviewRows = computed(() => {
+  if (!tender.value) {
+    return []
+  }
+
+  return buildVendorCostOverviewRows(
+    tender.value.vendors,
+    tender.value.costBlocks,
+    tender.value.vendorCostItems,
+    tender.value.settings.considerationYears
+  )
+})
+
+const projectCostRows = computed(() => costOverviewRows.value.filter((row) => row.kind === 'project'))
+const runCostRows = computed(() => costOverviewRows.value.filter((row) => row.kind === 'run'))
+const combinedCostRows = computed(() => buildCombinedVendorCostOverviewRows(costOverviewRows.value))
+const hasProjectCosts = computed(() => projectCostRows.value.some((row) => row.total > 0))
+const hasRunCosts = computed(() => runCostRows.value.some((row) => row.total > 0))
+const hasCombinedCosts = computed(() => combinedCostRows.value.some((row) => row.total > 0))
+
+const categoryComparisonRows = computed(() => {
+  if (!tender.value) {
+    return []
+  }
+
+  return buildSectionVendorComparisonRows(
+    tender.value.vendors,
+    tender.value.sections,
+    tender.value.settings.scoreRange
+  )
+})
+
+const reportChartWidth = '700px'
 
 const reportChapters = [
   {
@@ -150,22 +243,41 @@ useSeoMeta({
 
       <section :id="reportChapters[1].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[1]" />
-        <TenderValueScoreBubbleCard
-          :rows="valueScoreRows"
-          :consideration-years="tender.settings.considerationYears"
-          :palette="tender.settings.chartPalette"
-        />
+        <ReportChartBlock
+          title="Nutzen-Kosten-Positionierung"
+          description="Die Positionierung zeigt, welche Anbieter bei fachlichem Nutzen und normierten Kosten gleichzeitig stark abschneiden. Oben rechts liegen Anbieter mit hohem Nutzen und relativ niedrigen Kosten."
+        >
+          <TenderValueScoreBubbleChart
+            v-if="valueScoreChartHasData"
+            :rows="valueScoreRows"
+            :palette="tender.settings.chartPalette"
+            renderer="svg"
+            :width="reportChartWidth"
+          />
+          <p v-else class="report-empty-state">
+            Für das Bubble Chart werden sowohl gewichtete Kriterienerfüllung als auch valide Gesamtkosten benötigt.
+          </p>
+        </ReportChartBlock>
       </section>
 
       <section :id="reportChapters[2].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[2]" />
         <div class="report-section-content">
-          <TenderOverviewCard
-            :vendors="tender.vendors"
-            :sections="tender.sections"
-            :score-range="tender.settings.scoreRange"
-            :palette="tender.settings.chartPalette"
-          />
+          <ReportChartBlock
+            title="Gesamtbewertung der Kriterien"
+            description="Das Diagramm zeigt die gewichtete fachliche Erfüllung je Anbieter. Die gestapelten Balken machen sichtbar, welche Kriterienblöcke zum Gesamtergebnis beitragen."
+          >
+            <TenderOverviewChart
+              v-if="hasAnyQuestions"
+              :scores="vendorScores"
+              :palette="tender.settings.chartPalette"
+              renderer="svg"
+              :width="reportChartWidth"
+            />
+            <p v-else class="report-empty-state">
+              Es wurden noch keine Fragen importiert. Der Vergleich wird angezeigt, sobald Daten vorliegen.
+            </p>
+          </ReportChartBlock>
 
           <TenderCategoryComparisonTable
             :vendors="tender.vendors"
@@ -177,23 +289,80 @@ useSeoMeta({
 
       <section :id="reportChapters[3].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[3]" />
-        <TenderCostOverviewCard
-          :vendors="tender.vendors"
-          :cost-blocks="tender.costBlocks"
-          :vendor-cost-items="tender.vendorCostItems"
-          :consideration-years="tender.settings.considerationYears"
-          :palette="tender.settings.chartPalette"
-        />
+        <div class="report-section-content">
+          <ReportChartBlock
+            title="Gesamtkosten"
+            :description="`Gesamtvergleich aller Anbieter mit gestapelten Projekt- und Run-Kosten. Die Run-Kosten werden über ${tender.settings.considerationYears} Jahre betrachtet.`"
+          >
+            <TenderCostOverviewChart
+              v-if="hasCombinedCosts"
+              kind="combined"
+              :rows="combinedCostRows"
+              :palette="tender.settings.chartPalette"
+              renderer="svg"
+              :width="reportChartWidth"
+            />
+            <p v-else class="report-empty-state">
+              Es wurden noch keine Gesamtkosten erfasst.
+            </p>
+          </ReportChartBlock>
+
+          <ReportChartBlock
+            title="Projektkosten"
+            description="Einmalige Projekt- und Lizenzkosten im direkten Anbieter-Vergleich."
+          >
+            <TenderCostOverviewChart
+              v-if="hasProjectCosts"
+              kind="project"
+              :rows="projectCostRows"
+              :palette="tender.settings.chartPalette"
+              renderer="svg"
+              :width="reportChartWidth"
+            />
+            <p v-else class="report-empty-state">
+              Es wurden noch keine Projektkosten erfasst.
+            </p>
+          </ReportChartBlock>
+
+          <ReportChartBlock
+            title="Run-Kosten"
+            :description="`Laufende Kosten über ${tender.settings.considerationYears} Jahre im Anbieter-Vergleich.`"
+          >
+            <TenderCostOverviewChart
+              v-if="hasRunCosts"
+              kind="run"
+              :rows="runCostRows"
+              :palette="tender.settings.chartPalette"
+              renderer="svg"
+              :width="reportChartWidth"
+            />
+            <p v-else class="report-empty-state">
+              Es wurden noch keine Run-Kosten erfasst.
+            </p>
+          </ReportChartBlock>
+        </div>
       </section>
 
       <section :id="reportChapters[4].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[4]" />
-        <TenderCategoryComparisonOverview
-          :vendors="tender.vendors"
-          :sections="tender.sections"
-          :score-range="tender.settings.scoreRange"
-          :palette="tender.settings.chartPalette"
-        />
+        <div v-if="hasAnyQuestions" class="report-category-chart-grid">
+          <ReportChartBlock
+            v-for="row in categoryComparisonRows"
+            :key="row.sectionId"
+            :title="row.sectionName"
+            :description="`Kategoriegewicht: ${Math.round(row.sectionWeight)}%. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.`"
+          >
+            <TenderCategoryComparisonChart
+              :row="row"
+              :palette="tender.settings.chartPalette"
+              renderer="svg"
+              :width="reportChartWidth"
+            />
+          </ReportChartBlock>
+        </div>
+        <p v-else class="report-empty-state">
+          Es wurden noch keine Fragen importiert. Die Kategorievergleiche erscheinen, sobald Daten vorliegen.
+        </p>
       </section>
     </div>
   </main>
@@ -316,6 +485,28 @@ useSeoMeta({
   display: flex;
   flex-direction: column;
   gap: 8mm;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.report-category-chart-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8mm;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.report-empty-state {
+  align-items: center;
+  background: #f9fafb;
+  color: #6b7280;
+  display: flex;
+  font-size: 10pt;
+  font-style: italic;
+  justify-content: center;
+  min-height: 48mm;
+  text-align: center;
 }
 
 .report-page :deep(button),
@@ -345,6 +536,11 @@ useSeoMeta({
   .report-page :deep(.rounded-xl),
   .report-page :deep(.rounded-lg) {
     break-inside: auto;
+  }
+
+  .report-section {
+    max-width: 186mm;
+    overflow: hidden;
   }
 }
 </style>

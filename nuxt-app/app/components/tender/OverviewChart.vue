@@ -25,6 +25,8 @@ interface VendorScore {
 const props = defineProps<{
   scores: VendorScore[]
   palette?: typeof defaultTenderChartPalette
+  renderer?: 'canvas' | 'svg'
+  width?: string
 }>()
 
 const isVisible = ref(false)
@@ -37,6 +39,13 @@ onMounted(() => {
 })
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
+const initOptions = computed(() => ({
+  renderer: props.renderer || 'canvas'
+}))
+const chartStyle = computed(() => ({
+  width: props.width || '100%',
+  height: chartHeight.value
+}))
 const legendItemCount = computed(() => {
   const firstScore = sortedScores.value[0]
   return firstScore?.sectionScores.length || 0
@@ -277,12 +286,13 @@ defineExpose({
 </script>
 
 <template>
-  <div class="w-full overflow-hidden" :style="{ height: chartHeight }">
+  <div class="overflow-hidden" :style="chartStyle">
     <ClientOnly>
       <VChart
         v-if="isVisible"
         ref="chartRef"
         :option="option"
+        :init-options="initOptions"
         autoresize
       />
     </ClientOnly>
