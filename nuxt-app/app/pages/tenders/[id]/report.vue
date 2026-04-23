@@ -239,6 +239,10 @@ useSeoMeta({
 
       <section :id="reportChapters[0].id" class="report-section">
         <ReportChapterHeader v-bind="reportChapters[0]" />
+        <ReportManagementSummary
+          :rows="valueScoreRows"
+          :consideration-years="tender.settings.considerationYears"
+        />
       </section>
 
       <section :id="reportChapters[1].id" class="report-section">
