@@ -1,6 +1,7 @@
 export interface TenderSectionInput {
   name: string
   weight: number
+  evaluators?: string
 }
 
 export interface TenderPriceCategoryInput {
@@ -79,6 +80,7 @@ export interface TenderSection {
   id: string
   name: string
   weight: number
+  evaluators: string
   questionsByVendor: TenderSectionQuestionsByVendor[]
 }
 

@@ -69,7 +69,9 @@ const totalSectionWeight = computed(() => props.sections.reduce((sum, section) =
           >
             <td>{{ section.name }}</td>
             <td class="numeric">{{ Math.round(section.weight) }}%</td>
-            <td class="muted">TODO: Verantwortliche Bewertung noch nicht erfasst</td>
+            <td class="evaluators-cell" :class="{ muted: !section.evaluators }">
+              {{ section.evaluators || 'TODO: Verantwortliche Bewertung noch nicht erfasst' }}
+            </td>
           </tr>
           <tr class="summary-row">
             <td>Summe</td>
@@ -213,6 +215,10 @@ th {
 
 .muted {
   color: #6b7280;
+}
+
+.evaluators-cell {
+  white-space: pre-line;
 }
 
 .summary-row td {

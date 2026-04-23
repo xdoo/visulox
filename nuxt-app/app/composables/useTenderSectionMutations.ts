@@ -3,6 +3,7 @@ import { useTenderSettingsMutation } from './useTenderSettingsMutation'
 interface SectionPayload {
   name: string
   weight: number
+  evaluators: string
 }
 
 type PostSectionFetcher = <T>(request: string, options: {

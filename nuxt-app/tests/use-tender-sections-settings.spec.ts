@@ -53,6 +53,7 @@ describe('useTenderSectionsSettings', () => {
         id: '1',
         name: 'Qualitaet',
         weight: 60,
+        evaluators: '',
         questionsByVendor: [
           { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 0.6, gewichtetePunkte: 0.6 }] }
         ]
@@ -61,6 +62,7 @@ describe('useTenderSectionsSettings', () => {
         id: '2',
         name: 'Preis',
         weight: 40,
+        evaluators: '',
         questionsByVendor: [
           { vendorId: '10', questions: [] }
         ]
@@ -102,6 +104,7 @@ describe('useTenderSectionsSettings', () => {
         id: '1',
         name: 'Qualitaet',
         weight: 60,
+        evaluators: '',
         questionsByVendor: [
           { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 0.6, gewichtetePunkte: 0.6 }] }
         ]
@@ -119,7 +122,8 @@ describe('useTenderSectionsSettings', () => {
 
     expect(updateSectionMock).toHaveBeenCalledWith('1', {
       name: 'Qualität',
-      weight: 60
+      weight: 60,
+      evaluators: ''
     })
     expect(state.isModalOpen.value).toBe(false)
     expect(toastAddMock).toHaveBeenCalledWith({

@@ -86,15 +86,15 @@ async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTen
     }
   }
 
-  const sectionsResult = await client.query<SectionRow>(
-    'SELECT name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
+  const sectionsResult = await client.query<SectionRow & { evaluators: string | null }>(
+    'SELECT name, weight, evaluators FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
     [sourceTenderId]
   )
 
   for (const section of sectionsResult.rows) {
     await client.query(
-      'INSERT INTO abschnitte (ausschreibung_id, name, weight) VALUES ($1, $2, $3)',
-      [newTenderId, section.name, section.weight]
+      'INSERT INTO abschnitte (ausschreibung_id, name, weight, evaluators) VALUES ($1, $2, $3, $4)',
+      [newTenderId, section.name, section.weight, section.evaluators]
     )
   }
 

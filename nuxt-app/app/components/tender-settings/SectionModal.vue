@@ -4,6 +4,7 @@ import type { SectionSettingsRow } from '../../composables/useTenderSectionsSett
 const open = defineModel<boolean>('open', { required: true })
 const name = defineModel<string>('name', { required: true })
 const weight = defineModel<string>('weight', { required: true })
+const evaluators = defineModel<string>('evaluators', { required: true })
 
 const props = defineProps<{
   mode: 'create' | 'edit'
@@ -57,6 +58,20 @@ defineEmits<{
             v-model="name"
             class="w-full"
             placeholder="Titel des Abschnitts"
+            :disabled="pendingAction !== ''"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Bewerter"
+          description="Der Text wird unverändert im Report angezeigt."
+        >
+          <UTextarea
+            v-model="evaluators"
+            class="w-full"
+            autoresize
+            :rows="3"
+            placeholder="Bewerter eintragen"
             :disabled="pendingAction !== ''"
           />
         </UFormField>

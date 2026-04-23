@@ -61,14 +61,16 @@ export function useTenderSectionsSettings(tenderId: string, sections: MaybeRefOr
     openEditModal,
     startPending,
     stopPending
-  } = useEditableSettingsModal<SectionSettingsRow, { name: string, weight: string }>({
+  } = useEditableSettingsModal<SectionSettingsRow, { name: string, weight: string, evaluators: string }>({
     createForm: () => ({
       name: '',
-      weight: ''
+      weight: '',
+      evaluators: ''
     }),
     assignForm: (nextForm, section) => {
       nextForm.name = section?.name || ''
       nextForm.weight = section ? String(section.weight) : ''
+      nextForm.evaluators = section?.evaluators || ''
     },
     clearError
   })
@@ -104,7 +106,9 @@ export function useTenderSectionsSettings(tenderId: string, sections: MaybeRefOr
       return false
     }
 
-    return form.name.trim() !== selectedSection.value.name || parsedWeight !== selectedSection.value.weight
+    return form.name.trim() !== selectedSection.value.name
+      || parsedWeight !== selectedSection.value.weight
+      || form.evaluators.trim() !== selectedSection.value.evaluators
   })
 
   function notifyIfWeightTotalIsInvalid(nextTotal: number) {
@@ -141,12 +145,14 @@ export function useTenderSectionsSettings(tenderId: string, sections: MaybeRefOr
       if (modalMode.value === 'create') {
         await addSection({
           name: form.name.trim(),
-          weight: parsedWeight
+          weight: parsedWeight,
+          evaluators: form.evaluators.trim()
         })
       } else if (selectedSection.value) {
         await updateSection(selectedSection.value.id, {
           name: form.name.trim(),
-          weight: parsedWeight
+          weight: parsedWeight,
+          evaluators: form.evaluators.trim()
         })
       }
 

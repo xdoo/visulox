@@ -141,6 +141,7 @@ const columns: TableColumn<SectionSettingsRow>[] = [
       v-model:open="isModalOpen"
       v-model:name="form.name"
       v-model:weight="form.weight"
+      v-model:evaluators="form.evaluators"
       :mode="modalMode"
       :selected-section="selectedSection"
       :pending-action="pendingAction"

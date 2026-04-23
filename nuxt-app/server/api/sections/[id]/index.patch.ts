@@ -7,22 +7,25 @@ import { hasSectionQuestions, loadSection } from '../../../utils/tender-settings
 interface UpdateSectionBody {
   name: string
   weight: number
+  evaluators: string
 }
 
 interface UpdatedSectionRow {
   id: string | number
   name: string
   weight: number
+  evaluators: string | null
 }
 
 function normalizeBody(body: Partial<UpdateSectionBody> | null | undefined): UpdateSectionBody {
   return {
     name: body?.name?.trim() || '',
-    weight: body?.weight as number
+    weight: body?.weight as number,
+    evaluators: body?.evaluators?.trim() || ''
   }
 }
 
-export default defineEventHandler(async (event): Promise<{ id: string, name: string, weight: number }> => {
+export default defineEventHandler(async (event): Promise<{ id: string, name: string, weight: number, evaluators: string }> => {
   const sectionId = event.context.params?.id?.trim()
 
   if (!sectionId) {
@@ -73,8 +76,8 @@ export default defineEventHandler(async (event): Promise<{ id: string, name: str
     }
 
     const result = await client.query<UpdatedSectionRow>(
-      'UPDATE abschnitte SET name = $1, weight = $2 WHERE id = $3 RETURNING id, name, weight',
-      [body.name, body.weight, sectionId]
+      'UPDATE abschnitte SET name = $1, weight = $2, evaluators = $3 WHERE id = $4 RETURNING id, name, weight, evaluators',
+      [body.name, body.weight, body.evaluators || null, sectionId]
     )
 
     const updatedSection = result.rows[0]
@@ -91,7 +94,8 @@ export default defineEventHandler(async (event): Promise<{ id: string, name: str
     return {
       id: String(updatedSection.id),
       name: updatedSection.name,
-      weight: updatedSection.weight
+      weight: updatedSection.weight,
+      evaluators: updatedSection.evaluators || ''
     }
   } catch (error) {
     await client.query('ROLLBACK')
