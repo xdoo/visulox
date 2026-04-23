@@ -190,24 +190,18 @@ useSeoMeta({
     :style="{ '--report-primary-color': reportPrimaryColor }"
   >
     <section class="report-cover">
-      <p class="report-kicker">
-        Ausschreibungsbewertung
-      </p>
-      <h1>{{ tender?.name || 'Ausschreibung' }}</h1>
-      <dl v-if="tender" class="report-meta">
-        <div>
-          <dt>Anbieter</dt>
-          <dd>{{ tender.vendors.length }}</dd>
-        </div>
-        <div>
-          <dt>Bewertungsskala</dt>
-          <dd>{{ tender.settings.scoreRange[0] }} bis {{ tender.settings.scoreRange[1] }}</dd>
-        </div>
-        <div>
-          <dt>Kostenbetrachtung</dt>
-          <dd>{{ tender.settings.considerationYears }} Jahre</dd>
-        </div>
-      </dl>
+      <img
+        src="/vkb-logo.svg"
+        alt="VKB Logo"
+        class="report-cover-logo"
+      >
+
+      <div class="report-cover-panel">
+        <p class="report-kicker">
+          Ausschreibungsbewertung
+        </p>
+        <h1>{{ tender?.name || 'Ausschreibung' }}</h1>
+      </div>
     </section>
 
     <UAlert
@@ -398,6 +392,10 @@ useSeoMeta({
   margin: 12mm;
 }
 
+@page :first {
+  margin: 0;
+}
+
 .report-page {
   box-sizing: border-box;
   min-height: 100vh;
@@ -405,12 +403,35 @@ useSeoMeta({
 }
 
 .report-cover {
+  background-image: url('/vkb_background.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   break-after: always;
   box-sizing: border-box;
   display: flex;
-  min-height: 250mm;
+  min-height: 297mm;
   flex-direction: column;
-  justify-content: center;
+  padding: 22mm 20mm;
+  position: relative;
+  width: 210mm;
+}
+
+.report-cover-logo {
+  height: auto;
+  left: 10mm;
+  max-width: 48mm;
+  position: absolute;
+  top: 10mm;
+}
+
+.report-cover-panel {
+  background: rgba(255, 255, 255, 0.94);
+  box-sizing: border-box;
+  margin-top: 62mm;
+  min-height: 69mm;
+  padding: 12mm 14mm;
+  width: 156mm;
 }
 
 .report-kicker {
@@ -421,10 +442,12 @@ useSeoMeta({
 }
 
 .report-cover h1 {
-  max-width: 170mm;
+  color: var(--report-primary-color);
+  max-width: 128mm;
   font-size: 30pt;
   font-weight: 750;
   line-height: 1.1;
+  margin: 0;
 }
 
 .report-meta {
