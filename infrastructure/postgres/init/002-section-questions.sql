@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS abschnittsfragen (
   nr TEXT NOT NULL,
   frage TEXT NOT NULL,
   punkte NUMERIC(12, 4) NOT NULL,
+  kommentar TEXT,
   anteil NUMERIC(12, 6) NOT NULL,
   gewichtete_punkte NUMERIC(12, 4) NOT NULL,
   CONSTRAINT abschnittsfragen_abschnitt_anbieter_nr_unique UNIQUE (abschnitt_id, anbieter_id, nr)

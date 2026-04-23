@@ -62,6 +62,7 @@ interface SectionQuestionRow {
   nr: string
   frage: string
   punkte: string | number
+  kommentar: string | null
   anteil: string | number
   gewichtete_punkte: string | number
 }
@@ -159,7 +160,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
 
     if (sectionIds.length > 0) {
       const questionsResult = await client.query<SectionQuestionRow>(
-        `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte
+        `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte
          FROM abschnittsfragen
          WHERE abschnitt_id = ANY($1::bigint[])
          ORDER BY id ASC`,
@@ -177,6 +178,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
           nr: row.nr,
           frage: row.frage,
           punkte: toNumber(row.punkte),
+          kommentar: row.kommentar || '',
           anteil: toNumber(row.anteil),
           gewichtetePunkte: toNumber(row.gewichtete_punkte)
         })

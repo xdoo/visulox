@@ -30,15 +30,15 @@ describe('useTenderValueScore', () => {
             {
               vendorId: '1',
               questions: [
-                { id: 'q1', nr: '1', frage: 'A', punkte: 8, anteil: 0.36, gewichtetePunkte: 0 },
-                { id: 'q2', nr: '2', frage: 'B', punkte: 6, anteil: 0.24, gewichtetePunkte: 0 }
+                { id: 'q1', nr: '1', frage: 'A', punkte: 8, kommentar: '', anteil: 0.36, gewichtetePunkte: 0 },
+                { id: 'q2', nr: '2', frage: 'B', punkte: 6, kommentar: '', anteil: 0.24, gewichtetePunkte: 0 }
               ]
             },
             {
               vendorId: '2',
               questions: [
-                { id: 'q3', nr: '1', frage: 'A', punkte: 7, anteil: 0.36, gewichtetePunkte: 0 },
-                { id: 'q4', nr: '2', frage: 'B', punkte: 7, anteil: 0.24, gewichtetePunkte: 0 }
+                { id: 'q3', nr: '1', frage: 'A', punkte: 7, kommentar: '', anteil: 0.36, gewichtetePunkte: 0 },
+                { id: 'q4', nr: '2', frage: 'B', punkte: 7, kommentar: '', anteil: 0.24, gewichtetePunkte: 0 }
               ]
             },
             {
@@ -55,13 +55,13 @@ describe('useTenderValueScore', () => {
             {
               vendorId: '1',
               questions: [
-                { id: 'q5', nr: '1', frage: 'C', punkte: 9, anteil: 0.4, gewichtetePunkte: 0 }
+                { id: 'q5', nr: '1', frage: 'C', punkte: 9, kommentar: '', anteil: 0.4, gewichtetePunkte: 0 }
               ]
             },
             {
               vendorId: '2',
               questions: [
-                { id: 'q6', nr: '1', frage: 'C', punkte: 5, anteil: 0.4, gewichtetePunkte: 0 }
+                { id: 'q6', nr: '1', frage: 'C', punkte: 5, kommentar: '', anteil: 0.4, gewichtetePunkte: 0 }
               ]
             },
             {

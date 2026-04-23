@@ -10,7 +10,11 @@ interface UseSectionCsvUploadOptions {
   onError: (message: string) => void
 }
 
-type CsvQuestionRowTuple = [string, string, string, string]
+type CsvQuestionRowTuple = [string, string, string, string, string]
+
+function normalizeCellValue(value: string | undefined) {
+  return value?.replace(/^\uFEFF/, '').trim() || ''
+}
 
 export function formatPercentageValue(value: number) {
   return value.toFixed(2).replace(/\.?0+$/, '')
@@ -63,7 +67,9 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
   }
 
   function parseNumber(value: string) {
-    const normalizedValue = value.trim().replace(',', '.')
+    const normalizedValue = normalizeCellValue(value)
+      .replace(/\s|%/g, '')
+      .replace(',', '.')
     const parsedValue = Number(normalizedValue)
 
     return Number.isFinite(parsedValue) ? parsedValue : null
@@ -86,20 +92,42 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
   }
 
   function normalizeCsvRow(row: string[], index: number): CsvQuestionRowTuple {
-    if (row.length !== 4) {
-      throw new Error(`CSV-Zeile ${index + 1} muss genau 4 Spalten enthalten.`)
+    if (row.length !== 4 && row.length !== 5 && row.length !== 6) {
+      throw new Error(`CSV-Zeile ${index + 1} muss 4, 5 oder 6 Spalten enthalten.`)
+    }
+
+    if (row.length === 4) {
+      return [
+        normalizeCellValue(row[0]),
+        normalizeCellValue(row[1]),
+        normalizeCellValue(row[2]),
+        '',
+        normalizeCellValue(row[3])
+      ]
+    }
+
+    if (row.length === 6) {
+      return [
+        normalizeCellValue(row[0]),
+        normalizeCellValue(row[1]),
+        normalizeCellValue(row[2]),
+        normalizeCellValue(row[3]),
+        normalizeCellValue(row[5])
+      ]
     }
 
     return [
-      row[0]?.trim() || '',
-      row[1]?.trim() || '',
-      row[2]?.trim() || '',
-      row[3]?.trim() || ''
+      normalizeCellValue(row[0]),
+      normalizeCellValue(row[1]),
+      normalizeCellValue(row[2]),
+      normalizeCellValue(row[3]),
+      normalizeCellValue(row[4])
     ]
   }
 
   function parseCsvQuestions(csvContent: string): CriteriaCsvQuestionRow[] {
     const result = Papa.parse<string[]>(csvContent, {
+      delimiter: ';',
       header: false,
       skipEmptyLines: true
     })
@@ -109,7 +137,7 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
     }
 
     return result.data.map((row, index) => {
-      const [nr, frage, punkteRaw, anteilRaw] = normalizeCsvRow(row, index)
+      const [nr, frage, punkteRaw, kommentar, anteilRaw] = normalizeCsvRow(row, index)
       validateRequiredValue(nr, 'Nr', index)
       validateRequiredValue(frage, 'Frage', index)
       validateRequiredValue(punkteRaw, 'Punkte', index)
@@ -130,6 +158,7 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
         nr,
         frage,
         punkte,
+        kommentar,
         anteil
       }
     })

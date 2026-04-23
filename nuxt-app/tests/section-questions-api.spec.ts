@@ -41,8 +41,8 @@ describe('POST /api/sections/:id/questions', () => {
       .mockResolvedValueOnce({ rows: [{ id: 7, ausschreibung_id: 1, weight: 50 }] })
       .mockResolvedValueOnce({ rows: [{ id: 11, ausschreibung_id: 1 }] })
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ id: 101, nr: '1', frage: 'Frage A', punkte: '10', anteil: '0.3', gewichtete_punkte: '3.0' }] })
-      .mockResolvedValueOnce({ rows: [{ id: 102, nr: '2', frage: 'Frage B', punkte: '20', anteil: '0.2', gewichtete_punkte: '4.0' }] })
+      .mockResolvedValueOnce({ rows: [{ id: 101, nr: '1', frage: 'Frage A', punkte: '10', kommentar: 'Auswertung A', anteil: '0.3', gewichtete_punkte: '3.0' }] })
+      .mockResolvedValueOnce({ rows: [{ id: 102, nr: '2', frage: 'Frage B', punkte: '20', kommentar: '', anteil: '0.2', gewichtete_punkte: '4.0' }] })
       .mockResolvedValueOnce({ rows: [] })
     const release = vi.fn()
 
@@ -50,8 +50,8 @@ describe('POST /api/sections/:id/questions', () => {
     readBody.mockResolvedValue({
       vendorId: '11',
       questions: [
-        { nr: '1', frage: 'Frage A', punkte: 10, anteil: 0.3 },
-        { nr: '2', frage: 'Frage B', punkte: 20, anteil: 0.2 }
+        { nr: '1', frage: 'Frage A', punkte: 10, kommentar: 'Auswertung A', anteil: 0.3 },
+        { nr: '2', frage: 'Frage B', punkte: 20, kommentar: '', anteil: 0.2 }
       ]
     })
 
@@ -69,22 +69,22 @@ describe('POST /api/sections/:id/questions', () => {
     expect(query).toHaveBeenNthCalledWith(3, 'SELECT id, ausschreibung_id FROM anbieter WHERE id = $1 LIMIT 1', ['11'])
     expect(query).toHaveBeenNthCalledWith(4, 'DELETE FROM abschnittsfragen WHERE abschnitt_id = $1 AND anbieter_id = $2', ['7', '11'])
     expect(query).toHaveBeenNthCalledWith(5,
-      `INSERT INTO abschnittsfragen (abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, nr, frage, punkte, anteil, gewichtete_punkte`,
-      ['7', '11', '1', 'Frage A', 10, 0.3, 3]
+      `INSERT INTO abschnittsfragen (abschnitt_id, anbieter_id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte`,
+      ['7', '11', '1', 'Frage A', 10, 'Auswertung A', 0.3, 3]
     )
     expect(query).toHaveBeenNthCalledWith(6,
-      `INSERT INTO abschnittsfragen (abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, nr, frage, punkte, anteil, gewichtete_punkte`,
-      ['7', '11', '2', 'Frage B', 20, 0.2, 4]
+      `INSERT INTO abschnittsfragen (abschnitt_id, anbieter_id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte`,
+      ['7', '11', '2', 'Frage B', 20, '', 0.2, 4]
     )
     expect(query).toHaveBeenNthCalledWith(7, 'COMMIT')
     expect(response).toEqual({
       questions: [
-        { id: '101', nr: '1', frage: 'Frage A', punkte: 10, anteil: 0.3, gewichtetePunkte: 3 },
-        { id: '102', nr: '2', frage: 'Frage B', punkte: 20, anteil: 0.2, gewichtetePunkte: 4 }
+        { id: '101', nr: '1', frage: 'Frage A', punkte: 10, kommentar: 'Auswertung A', anteil: 0.3, gewichtetePunkte: 3 },
+        { id: '102', nr: '2', frage: 'Frage B', punkte: 20, kommentar: '', anteil: 0.2, gewichtetePunkte: 4 }
       ]
     })
     expect(release).toHaveBeenCalledTimes(1)
@@ -102,8 +102,8 @@ describe('POST /api/sections/:id/questions', () => {
     readBody.mockResolvedValue({
       vendorId: '11',
       questions: [
-        { nr: '1', frage: 'Frage A', punkte: 10, anteil: 0.3 },
-        { nr: '2', frage: 'Frage B', punkte: 20, anteil: 0.2 }
+        { nr: '1', frage: 'Frage A', punkte: 10, kommentar: '', anteil: 0.3 },
+        { nr: '2', frage: 'Frage B', punkte: 20, kommentar: '', anteil: 0.2 }
       ]
     })
 
@@ -132,8 +132,8 @@ describe('POST /api/sections/:id/questions', () => {
     readBody.mockResolvedValue({
       vendorId: '11',
       questions: [
-        { nr: '1.1', frage: 'Frage A', punkte: 10, anteil: 0.3 },
-        { nr: '1.1', frage: 'Frage B', punkte: 20, anteil: 0.2 }
+        { nr: '1.1', frage: 'Frage A', punkte: 10, kommentar: '', anteil: 0.3 },
+        { nr: '1.1', frage: 'Frage B', punkte: 20, kommentar: '', anteil: 0.2 }
       ]
     })
 

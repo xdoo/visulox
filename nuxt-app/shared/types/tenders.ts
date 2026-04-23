@@ -21,6 +21,7 @@ export interface SectionQuestionInput {
   nr: string
   frage: string
   punkte: number
+  kommentar: string
   anteil: number
 }
 
@@ -96,6 +97,7 @@ export interface SectionQuestion {
   nr: string
   frage: string
   punkte: number
+  kommentar: string
   anteil: number
   gewichtetePunkte: number
 }

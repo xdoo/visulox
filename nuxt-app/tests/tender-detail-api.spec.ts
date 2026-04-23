@@ -76,8 +76,8 @@ describe('GET /api/tenders/:id', () => {
       })
       .mockResolvedValueOnce({
         rows: [
-          { id: 31, abschnitt_id: 21, anbieter_id: 11, nr: '1', frage: 'Service', punkte: '10', anteil: '0.6', gewichtete_punkte: '6.0' },
-          { id: 32, abschnitt_id: 21, anbieter_id: 12, nr: '1', frage: 'Betrieb', punkte: '8', anteil: '0.6', gewichtete_punkte: '4.8' }
+          { id: 31, abschnitt_id: 21, anbieter_id: 11, nr: '1', frage: 'Service', punkte: '10', kommentar: 'Stark', anteil: '0.6', gewichtete_punkte: '6.0' },
+          { id: 32, abschnitt_id: 21, anbieter_id: 12, nr: '1', frage: 'Betrieb', punkte: '8', kommentar: null, anteil: '0.6', gewichtete_punkte: '4.8' }
         ]
       })
     const release = vi.fn()
@@ -113,7 +113,7 @@ describe('GET /api/tenders/:id', () => {
     )
     expect(query).toHaveBeenNthCalledWith(7, 'SELECT id, name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(8,
-      `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte
+      `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte
          FROM abschnittsfragen
          WHERE abschnitt_id = ANY($1::bigint[])
          ORDER BY id ASC`,
@@ -149,13 +149,13 @@ describe('GET /api/tenders/:id', () => {
             {
               vendorId: '11',
               questions: [
-                { id: '31', nr: '1', frage: 'Service', punkte: 10, anteil: 0.6, gewichtetePunkte: 6 }
+                { id: '31', nr: '1', frage: 'Service', punkte: 10, kommentar: 'Stark', anteil: 0.6, gewichtetePunkte: 6 }
               ]
             },
             {
               vendorId: '12',
               questions: [
-                { id: '32', nr: '1', frage: 'Betrieb', punkte: 8, anteil: 0.6, gewichtetePunkte: 4.8 }
+                { id: '32', nr: '1', frage: 'Betrieb', punkte: 8, kommentar: '', anteil: 0.6, gewichtetePunkte: 4.8 }
               ]
             }
           ]

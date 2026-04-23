@@ -69,10 +69,11 @@ const { fulfillmentLabel, fulfillmentBadgeColor } = useCriteriaSectionFulfillmen
     <div class="space-y-4">
       <div v-if="vendorQuestions.length > 0" class="space-y-2">
         <div class="overflow-hidden rounded-lg border ui-border">
-          <div class="grid grid-cols-12 gap-4 bg-gray-50 px-4 py-3 text-sm font-medium dark:bg-gray-950">
+          <div class="grid grid-cols-14 gap-4 bg-gray-50 px-4 py-3 text-sm font-medium dark:bg-gray-950">
             <div class="col-span-1">Nr</div>
-            <div class="col-span-8">Frage</div>
+            <div class="col-span-7">Frage</div>
             <div class="col-span-1 text-right">Punkte</div>
+            <div class="col-span-3">Kommentar</div>
             <div class="col-span-1 text-right">Anteil</div>
             <div class="col-span-1 text-right">gew. Punkte</div>
           </div>
@@ -81,11 +82,14 @@ const { fulfillmentLabel, fulfillmentBadgeColor } = useCriteriaSectionFulfillmen
             <div
               v-for="question in vendorQuestions"
               :key="`${props.section.id}-${question.nr}-${question.frage}`"
-              class="grid grid-cols-12 gap-4 px-4 py-3 text-sm"
+              class="grid grid-cols-14 gap-4 px-4 py-3 text-sm"
             >
               <div class="col-span-1">{{ question.nr }}</div>
-              <div class="col-span-8">{{ question.frage }}</div>
+              <div class="col-span-7">{{ question.frage }}</div>
               <div class="col-span-1 text-right">{{ question.punkte }}</div>
+              <div class="col-span-3 whitespace-pre-wrap break-words ui-text-muted">
+                {{ question.kommentar || '—' }}
+              </div>
               <div class="col-span-1 text-right">{{ formatPercentage(question.anteil) }}</div>
               <div class="col-span-1 text-right">{{ formatWeightedPoints(question.punkte, question.anteil) }}</div>
             </div>

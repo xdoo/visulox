@@ -19,13 +19,13 @@ describe('useTenderCategoryComparison', () => {
             {
               vendorId: '1',
               questions: [
-                { id: 'q1', nr: '1', frage: 'A', punkte: 10, anteil: 0.3, gewichtetePunkte: 0 }
+                { id: 'q1', nr: '1', frage: 'A', punkte: 10, kommentar: '', anteil: 0.3, gewichtetePunkte: 0 }
               ]
             },
             {
               vendorId: '2',
               questions: [
-                { id: 'q2', nr: '1', frage: 'A', punkte: 6, anteil: 0.3, gewichtetePunkte: 0 }
+                { id: 'q2', nr: '1', frage: 'A', punkte: 6, kommentar: '', anteil: 0.3, gewichtetePunkte: 0 }
               ]
             },
             {
@@ -42,13 +42,13 @@ describe('useTenderCategoryComparison', () => {
             {
               vendorId: '1',
               questions: [
-                { id: 'q3', nr: '1', frage: 'B', punkte: 8, anteil: 0.2, gewichtetePunkte: 0 }
+                { id: 'q3', nr: '1', frage: 'B', punkte: 8, kommentar: '', anteil: 0.2, gewichtetePunkte: 0 }
               ]
             },
             {
               vendorId: '2',
               questions: [
-                { id: 'q4', nr: '1', frage: 'B', punkte: 8, anteil: 0.2, gewichtetePunkte: 0 }
+                { id: 'q4', nr: '1', frage: 'B', punkte: 8, kommentar: '', anteil: 0.2, gewichtetePunkte: 0 }
               ]
             },
             {
