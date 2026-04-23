@@ -229,7 +229,7 @@ useSeoMeta({
         <p class="report-kicker">
           Inhaltsverzeichnis
         </p>
-        <h2>Aufbau des Reports</h2>
+        <h2></h2>
         <ol>
           <li
             v-for="chapter in reportChapters"
