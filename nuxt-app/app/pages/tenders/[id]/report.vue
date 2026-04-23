@@ -121,6 +121,19 @@ const categoryComparisonRows = computed(() => {
   )
 })
 
+const categoryComparisonSections = computed(() => {
+  if (!tender.value) {
+    return []
+  }
+
+  const sectionById = new Map(tender.value.sections.map(section => [section.id, section]))
+
+  return categoryComparisonRows.value.map(row => ({
+    row,
+    section: sectionById.get(row.sectionId)
+  }))
+})
+
 const reportChartWidth = '700px'
 const reportPrimaryColor = computed(() => tender.value?.settings.chartPalette[0]?.fillColor || '#0D57A6')
 
@@ -154,12 +167,6 @@ const reportChapters = [
     id: 'chapter-kostenbewertung',
     title: 'Kostenbewertung',
     description: 'Dieses Kapitel betrachtet die wirtschaftliche Perspektive über den definierten Zeitraum. Es trennt einmalige Projektkosten von laufenden Run-Kosten und macht sichtbar, wodurch Kostenunterschiede zwischen den Anbietern entstehen.'
-  },
-  {
-    number: '6',
-    id: 'chapter-anhang',
-    title: 'Anhang',
-    description: 'Dieses Kapitel enthält Detailauswertungen zur Nachvollziehbarkeit. Die Inhalte unterstützen die Prüfung einzelner Bewertungsbereiche, ohne die Management Summary mit Detailtiefe zu überladen.'
   }
 ]
 
@@ -301,6 +308,31 @@ useSeoMeta({
             </p>
           </ReportChartBlock>
 
+          <div v-if="hasAnyQuestions" class="report-category-sections">
+            <section
+              v-for="entry in categoryComparisonSections"
+              :key="entry.row.sectionId"
+              class="report-category-section"
+            >
+              <h3>{{ entry.row.sectionName }} (Gewicht {{ Math.round(entry.row.sectionWeight) }}%)</h3>
+              <p class="report-category-description">
+                {{ entry.section?.description || 'Für diese Kategorie wurde keine Beschreibung erfasst.' }}
+              </p>
+
+              <div class="report-category-chart">
+                <TenderCategoryComparisonChart
+                  :row="entry.row"
+                  :palette="tender.settings.chartPalette"
+                  renderer="svg"
+                  :width="reportChartWidth"
+                />
+              </div>
+
+              <p class="report-category-note">
+                Das Diagramm vergleicht die fachliche Erfüllung dieser Kategorie über alle Anbieter. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.
+              </p>
+            </section>
+          </div>
         </div>
       </section>
 
@@ -360,27 +392,6 @@ useSeoMeta({
         </div>
       </section>
 
-      <section :id="reportChapters[5].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[5]" />
-        <div v-if="hasAnyQuestions" class="report-category-chart-grid">
-          <ReportChartBlock
-            v-for="row in categoryComparisonRows"
-            :key="row.sectionId"
-            :title="row.sectionName"
-            :description="`Kategoriegewicht: ${Math.round(row.sectionWeight)}%. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.`"
-          >
-            <TenderCategoryComparisonChart
-              :row="row"
-              :palette="tender.settings.chartPalette"
-              renderer="svg"
-              :width="reportChartWidth"
-            />
-          </ReportChartBlock>
-        </div>
-        <p v-else class="report-empty-state">
-          Es wurden noch keine Fragen importiert. Die Kategorievergleiche erscheinen, sobald Daten vorliegen.
-        </p>
-      </section>
     </div>
   </main>
 </template>
@@ -535,12 +546,46 @@ useSeoMeta({
   overflow: hidden;
 }
 
-.report-category-chart-grid {
+.report-category-sections {
   display: flex;
   flex-direction: column;
   gap: 8mm;
   max-width: 100%;
   overflow: hidden;
+}
+
+.report-category-section {
+  break-inside: avoid;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+}
+
+.report-category-section h3 {
+  color: #111827;
+  font-size: 15pt;
+  font-weight: 750;
+  margin: 0;
+}
+
+.report-category-description {
+  color: #374151;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.report-category-chart {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.report-category-note {
+  color: #6b7280;
+  font-size: 9.5pt;
+  line-height: 1.45;
+  margin: 0;
 }
 
 .report-empty-state {
