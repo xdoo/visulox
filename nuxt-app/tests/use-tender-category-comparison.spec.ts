@@ -15,6 +15,8 @@ describe('useTenderCategoryComparison', () => {
           id: '10',
           name: 'Funktional',
           weight: 30,
+          evaluators: '',
+          description: '',
           questionsByVendor: [
             {
               vendorId: '1',
@@ -38,6 +40,8 @@ describe('useTenderCategoryComparison', () => {
           id: '11',
           name: 'Betrieb',
           weight: 20,
+          evaluators: '',
+          description: '',
           questionsByVendor: [
             {
               vendorId: '1',

@@ -35,7 +35,13 @@ const {
 const columns: TableColumn<VendorSettingsRow>[] = [
   {
     accessorKey: 'name',
-    header: 'Anbieter'
+    header: 'Anbieter',
+    meta: {
+      class: {
+        th: 'whitespace-normal',
+        td: 'whitespace-normal break-words'
+      }
+    }
   },
   {
     id: 'actions',
@@ -84,7 +90,7 @@ const columns: TableColumn<VendorSettingsRow>[] = [
         v-else
         :data="rows"
         :columns="columns"
-        class="flex-1"
+        class="w-full table-fixed"
       >
         <template #actions-cell="{ row }">
           <div class="flex items-center gap-2">

@@ -58,6 +58,7 @@ const totalSectionWeight = computed(() => props.sections.reduce((sum, section) =
         <thead>
           <tr>
             <th>Kategorie</th>
+            <th>Beschreibung</th>
             <th class="numeric">Gewicht</th>
             <th>Bewertung durchgeführt durch</th>
           </tr>
@@ -68,6 +69,9 @@ const totalSectionWeight = computed(() => props.sections.reduce((sum, section) =
             :key="section.id"
           >
             <td>{{ section.name }}</td>
+            <td class="description-cell" :class="{ muted: !section.description }">
+              {{ section.description || 'Keine Beschreibung erfasst' }}
+            </td>
             <td class="numeric">{{ Math.round(section.weight) }}%</td>
             <td class="evaluators-cell" :class="{ muted: !section.evaluators }">
               {{ section.evaluators || 'TODO: Verantwortliche Bewertung noch nicht erfasst' }}
@@ -75,6 +79,7 @@ const totalSectionWeight = computed(() => props.sections.reduce((sum, section) =
           </tr>
           <tr class="summary-row">
             <td>Summe</td>
+            <td />
             <td class="numeric">{{ Math.round(totalSectionWeight) }}%</td>
             <td />
           </tr>
@@ -218,6 +223,10 @@ th {
 }
 
 .evaluators-cell {
+  white-space: pre-line;
+}
+
+.description-cell {
   white-space: pre-line;
 }
 

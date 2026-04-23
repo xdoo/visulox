@@ -4,6 +4,7 @@ interface SectionPayload {
   name: string
   weight: number
   evaluators: string
+  description: string
 }
 
 type PostSectionFetcher = <T>(request: string, options: {

@@ -91,12 +91,6 @@ useSeoMeta({
         :palette="tender.settings.chartPalette"
       />
 
-      <TenderCategoryComparisonTable
-        :vendors="tender.vendors"
-        :sections="tender.sections"
-        :score-range="tender.settings.scoreRange"
-      />
-
       <TenderCategoryComparisonOverview
         :vendors="tender.vendors"
         :sections="tender.sections"

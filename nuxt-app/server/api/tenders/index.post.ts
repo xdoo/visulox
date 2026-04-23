@@ -32,8 +32,8 @@ export async function insertTender(client: Pick<PoolClient, 'query'>, payload: C
 
   for (const section of payload.sections) {
     await client.query(
-      'INSERT INTO abschnitte (ausschreibung_id, name, weight, evaluators) VALUES ($1, $2, $3, $4)',
-      [tenderId, section.name, section.weight, section.evaluators?.trim() || null]
+      'INSERT INTO abschnitte (ausschreibung_id, name, weight, evaluators, description) VALUES ($1, $2, $3, $4, $5)',
+      [tenderId, section.name, section.weight, section.evaluators?.trim() || null, section.description?.trim() || null]
     )
   }
 

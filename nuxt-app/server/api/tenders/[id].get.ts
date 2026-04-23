@@ -54,6 +54,7 @@ interface SectionRow {
   name: string
   weight: number
   evaluators: string | null
+  description: string | null
 }
 
 interface SectionQuestionRow {
@@ -152,7 +153,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
       : []
 
     const sectionsResult = await client.query<SectionRow>(
-      'SELECT id, name, weight, evaluators FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
+      'SELECT id, name, weight, evaluators, description FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
       [tenderId]
     )
 
@@ -198,6 +199,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
         name: row.name,
         weight: row.weight,
         evaluators: row.evaluators || '',
+        description: row.description || '',
         questionsByVendor: vendors.map<TenderSectionQuestionsByVendor>((vendor) => ({
           vendorId: vendor.id,
           questions: questionsByVendor.get(vendor.id) || []

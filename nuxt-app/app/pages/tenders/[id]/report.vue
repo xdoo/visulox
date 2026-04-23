@@ -301,11 +301,6 @@ useSeoMeta({
             </p>
           </ReportChartBlock>
 
-          <TenderCategoryComparisonTable
-            :vendors="tender.vendors"
-            :sections="tender.sections"
-            :score-range="tender.settings.scoreRange"
-          />
         </div>
       </section>
 

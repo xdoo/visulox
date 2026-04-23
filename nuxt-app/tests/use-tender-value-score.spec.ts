@@ -26,6 +26,8 @@ describe('useTenderValueScore', () => {
           id: '10',
           name: 'Funktional',
           weight: 60,
+          evaluators: '',
+          description: '',
           questionsByVendor: [
             {
               vendorId: '1',
@@ -51,6 +53,8 @@ describe('useTenderValueScore', () => {
           id: '11',
           name: 'Betrieb',
           weight: 40,
+          evaluators: '',
+          description: '',
           questionsByVendor: [
             {
               vendorId: '1',

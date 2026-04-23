@@ -83,7 +83,7 @@ useSeoMeta({
               description="Abschnitte und Anbieter können nicht gelöscht werden, sobald dafür Fragen importiert wurden. Bei Abschnitten bleibt der Name bearbeitbar, das Gewicht ist jedoch gesperrt, solange für diesen Abschnitt bereits Fragen importiert wurden."
             />
 
-            <div class="grid gap-6 xl:grid-cols-2">
+            <div class="space-y-6">
               <TenderSettingsSectionsCard
                 :tender-id="tenderId"
                 :sections="tender?.sections || []"

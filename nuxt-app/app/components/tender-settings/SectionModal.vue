@@ -5,6 +5,7 @@ const open = defineModel<boolean>('open', { required: true })
 const name = defineModel<string>('name', { required: true })
 const weight = defineModel<string>('weight', { required: true })
 const evaluators = defineModel<string>('evaluators', { required: true })
+const description = defineModel<string>('description', { required: true })
 
 const props = defineProps<{
   mode: 'create' | 'edit'
@@ -72,6 +73,20 @@ defineEmits<{
             autoresize
             :rows="3"
             placeholder="Bewerter eintragen"
+            :disabled="pendingAction !== ''"
+          />
+        </UFormField>
+
+        <UFormField
+          label="Beschreibung"
+          description="Die Beschreibung wird im Report bei der Methodik der Ausschreibung angezeigt."
+        >
+          <UTextarea
+            v-model="description"
+            class="w-full"
+            autoresize
+            :rows="4"
+            placeholder="Beschreibung der Kategorie eintragen"
             :disabled="pendingAction !== ''"
           />
         </UFormField>
