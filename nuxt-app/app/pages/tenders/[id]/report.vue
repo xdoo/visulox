@@ -143,14 +143,16 @@ useSeoMeta({
 }
 
 .report-page {
+  box-sizing: border-box;
   min-height: 100vh;
-  padding: 12mm;
+  overflow: visible;
 }
 
 .report-cover {
-  break-after: page;
+  break-after: always;
+  box-sizing: border-box;
   display: flex;
-  min-height: 260mm;
+  min-height: 250mm;
   flex-direction: column;
   justify-content: center;
 }
@@ -190,11 +192,17 @@ useSeoMeta({
 .report-content {
   display: flex;
   flex-direction: column;
-  gap: 8mm;
+  gap: 0;
 }
 
 .report-section {
-  break-inside: avoid;
+  break-before: page;
+  break-inside: auto;
+  padding-top: 0;
+}
+
+.report-content .report-section:first-child {
+  break-before: auto;
 }
 
 .report-page :deep(button),
@@ -208,8 +216,22 @@ useSeoMeta({
 }
 
 @media print {
+  :global(html),
+  :global(body),
+  :global(#__nuxt) {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
   .report-page {
     padding: 0;
+  }
+
+  .report-page :deep(.ui-card),
+  .report-page :deep(.rounded-xl),
+  .report-page :deep(.rounded-lg) {
+    break-inside: auto;
   }
 }
 </style>

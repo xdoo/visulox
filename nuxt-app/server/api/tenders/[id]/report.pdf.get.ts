@@ -43,12 +43,13 @@ export default defineEventHandler(async (event) => {
 
     const pdf = await page.pdf({
       format: 'A4',
+      preferCSSPageSize: true,
       printBackground: true,
       margin: {
-        top: '12mm',
-        right: '12mm',
-        bottom: '12mm',
-        left: '12mm'
+        top: '0',
+        right: '0',
+        bottom: '0',
+        left: '0'
       }
     })
 
