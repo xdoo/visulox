@@ -48,7 +48,7 @@ describe('useTenderVendorsSettings', () => {
           name: 'Qualitaet',
           weight: 100,
           questionsByVendor: [
-            { vendorId: '1', questions: [{ id: '99', nr: '1', frage: 'A', punkte: 1, anteil: 1, gewichtetePunkte: 1 }] },
+            { vendorId: '1', questions: [{ id: '99', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 1, gewichtetePunkte: 1 }] },
             { vendorId: '2', questions: [] }
           ]
         }
@@ -73,7 +73,7 @@ describe('useTenderVendorsSettings', () => {
         name: 'Qualitaet',
         weight: 100,
         questionsByVendor: [
-          { vendorId: '1', questions: [{ id: '99', nr: '1', frage: 'A', punkte: 1, anteil: 1, gewichtetePunkte: 1 }] }
+          { vendorId: '1', questions: [{ id: '99', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 1, gewichtetePunkte: 1 }] }
         ]
       }
     ])

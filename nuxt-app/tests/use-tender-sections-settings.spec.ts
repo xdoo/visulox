@@ -54,7 +54,7 @@ describe('useTenderSectionsSettings', () => {
         name: 'Qualitaet',
         weight: 60,
         questionsByVendor: [
-          { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, anteil: 0.6, gewichtetePunkte: 0.6 }] }
+          { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 0.6, gewichtetePunkte: 0.6 }] }
         ]
       },
       {
@@ -103,7 +103,7 @@ describe('useTenderSectionsSettings', () => {
         name: 'Qualitaet',
         weight: 60,
         questionsByVendor: [
-          { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, anteil: 0.6, gewichtetePunkte: 0.6 }] }
+          { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 0.6, gewichtetePunkte: 0.6 }] }
         ]
       }
     ])

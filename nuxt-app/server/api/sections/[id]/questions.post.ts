@@ -27,6 +27,7 @@ interface SavedSectionQuestionRow {
   nr: string
   frage: string
   punkte: string | number
+  kommentar: string | null
   anteil: string | number
   gewichtete_punkte: string | number
 }
@@ -38,6 +39,7 @@ function toNumber(value: string | number) {
 function normalizeQuestion(input: Partial<SectionQuestionInput>, index: number): SectionQuestionInput {
   const nr = input.nr?.trim() || ''
   const frage = input.frage?.trim() || ''
+  const kommentar = input.kommentar?.trim() || ''
   const punkte = input.punkte
   const anteil = input.anteil
 
@@ -73,6 +75,7 @@ function normalizeQuestion(input: Partial<SectionQuestionInput>, index: number):
     nr,
     frage,
     punkte,
+    kommentar,
     anteil
   }
 }
@@ -97,6 +100,7 @@ function mapQuestionRow(row: SavedSectionQuestionRow): SectionQuestion {
     nr: row.nr,
     frage: row.frage,
     punkte: toNumber(row.punkte),
+    kommentar: row.kommentar || '',
     anteil: toNumber(row.anteil),
     gewichtetePunkte: toNumber(row.gewichtete_punkte)
   }
@@ -133,10 +137,10 @@ async function saveQuestions(
   for (const question of questions) {
     const gewichtetePunkte = Number((question.punkte * question.anteil).toFixed(4))
     const result = await client.query<SavedSectionQuestionRow>(
-      `INSERT INTO abschnittsfragen (abschnitt_id, anbieter_id, nr, frage, punkte, anteil, gewichtete_punkte)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, nr, frage, punkte, anteil, gewichtete_punkte`,
-      [sectionId, vendorId, question.nr, question.frage, question.punkte, question.anteil, gewichtetePunkte]
+      `INSERT INTO abschnittsfragen (abschnitt_id, anbieter_id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte`,
+      [sectionId, vendorId, question.nr, question.frage, question.punkte, question.kommentar, question.anteil, gewichtetePunkte]
     )
 
     const row = result.rows[0]

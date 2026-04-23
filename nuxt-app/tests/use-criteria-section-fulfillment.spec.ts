@@ -18,6 +18,7 @@ function createQuestion(overrides: Partial<SectionQuestion>): SectionQuestion {
     nr: '1',
     frage: 'Frage',
     punkte: 0,
+    kommentar: '',
     anteil: 0,
     gewichtetePunkte: 0,
     ...overrides
