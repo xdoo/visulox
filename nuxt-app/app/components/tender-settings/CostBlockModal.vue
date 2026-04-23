@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { tenderCostBlockTypeOptions } from '../../../shared/constants/cost-blocks'
+import { tenderCostBlockTypeOptions } from '~~/shared/constants/cost-blocks'
 
 import type { CostBlockSettingsRow } from '../../composables/useTenderCostBlocksSettings'
 import type { TenderCostBlockType } from '../../../shared/types/tenders'

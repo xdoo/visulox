@@ -4,7 +4,7 @@ import type {
   EChartsOption,
   TooltipComponentFormatterCallbackParams
 } from 'echarts'
-import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
+import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 import { useChartImageDownload } from '../../composables/useChartImageDownload'
 import {
   buildTenderValueBubblePoints,
@@ -17,6 +17,8 @@ import type { TenderValueScoreRow } from '../../composables/useTenderValueScore'
 const props = defineProps<{
   rows: TenderValueScoreRow[]
   palette?: typeof defaultTenderChartPalette
+  renderer?: 'canvas' | 'svg'
+  width?: string
 }>()
 
 const isVisible = ref(false)
@@ -32,6 +34,12 @@ const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 const points = computed(() => buildTenderValueBubblePoints(props.rows))
 const scoreRange = computed(() => getBubbleScoreRange(points.value))
 const bubbleColor = computed(() => chartPalette.value[0]?.fillColor ?? '#0D57A6')
+const initOptions = computed(() => ({
+  renderer: props.renderer || 'canvas'
+}))
+const chartStyle = computed(() => ({
+  width: props.width || '100%'
+}))
 
 function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params[0] : params
@@ -79,7 +87,7 @@ const option = computed<EChartsOption>(() => ({
   },
   xAxis: {
     type: 'value',
-    name: 'Kosten normiert (rechts = besser)',
+    name: '€',
     min: 0,
     max: 1,
     splitLine: {
@@ -142,12 +150,13 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-[460px] w-full overflow-hidden">
+  <div class="h-[460px] overflow-hidden" :style="chartStyle">
     <ClientOnly>
       <VChart
         v-if="isVisible"
         ref="chartRef"
         :option="option"
+        :init-options="initOptions"
         autoresize
       />
     </ClientOnly>

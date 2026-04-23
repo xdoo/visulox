@@ -4,8 +4,10 @@ import type {
   EChartsOption,
   TooltipComponentFormatterCallbackParams
 } from 'echarts'
-import { defaultTenderChartPalette } from '../../../shared/constants/tender-settings'
+import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 import { useChartImageDownload } from '../../composables/useChartImageDownload'
+
+const MIN_VISIBLE_SECTION_LABEL_CONTRIBUTION = 6
 
 interface SectionScore {
   sectionId: string
@@ -25,6 +27,8 @@ interface VendorScore {
 const props = defineProps<{
   scores: VendorScore[]
   palette?: typeof defaultTenderChartPalette
+  renderer?: 'canvas' | 'svg'
+  width?: string
 }>()
 
 const isVisible = ref(false)
@@ -37,11 +41,20 @@ onMounted(() => {
 })
 
 const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
+const initOptions = computed(() => ({
+  renderer: props.renderer || 'canvas'
+}))
+const chartStyle = computed(() => ({
+  width: props.width || '100%',
+  height: chartHeight.value
+}))
 const legendItemCount = computed(() => {
   const firstScore = sortedScores.value[0]
   return firstScore?.sectionScores.length || 0
 })
-const chartHeight = computed(() => `${Math.max(400, 120 + (legendItemCount.value * 22))}px`)
+const legendRowCount = computed(() => Math.max(1, Math.ceil(legendItemCount.value / 3)))
+const legendBottomSpace = computed(() => 28 + (legendRowCount.value * 22))
+const chartHeight = computed(() => `${Math.max(400, 340 + legendBottomSpace.value)}px`)
 
 function toTooltipParams(params: TooltipComponentFormatterCallbackParams) {
   return Array.isArray(params) ? params : [params]
@@ -111,13 +124,16 @@ const option = computed<EChartsOption>(() => {
         fontSize: 11,
         fontWeight: 'normal',
         formatter: (params: any) => {
-          const fulfillment = params.data?.meta?.fulfillment
+          const sectionScore = params.data?.meta as SectionScore | undefined
 
-          if (typeof fulfillment !== 'number' || fulfillment < 20) {
+          if (
+            typeof sectionScore?.fulfillment !== 'number'
+            || sectionScore.contribution < MIN_VISIBLE_SECTION_LABEL_CONTRIBUTION
+          ) {
             return ''
           }
 
-          return `${Math.round(fulfillment)}%`
+          return `${Math.round(sectionScore.fulfillment)}%`
         }
       },
       labelLayout: {
@@ -179,9 +195,9 @@ const option = computed<EChartsOption>(() => {
     },
     grid: {
       left: 20,
-      right: 220,
+      right: 40,
       top: 48,
-      bottom: 20,
+      bottom: legendBottomSpace.value,
       containLabel: true
     },
     tooltip: {
@@ -238,11 +254,13 @@ const option = computed<EChartsOption>(() => {
     },
     legend: {
       show: true,
-      top: 24,
+      left: 'center',
       right: 0,
-      orient: 'vertical',
+      bottom: 0,
+      orient: 'horizontal',
       itemWidth: 10,
       itemHeight: 10,
+      width: '92%',
       data: sections.map(section => section.name)
     },
     xAxis: {
@@ -277,12 +295,13 @@ defineExpose({
 </script>
 
 <template>
-  <div class="w-full overflow-hidden" :style="{ height: chartHeight }">
+  <div class="overflow-hidden" :style="chartStyle">
     <ClientOnly>
       <VChart
         v-if="isVisible"
         ref="chartRef"
         :option="option"
+        :init-options="initOptions"
         autoresize
       />
     </ClientOnly>

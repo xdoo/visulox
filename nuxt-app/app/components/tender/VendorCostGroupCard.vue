@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
-import { tenderCostBlockTypeLabels } from '../../../shared/constants/cost-blocks'
+import { tenderCostBlockTypeLabels } from '~~/shared/constants/cost-blocks'
 import type { VendorCostRow } from '../../composables/useTenderVendorCosts'
 import type { VendorCostSummaryItem } from '../../composables/useVendorCostSummaries'
 import { useVendorCostGroupInputs } from '../../composables/useVendorCostGroupInputs'

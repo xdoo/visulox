@@ -26,6 +26,8 @@ interface TenderChartPaletteRow {
 interface SectionRow {
   name: string
   weight: number
+  evaluators: string | null
+  description: string | null
 }
 
 interface CostBlockRow {
@@ -87,14 +89,14 @@ async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTen
   }
 
   const sectionsResult = await client.query<SectionRow>(
-    'SELECT name, weight FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
+    'SELECT name, weight, evaluators, description FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
     [sourceTenderId]
   )
 
   for (const section of sectionsResult.rows) {
     await client.query(
-      'INSERT INTO abschnitte (ausschreibung_id, name, weight) VALUES ($1, $2, $3)',
-      [newTenderId, section.name, section.weight]
+      'INSERT INTO abschnitte (ausschreibung_id, name, weight, evaluators, description) VALUES ($1, $2, $3, $4, $5)',
+      [newTenderId, section.name, section.weight, section.evaluators, section.description]
     )
   }
 

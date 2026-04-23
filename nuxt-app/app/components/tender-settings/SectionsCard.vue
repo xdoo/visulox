@@ -31,7 +31,33 @@ const {
 const columns: TableColumn<SectionSettingsRow>[] = [
   {
     accessorKey: 'name',
-    header: 'Abschnitt'
+    header: 'Abschnitt',
+    meta: {
+      class: {
+        th: 'w-1/4 whitespace-normal',
+        td: 'w-1/4 whitespace-normal break-words'
+      }
+    }
+  },
+  {
+    accessorKey: 'description',
+    header: 'Beschreibung',
+    meta: {
+      class: {
+        th: 'w-2/5 whitespace-normal',
+        td: 'w-2/5 whitespace-normal break-words'
+      }
+    }
+  },
+  {
+    accessorKey: 'evaluators',
+    header: 'Bewerter',
+    meta: {
+      class: {
+        th: 'w-1/5 whitespace-normal',
+        td: 'w-1/5 whitespace-normal break-words'
+      }
+    }
   },
   {
     accessorKey: 'weight',
@@ -99,8 +125,30 @@ const columns: TableColumn<SectionSettingsRow>[] = [
         v-else
         :data="rows"
         :columns="columns"
-        class="flex-1"
+        class="w-full table-fixed"
       >
+        <template #description-cell="{ row }">
+          <UTooltip
+            :text="row.original.description || 'Keine Beschreibung erfasst'"
+            :disabled="!row.original.description"
+          >
+            <span class="block whitespace-pre-line break-words text-sm ui-text-muted">
+              {{ row.original.description || '–' }}
+            </span>
+          </UTooltip>
+        </template>
+
+        <template #evaluators-cell="{ row }">
+          <UTooltip
+            :text="row.original.evaluators || 'Keine Bewerter erfasst'"
+            :disabled="!row.original.evaluators"
+          >
+            <span class="block whitespace-pre-line break-words text-sm ui-text-muted">
+              {{ row.original.evaluators || '–' }}
+            </span>
+          </UTooltip>
+        </template>
+
         <template #weight-cell="{ row }">
           {{ row.original.weight }}%
         </template>
@@ -141,6 +189,8 @@ const columns: TableColumn<SectionSettingsRow>[] = [
       v-model:open="isModalOpen"
       v-model:name="form.name"
       v-model:weight="form.weight"
+      v-model:evaluators="form.evaluators"
+      v-model:description="form.description"
       :mode="modalMode"
       :selected-section="selectedSection"
       :pending-action="pendingAction"

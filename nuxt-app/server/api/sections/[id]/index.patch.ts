@@ -7,22 +7,28 @@ import { hasSectionQuestions, loadSection } from '../../../utils/tender-settings
 interface UpdateSectionBody {
   name: string
   weight: number
+  evaluators: string
+  description: string
 }
 
 interface UpdatedSectionRow {
   id: string | number
   name: string
   weight: number
+  evaluators: string | null
+  description: string | null
 }
 
 function normalizeBody(body: Partial<UpdateSectionBody> | null | undefined): UpdateSectionBody {
   return {
     name: body?.name?.trim() || '',
-    weight: body?.weight as number
+    weight: body?.weight as number,
+    evaluators: body?.evaluators?.trim() || '',
+    description: body?.description?.trim() || ''
   }
 }
 
-export default defineEventHandler(async (event): Promise<{ id: string, name: string, weight: number }> => {
+export default defineEventHandler(async (event): Promise<{ id: string, name: string, weight: number, evaluators: string, description: string }> => {
   const sectionId = event.context.params?.id?.trim()
 
   if (!sectionId) {
@@ -73,8 +79,8 @@ export default defineEventHandler(async (event): Promise<{ id: string, name: str
     }
 
     const result = await client.query<UpdatedSectionRow>(
-      'UPDATE abschnitte SET name = $1, weight = $2 WHERE id = $3 RETURNING id, name, weight',
-      [body.name, body.weight, sectionId]
+      'UPDATE abschnitte SET name = $1, weight = $2, evaluators = $3, description = $4 WHERE id = $5 RETURNING id, name, weight, evaluators, description',
+      [body.name, body.weight, body.evaluators || null, body.description || null, sectionId]
     )
 
     const updatedSection = result.rows[0]
@@ -91,7 +97,9 @@ export default defineEventHandler(async (event): Promise<{ id: string, name: str
     return {
       id: String(updatedSection.id),
       name: updatedSection.name,
-      weight: updatedSection.weight
+      weight: updatedSection.weight,
+      evaluators: updatedSection.evaluators || '',
+      description: updatedSection.description || ''
     }
   } catch (error) {
     await client.query('ROLLBACK')
