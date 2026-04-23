@@ -30,6 +30,39 @@ const valueScoreRows = computed(() => {
   )
 })
 
+const reportChapters = [
+  {
+    number: '1',
+    id: 'chapter-management-summary',
+    title: 'Management Summary',
+    description: 'Dieses Kapitel fasst die Entscheidungslage zusammen. Es zeigt, welche Anbieter nach aktuellem Bewertungsstand vorne liegen und ob die Entscheidung primär durch Qualität, Kosten oder eine ausgewogene Kombination beider Dimensionen geprägt ist.'
+  },
+  {
+    number: '2',
+    id: 'chapter-gesamtvergleich',
+    title: 'Gesamtvergleich der Anbieter',
+    description: 'Dieses Kapitel ordnet alle Anbieter gesamthaft ein. Es macht sichtbar, ob ein Anbieter nur wegen niedriger Kosten attraktiv wirkt, ob hohe Qualität höhere Kosten rechtfertigt oder ob ein Anbieter in beiden Dimensionen überzeugt.'
+  },
+  {
+    number: '3',
+    id: 'chapter-fachliche-bewertung',
+    title: 'Fachliche Bewertung',
+    description: 'Dieses Kapitel zeigt die inhaltliche Leistungsfähigkeit der Anbieter. Für eine Managemententscheidung ist hier relevant, welcher Anbieter die fachlichen Anforderungen am besten erfüllt und in welchen Kriterienblöcken deutliche Stärken oder Schwächen bestehen.'
+  },
+  {
+    number: '4',
+    id: 'chapter-kostenbewertung',
+    title: 'Kostenbewertung',
+    description: 'Dieses Kapitel betrachtet die wirtschaftliche Perspektive über den definierten Zeitraum. Es trennt einmalige Projektkosten von laufenden Run-Kosten und macht sichtbar, wodurch Kostenunterschiede zwischen den Anbietern entstehen.'
+  },
+  {
+    number: '5',
+    id: 'chapter-anhang',
+    title: 'Anhang',
+    description: 'Dieses Kapitel enthält Detailauswertungen zur Nachvollziehbarkeit. Die Inhalte unterstützen die Prüfung einzelner Bewertungsbereiche, ohne die Management Summary mit Detailtiefe zu überladen.'
+  }
+]
+
 const isReadyForPdf = computed(() => status.value !== 'pending' && !error.value && Boolean(tender.value))
 
 watch(isReadyForPdf, async (ready) => {
@@ -89,7 +122,34 @@ useSeoMeta({
     </div>
 
     <div v-else-if="tender" class="report-content">
-      <section class="report-section">
+      <section class="report-toc">
+        <p class="report-kicker">
+          Inhaltsverzeichnis
+        </p>
+        <h2>Aufbau des Reports</h2>
+        <ol>
+          <li
+            v-for="chapter in reportChapters"
+            :key="chapter.number"
+          >
+            <a :href="`#${chapter.id}`">
+              <span class="toc-number">{{ chapter.number }}</span>
+              <span class="toc-title">{{ chapter.title }}</span>
+            </a>
+          </li>
+        </ol>
+      </section>
+
+      <section :id="reportChapters[0].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[0]" />
+        <TenderValueScoreTable
+          :rows="valueScoreRows"
+          :consideration-years="tender.settings.considerationYears"
+        />
+      </section>
+
+      <section :id="reportChapters[1].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[1]" />
         <TenderValueScoreBubbleCard
           :rows="valueScoreRows"
           :consideration-years="tender.settings.considerationYears"
@@ -97,7 +157,26 @@ useSeoMeta({
         />
       </section>
 
-      <section class="report-section">
+      <section :id="reportChapters[2].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[2]" />
+        <div class="report-section-content">
+          <TenderOverviewCard
+            :vendors="tender.vendors"
+            :sections="tender.sections"
+            :score-range="tender.settings.scoreRange"
+            :palette="tender.settings.chartPalette"
+          />
+
+          <TenderCategoryComparisonTable
+            :vendors="tender.vendors"
+            :sections="tender.sections"
+            :score-range="tender.settings.scoreRange"
+          />
+        </div>
+      </section>
+
+      <section :id="reportChapters[3].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[3]" />
         <TenderCostOverviewCard
           :vendors="tender.vendors"
           :cost-blocks="tender.costBlocks"
@@ -107,24 +186,8 @@ useSeoMeta({
         />
       </section>
 
-      <section class="report-section">
-        <TenderOverviewCard
-          :vendors="tender.vendors"
-          :sections="tender.sections"
-          :score-range="tender.settings.scoreRange"
-          :palette="tender.settings.chartPalette"
-        />
-      </section>
-
-      <section class="report-section">
-        <TenderCategoryComparisonTable
-          :vendors="tender.vendors"
-          :sections="tender.sections"
-          :score-range="tender.settings.scoreRange"
-        />
-      </section>
-
-      <section class="report-section">
+      <section :id="reportChapters[4].id" class="report-section">
+        <ReportChapterHeader v-bind="reportChapters[4]" />
         <TenderCategoryComparisonOverview
           :vendors="tender.vendors"
           :sections="tender.sections"
@@ -195,6 +258,50 @@ useSeoMeta({
   gap: 0;
 }
 
+.report-toc {
+  break-after: always;
+  box-sizing: border-box;
+  min-height: 250mm;
+  padding-top: 28mm;
+}
+
+.report-toc h2 {
+  margin: 0 0 18mm;
+  font-size: 24pt;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.report-toc ol {
+  display: flex;
+  flex-direction: column;
+  gap: 7mm;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.report-toc a {
+  align-items: baseline;
+  border-bottom: 1px solid #e5e7eb;
+  color: inherit;
+  display: grid;
+  grid-template-columns: 14mm minmax(0, 1fr);
+  padding-bottom: 4mm;
+  text-decoration: none;
+}
+
+.toc-number {
+  color: #6b7280;
+  font-size: 13pt;
+  font-weight: 650;
+}
+
+.toc-title {
+  font-size: 15pt;
+  font-weight: 650;
+}
+
 .report-section {
   break-before: page;
   break-inside: auto;
@@ -203,6 +310,12 @@ useSeoMeta({
 
 .report-content .report-section:first-child {
   break-before: auto;
+}
+
+.report-section-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8mm;
 }
 
 .report-page :deep(button),
