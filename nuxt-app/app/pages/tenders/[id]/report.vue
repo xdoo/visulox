@@ -4,6 +4,7 @@ import {
   calculateSectionFulfillmentPercentage
 } from '../../../composables/useCriteriaSectionFulfillment'
 import marketOverviewMarkdown from '../../../report-content/market-overview.md?raw'
+import valueScoreResultsMarkdown from '../../../report-content/value-score-results.md?raw'
 import { buildSectionVendorComparisonRows } from '../../../composables/useTenderCategoryComparison'
 import {
   buildCombinedVendorCostOverviewRows,
@@ -290,23 +291,32 @@ useSeoMeta({
           <ReportValueScoreComparison
             :rows="valueScoreRows"
             :consideration-years="tender.settings.considerationYears"
-          />
-
-          <ReportChartBlock
-            title="Nutzen-Kosten-Positionierung"
-            description="Die Positionierung zeigt, welche Anbieter bei fachlichem Nutzen und normierten Kosten gleichzeitig stark abschneiden. Oben rechts liegen Anbieter mit hohem Nutzen und relativ niedrigen Kosten. Die Größe der Bubbles entspricht dem Balanced Score: größere Bubbles stehen für eine stärkere kombinierte Bewertung aus Nutzen und Kosten."
           >
-            <TenderValueScoreBubbleChart
-              v-if="valueScoreChartHasData"
-              :rows="valueScoreRows"
-              :palette="tender.settings.chartPalette"
-              renderer="svg"
-              :width="reportChartWidth"
-            />
-            <p v-else class="report-empty-state">
-              Für das Bubble Chart werden sowohl gewichtete Kriterienerfüllung als auch valide Gesamtkosten benötigt.
-            </p>
-          </ReportChartBlock>
+            <template #positioning>
+              <ReportChartBlock
+                title="Nutzen-Kosten-Positionierung"
+                description="Die Positionierung ordnet die Anbieter nach fachlichem Nutzen und relativer Wirtschaftlichkeit ein. Anbieter im oberen rechten Bereich verbinden einen hohen fachlichen Nutzen mit einer starken Kostenposition. Die Bubble-Größe zeigt die kombinierte Gesamtbewertung."
+              >
+                <TenderValueScoreBubbleChart
+                  v-if="valueScoreChartHasData"
+                  :rows="valueScoreRows"
+                  :palette="tender.settings.chartPalette"
+                  renderer="svg"
+                  :width="reportChartWidth"
+                />
+                <p v-else class="report-empty-state">
+                  Für das Bubble Chart werden sowohl gewichtete Kriterienerfüllung als auch valide Gesamtkosten benötigt.
+                </p>
+              </ReportChartBlock>
+            </template>
+
+            <template #results-context>
+              <div class="report-table-block">
+                <h3>Einordnung der Ergebnisse</h3>
+                <ReportMarkdownBlock :markdown="valueScoreResultsMarkdown" />
+              </div>
+            </template>
+          </ReportValueScoreComparison>
         </div>
       </section>
 
@@ -565,6 +575,14 @@ useSeoMeta({
   gap: 8mm;
   max-width: 100%;
   overflow: hidden;
+}
+
+.report-section :deep(h3) {
+  color: #111827 !important;
+  font-size: 1.17em !important;
+  font-weight: 600 !important;
+  line-height: normal !important;
+  margin: 1em 0 !important;
 }
 
 .report-category-sections {

@@ -38,7 +38,11 @@ function getWinningClass(value: number | null, highestValue: number | null) {
       <p>
         Der Balanced Score gewichtet Nutzen und Kosten jeweils mit 50 Prozent:
         <strong>Score = 0,5 x Nutzen_norm + 0,5 x Kosten_norm</strong>.
-        Die Betrachtung der Kosten erfolgt über {{ props.considerationYears }} Jahre.
+        Die Betrachtung der Kosten erfolgt über 7 Jahre.
+      </p>
+      <p>
+        Ergänzend werden alternative Gewichtungsszenarien betrachtet (z. B. stärker kosten- oder nutzengetrieben),
+        um die Sensitivität der Rangfolge zu analysieren und die Robustheit der Entscheidung zu bewerten.
       </p>
     </div>
 
@@ -55,11 +59,11 @@ function getWinningClass(value: number | null, highestValue: number | null) {
 
     <template v-else>
       <div class="report-table-block">
-        <h3>Datenbasis für die Nutzen-Kosten-Positionierung</h3>
+        <h3>Vergleichsgrundlage Nutzen und Kosten</h3>
         <p>
-          Diese Tabelle zeigt die Werte, die anschließend im Bubble Chart visualisiert werden:
-          die X-Achse basiert auf den normierten Kosten, die Y-Achse auf dem normierten Nutzen.
-          Die Bubble-Größe ergibt sich aus dem Balanced Score.
+          Die Tabelle zeigt die normierten Kosten und den normierten Nutzen je Anbieter sowie den daraus abgeleiteten
+          Balanced Score als kombinierte Kennzahl. Die Werte bilden die Grundlage für die anschließende Visualisierung
+          und den Gesamtvergleich.
         </p>
 
         <table>
@@ -91,13 +95,15 @@ function getWinningClass(value: number | null, highestValue: number | null) {
         </table>
       </div>
 
+      <slot name="positioning" />
+
       <div class="report-table-block">
         <h3>Sensitivität der Gewichtung</h3>
         <p>
-          Die zweite Tabelle zeigt, ob sich die Rangfolge verändert, wenn Kosten oder Nutzen stärker gewichtet werden.
+          Die Tabelle zeigt, wie robust die Rangfolge bleibt, wenn Kosten oder Nutzen stärker gewichtet werden.
           Der Kostenfokus bewertet Nutzen mit 40 Prozent und Kosten mit 60 Prozent.
           Der Nutzenfokus bewertet Nutzen mit 60 Prozent und Kosten mit 40 Prozent.
-          Der jeweils beste Anbieter pro Szenario ist farblich hervorgehoben.
+          Stabile Spitzenpositionen über mehrere Szenarien hinweg stärken die Belastbarkeit der Entscheidung.
         </p>
 
         <table>
@@ -128,6 +134,8 @@ function getWinningClass(value: number | null, highestValue: number | null) {
           </tbody>
         </table>
       </div>
+
+      <slot name="results-context" />
     </template>
   </section>
 </template>
@@ -144,8 +152,7 @@ function getWinningClass(value: number | null, highestValue: number | null) {
   break-inside: avoid;
 }
 
-.report-explanation h3,
-.report-table-block h3 {
+.report-explanation h3 {
   color: #111827;
   font-size: 14pt;
   font-weight: 700;
