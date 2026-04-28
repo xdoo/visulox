@@ -359,6 +359,10 @@ useSeoMeta({
                 />
               </div>
 
+              <p class="report-category-note">
+                Das Diagramm vergleicht die fachliche Erfüllung dieser Kategorie über alle Anbieter. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.
+              </p>
+
               <div
                 v-if="entry.section?.resultAssessment"
                 class="report-category-result-assessment"
@@ -366,10 +370,6 @@ useSeoMeta({
                 <h4>Einordnung der Kategorieergebnisse</h4>
                 <ReportMarkdownBlock :markdown="entry.section.resultAssessment" />
               </div>
-
-              <p class="report-category-note">
-                Das Diagramm vergleicht die fachliche Erfüllung dieser Kategorie über alle Anbieter. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.
-              </p>
             </section>
           </div>
         </div>
