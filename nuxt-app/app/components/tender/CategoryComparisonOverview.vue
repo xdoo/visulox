@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import { downloadCategoryQuestionsJson } from '../../composables/useCategoryQuestionsJsonExport'
 import { buildSectionVendorComparisonRows } from '../../composables/useTenderCategoryComparison'
 
 import type { TenderSection, TenderSettings, TenderVendor } from '../../../shared/types/tenders'
@@ -25,11 +26,20 @@ const rows = computed(() => buildSectionVendorComparisonRows(
   props.sections,
   props.scoreRange
 ))
+const sectionsById = computed(() => new Map(props.sections.map((section) => [section.id, section])))
 
 const hasAnyQuestions = computed(() => rows.value.some((row) => row.vendors.some((vendor) => vendor.hasQuestions)))
 
-function setChartRef(sectionId: string, instance: CategoryChartRef | null) {
-  chartRefs.value[sectionId] = instance
+function isCategoryChartRef(instance: unknown): instance is CategoryChartRef {
+  return Boolean(
+    instance
+    && typeof (instance as CategoryChartRef).downloadPng === 'function'
+    && typeof (instance as CategoryChartRef).downloadSvg === 'function'
+  )
+}
+
+function setChartRef(sectionId: string, instance: unknown) {
+  chartRefs.value[sectionId] = isCategoryChartRef(instance) ? instance : null
 }
 
 function getChartFilename(row: SectionVendorComparisonRow, extension: 'png' | 'svg') {
@@ -53,6 +63,16 @@ async function downloadAllChartsAsSvg() {
     chartRefs.value[row.sectionId]?.downloadSvg(getChartFilename(row, 'svg'))
     await new Promise(resolve => setTimeout(resolve, 100))
   }
+}
+
+function downloadCategoryQuestions(row: SectionVendorComparisonRow) {
+  const section = sectionsById.value.get(row.sectionId)
+
+  if (!section) {
+    return
+  }
+
+  downloadCategoryQuestionsJson(section, props.vendors)
 }
 </script>
 
@@ -105,6 +125,21 @@ async function downloadAllChartsAsSvg() {
         :key="row.sectionId"
         class="rounded-lg border ui-border p-4 bg-gray-50/50"
       >
+        <div class="mb-3 flex justify-end">
+          <UTooltip text="Kategoriefragen als JSON herunterladen">
+            <UButton
+              icon="i-lucide-file-json"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              aria-label="Kategoriefragen als JSON herunterladen"
+              :disabled="!row.vendors.some((vendor) => vendor.hasQuestions)"
+              @click="downloadCategoryQuestions(row)"
+            />
+          </UTooltip>
+        </div>
+
         <TenderCategoryComparisonChart
           :ref="(instance) => setChartRef(row.sectionId, instance)"
           :row="row"
