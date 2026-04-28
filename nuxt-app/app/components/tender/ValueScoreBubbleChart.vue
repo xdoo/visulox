@@ -87,7 +87,7 @@ const option = computed<EChartsOption>(() => ({
   },
   xAxis: {
     type: 'value',
-    name: '€',
+    name: 'Kosten',
     min: 0,
     max: 1,
     splitLine: {
