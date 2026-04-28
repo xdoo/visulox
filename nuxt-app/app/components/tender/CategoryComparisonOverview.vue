@@ -2,12 +2,14 @@
 import { computed, ref } from 'vue'
 
 import { downloadCategoryQuestionsJson } from '../../composables/useCategoryQuestionsJsonExport'
+import { useCategoryResultAssessmentEditor } from '../../composables/useCategoryResultAssessmentEditor'
 import { buildSectionVendorComparisonRows } from '../../composables/useTenderCategoryComparison'
 
 import type { TenderSection, TenderSettings, TenderVendor } from '../../../shared/types/tenders'
 import type { SectionVendorComparisonRow } from '../../composables/useTenderCategoryComparison'
 
 const props = defineProps<{
+  tenderId: string
   vendors: TenderVendor[]
   sections: TenderSection[]
   scoreRange: TenderSettings['scoreRange']
@@ -20,6 +22,16 @@ type CategoryChartRef = {
 }
 
 const chartRefs = ref<Record<string, CategoryChartRef | null>>({})
+const {
+  errorMessage: resultAssessmentErrorMessage,
+  isResultAssessmentModalOpen,
+  selectedSection,
+  resultAssessment,
+  isSavingResultAssessment,
+  canSaveResultAssessment,
+  openResultAssessmentEditor,
+  saveResultAssessment
+} = useCategoryResultAssessmentEditor(props.tenderId)
 
 const rows = computed(() => buildSectionVendorComparisonRows(
   props.vendors,
@@ -74,6 +86,16 @@ function downloadCategoryQuestions(row: SectionVendorComparisonRow) {
 
   downloadCategoryQuestionsJson(section, props.vendors)
 }
+
+function openCategoryResultAssessmentEditor(row: SectionVendorComparisonRow) {
+  const section = sectionsById.value.get(row.sectionId)
+
+  if (!section) {
+    return
+  }
+
+  openResultAssessmentEditor(section)
+}
 </script>
 
 <template>
@@ -125,7 +147,19 @@ function downloadCategoryQuestions(row: SectionVendorComparisonRow) {
         :key="row.sectionId"
         class="rounded-lg border ui-border p-4 bg-gray-50/50"
       >
-        <div class="mb-3 flex justify-end">
+        <div class="mb-3 flex justify-end gap-1">
+          <UTooltip text="Ergebnisbewertung der Kategorie bearbeiten">
+            <UButton
+              icon="i-lucide-file-pen-line"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              aria-label="Ergebnisbewertung der Kategorie bearbeiten"
+              @click="openCategoryResultAssessmentEditor(row)"
+            />
+          </UTooltip>
+
           <UTooltip text="Kategoriefragen als JSON herunterladen">
             <UButton
               icon="i-lucide-file-json"
@@ -154,5 +188,15 @@ function downloadCategoryQuestions(row: SectionVendorComparisonRow) {
     >
       Es wurden noch keine Fragen importiert. Die Kategorievergleiche erscheinen, sobald Daten vorliegen.
     </div>
+
+    <TenderCategoryResultAssessmentModal
+      v-model:open="isResultAssessmentModalOpen"
+      v-model:result-assessment="resultAssessment"
+      :selected-section="selectedSection"
+      :is-saving="isSavingResultAssessment"
+      :can-save="canSaveResultAssessment"
+      :error-message="resultAssessmentErrorMessage"
+      @submit="saveResultAssessment"
+    />
   </UCard>
 </template>

@@ -92,6 +92,7 @@ useSeoMeta({
       />
 
       <TenderCategoryComparisonOverview
+        :tender-id="tender.id"
         :vendors="tender.vendors"
         :sections="tender.sections"
         :score-range="tender.settings.scoreRange"

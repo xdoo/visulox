@@ -55,6 +55,7 @@ describe('useTenderSectionsSettings', () => {
         weight: 60,
         evaluators: '',
         description: '',
+        resultAssessment: '',
         questionsByVendor: [
           { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 0.6, gewichtetePunkte: 0.6 }] }
         ]
@@ -65,6 +66,7 @@ describe('useTenderSectionsSettings', () => {
         weight: 40,
         evaluators: '',
         description: '',
+        resultAssessment: '',
         questionsByVendor: [
           { vendorId: '10', questions: [] }
         ]
@@ -108,6 +110,7 @@ describe('useTenderSectionsSettings', () => {
         weight: 60,
         evaluators: '',
         description: '',
+        resultAssessment: '',
         questionsByVendor: [
           { vendorId: '10', questions: [{ id: '1', nr: '1', frage: 'A', punkte: 1, kommentar: '', anteil: 0.6, gewichtetePunkte: 0.6 }] }
         ]

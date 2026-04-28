@@ -359,6 +359,14 @@ useSeoMeta({
                 />
               </div>
 
+              <div
+                v-if="entry.section?.resultAssessment"
+                class="report-category-result-assessment"
+              >
+                <h4>Einordnung der Kategorieergebnisse</h4>
+                <ReportMarkdownBlock :markdown="entry.section.resultAssessment" />
+              </div>
+
               <p class="report-category-note">
                 Das Diagramm vergleicht die fachliche Erfüllung dieser Kategorie über alle Anbieter. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.
               </p>
@@ -613,6 +621,21 @@ useSeoMeta({
   line-height: 1.55;
   margin: 0;
   white-space: pre-line;
+}
+
+.report-category-result-assessment {
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
+}
+
+.report-category-result-assessment h4 {
+  color: #111827;
+  font-size: 11pt;
+  font-weight: 650;
+  line-height: 1.25;
+  margin: 0;
 }
 
 .report-category-chart {

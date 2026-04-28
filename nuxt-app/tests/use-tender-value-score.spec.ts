@@ -28,6 +28,7 @@ describe('useTenderValueScore', () => {
           weight: 60,
           evaluators: '',
           description: '',
+          resultAssessment: '',
           questionsByVendor: [
             {
               vendorId: '1',
@@ -55,6 +56,7 @@ describe('useTenderValueScore', () => {
           weight: 40,
           evaluators: '',
           description: '',
+          resultAssessment: '',
           questionsByVendor: [
             {
               vendorId: '1',

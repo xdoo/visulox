@@ -17,6 +17,7 @@ describe('useTenderCategoryComparison', () => {
           weight: 30,
           evaluators: '',
           description: '',
+          resultAssessment: '',
           questionsByVendor: [
             {
               vendorId: '1',
@@ -42,6 +43,7 @@ describe('useTenderCategoryComparison', () => {
           weight: 20,
           evaluators: '',
           description: '',
+          resultAssessment: '',
           questionsByVendor: [
             {
               vendorId: '1',

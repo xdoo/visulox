@@ -83,7 +83,16 @@ export interface TenderSection {
   weight: number
   evaluators: string
   description: string
+  resultAssessment: string
   questionsByVendor: TenderSectionQuestionsByVendor[]
+}
+
+export interface UpdateSectionResultAssessmentRequest {
+  resultAssessment: string
+}
+
+export interface UpdateSectionResultAssessmentResponse {
+  section: Pick<TenderSection, 'id' | 'resultAssessment'>
 }
 
 export interface TenderDetail {

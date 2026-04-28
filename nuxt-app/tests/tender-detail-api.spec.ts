@@ -70,8 +70,8 @@ describe('GET /api/tenders/:id', () => {
       })
       .mockResolvedValueOnce({
         rows: [
-          { id: 21, name: 'Qualitaet', weight: 60, evaluators: 'Fachbereich', description: 'Fachliche Anforderungen' },
-          { id: 22, name: 'Preis', weight: 40, evaluators: null, description: null }
+          { id: 21, name: 'Qualitaet', weight: 60, evaluators: 'Fachbereich', description: 'Fachliche Anforderungen', result_assessment: 'Alpha ist stark.' },
+          { id: 22, name: 'Preis', weight: 40, evaluators: null, description: null, result_assessment: null }
         ]
       })
       .mockResolvedValueOnce({
@@ -111,7 +111,7 @@ describe('GET /api/tenders/:id', () => {
          ORDER BY id ASC`,
       [['11', '12']]
     )
-    expect(query).toHaveBeenNthCalledWith(7, 'SELECT id, name, weight, evaluators, description FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(7, 'SELECT id, name, weight, evaluators, description, result_assessment FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(8,
       `SELECT id, abschnitt_id, anbieter_id, nr, frage, punkte, kommentar, anteil, gewichtete_punkte
          FROM abschnittsfragen
@@ -147,6 +147,7 @@ describe('GET /api/tenders/:id', () => {
           weight: 60,
           evaluators: 'Fachbereich',
           description: 'Fachliche Anforderungen',
+          resultAssessment: 'Alpha ist stark.',
           questionsByVendor: [
             {
               vendorId: '11',
@@ -168,6 +169,7 @@ describe('GET /api/tenders/:id', () => {
           weight: 40,
           evaluators: '',
           description: '',
+          resultAssessment: '',
           questionsByVendor: [
             {
               vendorId: '11',

@@ -19,6 +19,7 @@ describe('useCategoryQuestionsJsonExport', () => {
     weight: 40,
     evaluators: '',
     description: '',
+    resultAssessment: '',
     questionsByVendor: [
       {
         vendorId: '1',
