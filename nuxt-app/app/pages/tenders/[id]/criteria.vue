@@ -47,6 +47,7 @@ useSeoMeta({
           />
 
           <TenderCategoryComparisonOverview
+            :tender-id="tender?.id || tenderId"
             :vendors="tender?.vendors || []"
             :sections="tender?.sections || []"
             :score-range="tender?.settings.scoreRange || [0, 10]"

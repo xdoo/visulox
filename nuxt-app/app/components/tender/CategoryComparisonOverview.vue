@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import { downloadCategoryQuestionsJson } from '../../composables/useCategoryQuestionsJsonExport'
+import { useCategoryResultAssessmentEditor } from '../../composables/useCategoryResultAssessmentEditor'
 import { buildSectionVendorComparisonRows } from '../../composables/useTenderCategoryComparison'
 
 import type { TenderSection, TenderSettings, TenderVendor } from '../../../shared/types/tenders'
 import type { SectionVendorComparisonRow } from '../../composables/useTenderCategoryComparison'
 
 const props = defineProps<{
+  tenderId: string
   vendors: TenderVendor[]
   sections: TenderSection[]
   scoreRange: TenderSettings['scoreRange']
@@ -19,17 +22,36 @@ type CategoryChartRef = {
 }
 
 const chartRefs = ref<Record<string, CategoryChartRef | null>>({})
+const {
+  errorMessage: resultAssessmentErrorMessage,
+  isResultAssessmentModalOpen,
+  selectedSection,
+  resultAssessment,
+  isSavingResultAssessment,
+  canSaveResultAssessment,
+  openResultAssessmentEditor,
+  saveResultAssessment
+} = useCategoryResultAssessmentEditor(props.tenderId)
 
 const rows = computed(() => buildSectionVendorComparisonRows(
   props.vendors,
   props.sections,
   props.scoreRange
 ))
+const sectionsById = computed(() => new Map(props.sections.map((section) => [section.id, section])))
 
 const hasAnyQuestions = computed(() => rows.value.some((row) => row.vendors.some((vendor) => vendor.hasQuestions)))
 
-function setChartRef(sectionId: string, instance: CategoryChartRef | null) {
-  chartRefs.value[sectionId] = instance
+function isCategoryChartRef(instance: unknown): instance is CategoryChartRef {
+  return Boolean(
+    instance
+    && typeof (instance as CategoryChartRef).downloadPng === 'function'
+    && typeof (instance as CategoryChartRef).downloadSvg === 'function'
+  )
+}
+
+function setChartRef(sectionId: string, instance: unknown) {
+  chartRefs.value[sectionId] = isCategoryChartRef(instance) ? instance : null
 }
 
 function getChartFilename(row: SectionVendorComparisonRow, extension: 'png' | 'svg') {
@@ -53,6 +75,26 @@ async function downloadAllChartsAsSvg() {
     chartRefs.value[row.sectionId]?.downloadSvg(getChartFilename(row, 'svg'))
     await new Promise(resolve => setTimeout(resolve, 100))
   }
+}
+
+function downloadCategoryQuestions(row: SectionVendorComparisonRow) {
+  const section = sectionsById.value.get(row.sectionId)
+
+  if (!section) {
+    return
+  }
+
+  downloadCategoryQuestionsJson(section, props.vendors)
+}
+
+function openCategoryResultAssessmentEditor(row: SectionVendorComparisonRow) {
+  const section = sectionsById.value.get(row.sectionId)
+
+  if (!section) {
+    return
+  }
+
+  openResultAssessmentEditor(section)
 }
 </script>
 
@@ -105,6 +147,33 @@ async function downloadAllChartsAsSvg() {
         :key="row.sectionId"
         class="rounded-lg border ui-border p-4 bg-gray-50/50"
       >
+        <div class="mb-3 flex justify-end gap-1">
+          <UTooltip text="Ergebnisbewertung der Kategorie bearbeiten">
+            <UButton
+              icon="i-lucide-file-pen-line"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              aria-label="Ergebnisbewertung der Kategorie bearbeiten"
+              @click="openCategoryResultAssessmentEditor(row)"
+            />
+          </UTooltip>
+
+          <UTooltip text="Kategoriefragen als JSON herunterladen">
+            <UButton
+              icon="i-lucide-file-json"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              square
+              aria-label="Kategoriefragen als JSON herunterladen"
+              :disabled="!row.vendors.some((vendor) => vendor.hasQuestions)"
+              @click="downloadCategoryQuestions(row)"
+            />
+          </UTooltip>
+        </div>
+
         <TenderCategoryComparisonChart
           :ref="(instance) => setChartRef(row.sectionId, instance)"
           :row="row"
@@ -119,5 +188,15 @@ async function downloadAllChartsAsSvg() {
     >
       Es wurden noch keine Fragen importiert. Die Kategorievergleiche erscheinen, sobald Daten vorliegen.
     </div>
+
+    <TenderCategoryResultAssessmentModal
+      v-model:open="isResultAssessmentModalOpen"
+      v-model:result-assessment="resultAssessment"
+      :selected-section="selectedSection"
+      :is-saving="isSavingResultAssessment"
+      :can-save="canSaveResultAssessment"
+      :error-message="resultAssessmentErrorMessage"
+      @submit="saveResultAssessment"
+    />
   </UCard>
 </template>
