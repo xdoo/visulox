@@ -32,10 +32,16 @@ The API expects these PostgreSQL tables to exist:
 - `abschnitte`
 - `kostenbloecke`
 - `anbieter`
+- `abschnittsfragen`
+- `ausschreibung_settings`
+- `ausschreibung_chart_palette`
+- `anbieter_kostenpositionen`
 
 The repository Compose setup initializes them from [001-ausschreibungen-schema.sql](/home/claus/Projekte/visulox/infrastructure/postgres/init/001-ausschreibungen-schema.sql) on the first container start.
 
 If your Postgres container was already created before that init script existed, recreate the database volume or run the SQL manually, because `/docker-entrypoint-initdb.d` is only processed during initial database creation.
+
+Schema changes are kept as ordered SQL files under [infrastructure/postgres/init](/home/claus/Projekte/visulox/infrastructure/postgres/init). When adding a new column or table, create the next numbered file and keep it idempotent with `IF NOT EXISTS` where possible. For existing local databases, remember that new init scripts do not run automatically against an already-created Postgres volume; run the SQL manually or recreate the volume.
 
 ## Available Scripts
 
@@ -130,10 +136,43 @@ Examples:
 - `app/layouts/default.vue`: Main application shell with sidebar, header, breadcrumb, and modal trigger.
 - `app/components/tender-create/Modal.vue`: Multi-step tender creation wizard.
 - `app/components/tender/*`: Tender detail components for vendor tabs, sections, and CSV upload flows.
+- `app/components/report/*`: Print/PDF-oriented report building blocks.
 - `app/components/tender-create/*`: Step-specific form sections for the wizard.
 - `app/composables/useTenderWizard.ts`: State and navigation logic for the tender workflow.
+- `app/report-content/*.md`: Static Markdown report content imported with `?raw`.
+- `app/utils/reportMarkdown.ts`: Restricted Markdown renderer used for PDF-safe report content.
 - `app/types/tender-wizard.ts`: Shared TypeScript contracts for the tender form data.
 - `app/app.css`: Global theme variables and shared semantic utility classes.
+
+## Report Workflow
+
+The PDF is generated from the dedicated report page, not from the interactive summary page:
+
+- API endpoint: `server/api/tenders/[id]/report.pdf.get.ts`
+- Render source: `app/pages/tenders/[id]/report.vue`
+- Browser renderer: Playwright Chromium
+
+The interactive `/tenders/:id/summary` page can link to the PDF download, but changes to that page do not affect the PDF unless they touch shared report/chart components or shared composables.
+
+Report content currently combines:
+
+- structured tender data loaded through `useTenderDetail`
+- static Markdown files from `app/report-content`
+- category-specific Markdown result assessments stored in `abschnitte.result_assessment`
+
+For static report blocks, prefer Markdown files in `app/report-content` and render them with `ReportMarkdownBlock`. For tender-specific or category-specific text, persist it in Postgres and load it through `TenderDetail` or a focused API.
+
+## Category Result Assessments
+
+The category comparison overview supports a per-category JSON export and a separate result assessment editor:
+
+- JSON export logic: `app/composables/useCategoryQuestionsJsonExport.ts`
+- result assessment editor logic: `app/composables/useCategoryResultAssessmentEditor.ts`
+- result assessment modal: `app/components/tender/CategoryResultAssessmentModal.vue`
+- persistence endpoint: `server/api/sections/[id]/result-assessment.patch.ts`
+- database column: `abschnitte.result_assessment`
+
+The result assessment is separate from the general category description in `abschnitte.description`. Use `description` for structural/category context from settings. Use `result_assessment` for LLM-derived interpretation of the category results, rendered below the category chart in the PDF report.
 
 ## Styling Guidelines
 
