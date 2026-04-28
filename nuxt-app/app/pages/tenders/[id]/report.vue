@@ -3,6 +3,7 @@ import {
   calculateSectionContributionPercentage,
   calculateSectionFulfillmentPercentage
 } from '../../../composables/useCriteriaSectionFulfillment'
+import marketOverviewMarkdown from '../../../report-content/market-overview.md?raw'
 import { buildSectionVendorComparisonRows } from '../../../composables/useTenderCategoryComparison'
 import {
   buildCombinedVendorCostOverviewRows,
@@ -137,37 +138,50 @@ const categoryComparisonSections = computed(() => {
 const reportChartWidth = '700px'
 const reportPrimaryColor = computed(() => tender.value?.settings.chartPalette[0]?.fillColor || '#0D57A6')
 
+const managementSummaryChapter = {
+  number: '1',
+  id: 'chapter-management-summary',
+  title: 'Management Summary',
+  description: 'Dieses Kapitel fasst die Entscheidungslage zusammen. Es zeigt, welche Anbieter nach aktuellem Bewertungsstand vorne liegen und ob die Entscheidung primär durch Qualität, Kosten oder eine ausgewogene Kombination beider Dimensionen geprägt ist.'
+}
+const marketOverviewChapter = {
+  number: '2',
+  id: 'chapter-market-overview',
+  title: 'Allgemeine Marktbetrachtung',
+  description: 'Dieses Kapitel ordnet die Ausschreibung in den relevanten Marktkontext ein. Es beschreibt allgemeine Rahmenbedingungen, die für die Bewertung und Einordnung der Anbieter relevant sind.'
+}
+const methodologyChapter = {
+  number: '3',
+  id: 'chapter-methodik',
+  title: 'Methodik der Bewertung',
+  description: 'Dieses Kapitel erklärt die Struktur der Ausschreibung. Es ordnet Anbieter, Kriterienkatalog und Kostenarten ein, damit die folgenden Bewertungen nachvollziehbar gelesen werden können.'
+}
+const valueComparisonChapter = {
+  number: '4',
+  id: 'chapter-gesamtvergleich',
+  title: 'Gesamtvergleich der Anbieter',
+  description: 'Dieses Kapitel ordnet alle Anbieter gesamthaft ein. Es macht sichtbar, ob ein Anbieter nur wegen niedriger Kosten attraktiv wirkt, ob hohe Qualität höhere Kosten rechtfertigt oder ob ein Anbieter in beiden Dimensionen überzeugt.'
+}
+const criteriaComparisonChapter = {
+  number: '5',
+  id: 'chapter-fachliche-bewertung',
+  title: 'Fachliche Bewertung',
+  description: 'Dieses Kapitel zeigt die inhaltliche Leistungsfähigkeit der Anbieter. Für eine Managemententscheidung ist hier relevant, welcher Anbieter die fachlichen Anforderungen am besten erfüllt und in welchen Kriterienblöcken deutliche Stärken oder Schwächen bestehen.'
+}
+const costComparisonChapter = {
+  number: '6',
+  id: 'chapter-kostenbewertung',
+  title: 'Kostenbewertung',
+  description: 'Dieses Kapitel betrachtet die wirtschaftliche Perspektive über den definierten Zeitraum. Es trennt einmalige Projektkosten von laufenden Run-Kosten und macht sichtbar, wodurch Kostenunterschiede zwischen den Anbietern entstehen.'
+}
+
 const reportChapters = [
-  {
-    number: '1',
-    id: 'chapter-management-summary',
-    title: 'Management Summary',
-    description: 'Dieses Kapitel fasst die Entscheidungslage zusammen. Es zeigt, welche Anbieter nach aktuellem Bewertungsstand vorne liegen und ob die Entscheidung primär durch Qualität, Kosten oder eine ausgewogene Kombination beider Dimensionen geprägt ist.'
-  },
-  {
-    number: '2',
-    id: 'chapter-methodik',
-    title: 'Methodik der Bewertung',
-    description: 'Dieses Kapitel erklärt die Struktur der Ausschreibung. Es ordnet Anbieter, Kriterienkatalog und Kostenarten ein, damit die folgenden Bewertungen nachvollziehbar gelesen werden können.'
-  },
-  {
-    number: '3',
-    id: 'chapter-gesamtvergleich',
-    title: 'Gesamtvergleich der Anbieter',
-    description: 'Dieses Kapitel ordnet alle Anbieter gesamthaft ein. Es macht sichtbar, ob ein Anbieter nur wegen niedriger Kosten attraktiv wirkt, ob hohe Qualität höhere Kosten rechtfertigt oder ob ein Anbieter in beiden Dimensionen überzeugt.'
-  },
-  {
-    number: '4',
-    id: 'chapter-fachliche-bewertung',
-    title: 'Fachliche Bewertung',
-    description: 'Dieses Kapitel zeigt die inhaltliche Leistungsfähigkeit der Anbieter. Für eine Managemententscheidung ist hier relevant, welcher Anbieter die fachlichen Anforderungen am besten erfüllt und in welchen Kriterienblöcken deutliche Stärken oder Schwächen bestehen.'
-  },
-  {
-    number: '5',
-    id: 'chapter-kostenbewertung',
-    title: 'Kostenbewertung',
-    description: 'Dieses Kapitel betrachtet die wirtschaftliche Perspektive über den definierten Zeitraum. Es trennt einmalige Projektkosten von laufenden Run-Kosten und macht sichtbar, wodurch Kostenunterschiede zwischen den Anbietern entstehen.'
-  }
+  managementSummaryChapter,
+  marketOverviewChapter,
+  methodologyChapter,
+  valueComparisonChapter,
+  criteriaComparisonChapter,
+  costComparisonChapter
 ]
 
 const isReadyForPdf = computed(() => status.value !== 'pending' && !error.value && Boolean(tender.value))
@@ -230,7 +244,7 @@ useSeoMeta({
         <p class="report-kicker">
           Inhaltsverzeichnis
         </p>
-        <h2></h2>
+        <h2 />
         <ol>
           <li
             v-for="chapter in reportChapters"
@@ -244,16 +258,23 @@ useSeoMeta({
         </ol>
       </section>
 
-      <section :id="reportChapters[0].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[0]" />
+      <section :id="managementSummaryChapter.id" class="report-section">
+        <ReportChapterHeader v-bind="managementSummaryChapter" />
         <ReportManagementSummary
           :rows="valueScoreRows"
           :consideration-years="tender.settings.considerationYears"
         />
       </section>
 
-      <section :id="reportChapters[1].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[1]" />
+      <section :id="marketOverviewChapter.id" class="report-section">
+        <ReportChapterHeader v-bind="marketOverviewChapter" />
+        <div class="report-section-content">
+          <ReportMarkdownBlock :markdown="marketOverviewMarkdown" />
+        </div>
+      </section>
+
+      <section :id="methodologyChapter.id" class="report-section">
+        <ReportChapterHeader v-bind="methodologyChapter" />
         <ReportMethodology
           :vendors="tender.vendors"
           :sections="tender.sections"
@@ -263,8 +284,8 @@ useSeoMeta({
         />
       </section>
 
-      <section :id="reportChapters[2].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[2]" />
+      <section :id="valueComparisonChapter.id" class="report-section">
+        <ReportChapterHeader v-bind="valueComparisonChapter" />
         <div class="report-section-content">
           <ReportValueScoreComparison
             :rows="valueScoreRows"
@@ -289,8 +310,8 @@ useSeoMeta({
         </div>
       </section>
 
-      <section :id="reportChapters[3].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[3]" />
+      <section :id="criteriaComparisonChapter.id" class="report-section">
+        <ReportChapterHeader v-bind="criteriaComparisonChapter" />
         <div class="report-section-content">
           <ReportChartBlock
             title="Gesamtbewertung der Kriterien"
@@ -336,8 +357,8 @@ useSeoMeta({
         </div>
       </section>
 
-      <section :id="reportChapters[4].id" class="report-section">
-        <ReportChapterHeader v-bind="reportChapters[4]" />
+      <section :id="costComparisonChapter.id" class="report-section">
+        <ReportChapterHeader v-bind="costComparisonChapter" />
         <div class="report-section-content">
           <ReportChartBlock
             title="Gesamtkosten"
