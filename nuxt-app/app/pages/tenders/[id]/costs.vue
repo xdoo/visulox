@@ -30,7 +30,7 @@ useSeoMeta({
     />
 
     <div
-      v-else-if="status === 'pending'"
+      v-else-if="status === 'pending' && !tender"
       class="flex h-96 items-center justify-center rounded-xl border-2 border-dashed ui-border text-center italic text-gray-400"
     >
       Lade Anbieter und Kostenansicht ...

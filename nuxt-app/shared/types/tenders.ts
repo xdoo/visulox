@@ -70,6 +70,7 @@ export interface TenderVendorCostItem {
   vendorId: string
   costBlockId: string
   amount: number | null
+  kommentar: string
 }
 
 export interface TenderSectionQuestionsByVendor {
@@ -167,6 +168,7 @@ export interface UpdateTenderCostBlockRequest {
 export interface SaveVendorCostItemInput {
   costBlockId: string
   amount: number | null
+  kommentar: string
 }
 
 export interface SaveVendorCostItemsRequest {
@@ -175,4 +177,12 @@ export interface SaveVendorCostItemsRequest {
 
 export interface SaveVendorCostItemsResponse {
   items: TenderVendorCostItem[]
+}
+
+export interface UpdateVendorCostItemCommentRequest {
+  kommentar: string
+}
+
+export interface UpdateVendorCostItemCommentResponse {
+  item: TenderVendorCostItem
 }

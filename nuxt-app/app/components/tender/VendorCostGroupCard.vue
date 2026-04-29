@@ -12,8 +12,9 @@ const props = defineProps<{
   summaries: VendorCostSummaryItem[]
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   updateAmount: [costBlockId: string, value: string]
+  saveComment: [costBlockId: string, value: string]
 }>()
 
 const {
@@ -42,8 +43,51 @@ const columns: TableColumn<VendorCostRow>[] = [
         td: 'w-40'
       }
     }
+  },
+  {
+    id: 'comment',
+    header: '',
+    meta: {
+      class: {
+        th: 'w-12 text-right',
+        td: 'w-12 text-right'
+      }
+    }
   }
 ]
+
+const isCommentModalOpen = ref(false)
+const selectedCostBlockId = ref('')
+const commentDraft = ref('')
+
+const selectedRow = computed(() => {
+  return props.rows.find((row) => row.costBlockId === selectedCostBlockId.value) || null
+})
+
+const canSaveComment = computed(() => {
+  return selectedRow.value !== null && selectedRow.value.kommentar !== commentDraft.value
+})
+
+function openCommentModal(row: VendorCostRow) {
+  selectedCostBlockId.value = row.costBlockId
+  commentDraft.value = row.kommentar
+  isCommentModalOpen.value = true
+}
+
+function closeCommentModal() {
+  isCommentModalOpen.value = false
+  selectedCostBlockId.value = ''
+  commentDraft.value = ''
+}
+
+function saveComment() {
+  if (!selectedRow.value) {
+    return
+  }
+
+  emit('saveComment', selectedRow.value.costBlockId, commentDraft.value)
+  closeCommentModal()
+}
 </script>
 
 <template>
@@ -93,6 +137,18 @@ const columns: TableColumn<VendorCostRow>[] = [
           </span>
         </UFieldGroup>
       </template>
+
+      <template #comment-cell="{ row }">
+        <UTooltip :text="row.original.kommentar ? 'Kommentar bearbeiten' : 'Kommentar hinzufügen'">
+          <UButton
+            icon="i-lucide-message-square-quote"
+            :color="row.original.kommentar ? 'primary' : 'neutral'"
+            :variant="row.original.kommentar ? 'soft' : 'ghost'"
+            :aria-label="`Kommentar fuer ${row.original.name} bearbeiten`"
+            @click="openCommentModal(row.original)"
+          />
+        </UTooltip>
+      </template>
     </UTable>
 
     <div
@@ -117,4 +173,13 @@ const columns: TableColumn<VendorCostRow>[] = [
       </div>
     </div>
   </UCard>
+
+  <TenderVendorCostCommentModal
+    v-model:open="isCommentModalOpen"
+    v-model:comment="commentDraft"
+    :cost-block-name="selectedRow ? selectedRow.name : ''"
+    :can-save="canSaveComment"
+    @cancel="closeCommentModal"
+    @save="saveComment"
+  />
 </template>

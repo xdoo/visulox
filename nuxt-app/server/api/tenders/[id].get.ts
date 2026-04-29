@@ -47,6 +47,7 @@ interface VendorCostItemRow {
   anbieter_id: string | number
   kostenblock_id: string | number
   amount: string | number | null
+  kommentar: string | null
 }
 
 interface SectionRow {
@@ -140,7 +141,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     const vendorIds = vendors.map((vendor) => vendor.id)
     const vendorCostItems: TenderVendorCostItem[] = vendorIds.length > 0
       ? (await client.query<VendorCostItemRow>(
-        `SELECT id, anbieter_id, kostenblock_id, amount
+        `SELECT id, anbieter_id, kostenblock_id, amount, kommentar
          FROM anbieter_kostenpositionen
          WHERE anbieter_id = ANY($1::bigint[])
          ORDER BY id ASC`,
@@ -149,7 +150,8 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
         id: String(row.id),
         vendorId: String(row.anbieter_id),
         costBlockId: String(row.kostenblock_id),
-        amount: row.amount === null ? null : toNumber(row.amount)
+        amount: row.amount === null ? null : toNumber(row.amount),
+        kommentar: row.kommentar || ''
       }))
       : []
 

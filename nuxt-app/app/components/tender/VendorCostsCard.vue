@@ -21,6 +21,8 @@ const {
   canSave,
   hasInvalidAmounts,
   updateAmount,
+  updateComment,
+  saveComment,
   save
 } = useTenderVendorCosts(
   props.tenderId,
@@ -36,6 +38,10 @@ const { projectSummaries, runSummaries } = useVendorCostSummaries(
   () => runTotalOverConsiderationYears.value,
   () => props.considerationYears
 )
+async function handleCommentSaved(costBlockId: string, value: string) {
+  updateComment(costBlockId, value)
+  await saveComment(costBlockId, value)
+}
 </script>
 
 <template>
@@ -69,13 +75,14 @@ const { projectSummaries, runSummaries } = useVendorCostSummaries(
       description="Bitte geben Sie nur leere Werte oder nicht negative Zahlen ein."
     />
 
-    <div class="grid gap-6 xl:grid-cols-2">
+    <div class="grid gap-6">
       <TenderVendorCostGroupCard
         title="Projektkosten"
         description="Einmalkosten und projektbezogene Kostenblöcke."
         :rows="projectRows"
         :summaries="projectSummaries"
         @update-amount="updateAmount"
+        @save-comment="handleCommentSaved"
       />
 
       <TenderVendorCostGroupCard
@@ -84,6 +91,7 @@ const { projectSummaries, runSummaries } = useVendorCostSummaries(
         :rows="runRows"
         :summaries="runSummaries"
         @update-amount="updateAmount"
+        @save-comment="handleCommentSaved"
       />
     </div>
 

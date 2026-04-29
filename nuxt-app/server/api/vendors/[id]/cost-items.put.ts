@@ -25,6 +25,7 @@ interface SavedVendorCostItemRow {
   anbieter_id: string | number
   kostenblock_id: string | number
   amount: string | number | null
+  kommentar: string | null
 }
 
 function toNumber(value: string | number) {
@@ -34,6 +35,7 @@ function toNumber(value: string | number) {
 function normalizeItem(input: Partial<SaveVendorCostItemsRequest['items'][number]>, index: number) {
   const costBlockId = input.costBlockId?.trim() || ''
   const amount = input.amount
+  const kommentar = input.kommentar?.trim() || ''
 
   if (!costBlockId) {
     throw createError({
@@ -51,7 +53,8 @@ function normalizeItem(input: Partial<SaveVendorCostItemsRequest['items'][number
 
   return {
     costBlockId,
-    amount: amount ?? null
+    amount: amount ?? null,
+    kommentar
   }
 }
 
@@ -124,10 +127,10 @@ export default defineEventHandler(async (event): Promise<SaveVendorCostItemsResp
 
     for (const item of items) {
       const result = await client.query<SavedVendorCostItemRow>(
-        `INSERT INTO anbieter_kostenpositionen (anbieter_id, kostenblock_id, amount)
-         VALUES ($1, $2, $3)
-         RETURNING id, anbieter_id, kostenblock_id, amount`,
-        [vendorId, item.costBlockId, item.amount]
+        `INSERT INTO anbieter_kostenpositionen (anbieter_id, kostenblock_id, amount, kommentar)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, anbieter_id, kostenblock_id, amount, kommentar`,
+        [vendorId, item.costBlockId, item.amount, item.kommentar]
       )
 
       const row = result.rows[0]
@@ -143,7 +146,8 @@ export default defineEventHandler(async (event): Promise<SaveVendorCostItemsResp
         id: String(row.id),
         vendorId: String(row.anbieter_id),
         costBlockId: String(row.kostenblock_id),
-        amount: row.amount === null ? null : toNumber(row.amount)
+        amount: row.amount === null ? null : toNumber(row.amount),
+        kommentar: row.kommentar || ''
       })
     }
 

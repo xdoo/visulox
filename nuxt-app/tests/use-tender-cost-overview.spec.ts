@@ -20,10 +20,10 @@ describe('useTenderCostOverview', () => {
         { id: '12', name: 'Hosting', type: 'infrastructure' }
       ],
       [
-        { id: '100', vendorId: '1', costBlockId: '10', amount: 3000 },
-        { id: '101', vendorId: '1', costBlockId: '11', amount: 2000 },
-        { id: '102', vendorId: '1', costBlockId: '12', amount: 500 },
-        { id: '103', vendorId: '2', costBlockId: '11', amount: 1000 }
+        { id: '100', vendorId: '1', costBlockId: '10', amount: 3000, kommentar: '' },
+        { id: '101', vendorId: '1', costBlockId: '11', amount: 2000, kommentar: '' },
+        { id: '102', vendorId: '1', costBlockId: '12', amount: 500, kommentar: '' },
+        { id: '103', vendorId: '2', costBlockId: '11', amount: 1000, kommentar: '' }
       ],
       10
     )
@@ -100,10 +100,10 @@ describe('useTenderCostOverview', () => {
         { id: '12', name: 'Hosting', type: 'infrastructure' }
       ],
       [
-        { id: '100', vendorId: '1', costBlockId: '10', amount: 3000 },
-        { id: '101', vendorId: '1', costBlockId: '11', amount: 2000 },
-        { id: '102', vendorId: '1', costBlockId: '12', amount: 500 },
-        { id: '103', vendorId: '2', costBlockId: '11', amount: 1000 }
+        { id: '100', vendorId: '1', costBlockId: '10', amount: 3000, kommentar: '' },
+        { id: '101', vendorId: '1', costBlockId: '11', amount: 2000, kommentar: '' },
+        { id: '102', vendorId: '1', costBlockId: '12', amount: 500, kommentar: '' },
+        { id: '103', vendorId: '2', costBlockId: '11', amount: 1000, kommentar: '' }
       ],
       10
     )
