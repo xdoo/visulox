@@ -69,7 +69,7 @@ const { projectSummaries, runSummaries } = useVendorCostSummaries(
       description="Bitte geben Sie nur leere Werte oder nicht negative Zahlen ein."
     />
 
-    <div class="grid gap-6 xl:grid-cols-2">
+    <div class="grid gap-6">
       <TenderVendorCostGroupCard
         title="Projektkosten"
         description="Einmalkosten und projektbezogene Kostenblöcke."
