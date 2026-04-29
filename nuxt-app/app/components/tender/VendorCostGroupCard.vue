@@ -4,6 +4,7 @@ import { tenderCostBlockTypeLabels } from '~~/shared/constants/cost-blocks'
 import type { VendorCostRow } from '../../composables/useTenderVendorCosts'
 import type { VendorCostSummaryItem } from '../../composables/useVendorCostSummaries'
 import { useVendorCostGroupInputs } from '../../composables/useVendorCostGroupInputs'
+import VendorCostCommentModal from './VendorCostCommentModal.vue'
 
 const props = defineProps<{
   title: string
@@ -174,7 +175,7 @@ function saveComment() {
     </div>
   </UCard>
 
-  <TenderVendorCostCommentModal
+  <VendorCostCommentModal
     v-model:open="isCommentModalOpen"
     v-model:comment="commentDraft"
     :cost-block-name="selectedRow ? selectedRow.name : ''"
