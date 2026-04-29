@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   updateAmount: [costBlockId: string, value: string]
-  updateComment: [costBlockId: string, value: string]
+  saveComment: [costBlockId: string, value: string]
 }>()
 
 const {
@@ -85,7 +85,7 @@ function saveComment() {
     return
   }
 
-  emit('updateComment', selectedRow.value.costBlockId, commentDraft.value)
+  emit('saveComment', selectedRow.value.costBlockId, commentDraft.value)
   closeCommentModal()
 }
 </script>

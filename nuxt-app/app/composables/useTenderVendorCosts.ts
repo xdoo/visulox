@@ -7,7 +7,8 @@ import type {
   TenderCostBlock,
   TenderCostBlockType,
   TenderVendor,
-  TenderVendorCostItem
+  TenderVendorCostItem,
+  UpdateVendorCostItemCommentRequest
 } from '../../shared/types/tenders'
 import type { MaybeRefOrGetter } from 'vue'
 
@@ -22,6 +23,7 @@ export interface VendorCostRow {
 }
 
 type PutFetcher = <T>(request: string, options: { method: 'PUT', body: SaveVendorCostItemsRequest }) => Promise<T>
+type PatchCommentFetcher = <T>(request: string, options: { method: 'PATCH', body: UpdateVendorCostItemCommentRequest }) => Promise<T>
 
 export function getVendorCostGroup(type: TenderCostBlockType): VendorCostGroupKey {
   return type === 'vendor_operating' || type === 'infrastructure' ? 'run' : 'project'
@@ -109,6 +111,7 @@ export function useTenderVendorCosts(
   considerationYears: MaybeRefOrGetter<number>
 ) {
   const putFetcher = globalThis.$fetch as PutFetcher
+  const patchCommentFetcher = globalThis.$fetch as PatchCommentFetcher
   const { errorMessage, runMutation, clearError } = useTenderSettingsMutation(tenderId)
   const rows = ref<VendorCostRow[]>([])
   const isSaving = ref(false)
@@ -199,6 +202,26 @@ export function useTenderVendorCosts(
     }
   }
 
+  async function saveComment(costBlockId: string, kommentar: string) {
+    const currentVendor = toValue(vendor)
+
+    if (!currentVendor) {
+      return
+    }
+
+    clearError()
+
+    await runMutation(() => patchCommentFetcher(
+      `/api/vendors/${currentVendor.id}/cost-items/${costBlockId}/comment`,
+      {
+        method: 'PATCH',
+        body: {
+          kommentar
+        }
+      }
+    ))
+  }
+
   return {
     errorMessage,
     isSaving,
@@ -211,6 +234,7 @@ export function useTenderVendorCosts(
     hasInvalidAmounts,
     updateAmount,
     updateComment,
+    saveComment,
     save
   }
 }

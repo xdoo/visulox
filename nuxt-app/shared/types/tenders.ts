@@ -178,3 +178,11 @@ export interface SaveVendorCostItemsRequest {
 export interface SaveVendorCostItemsResponse {
   items: TenderVendorCostItem[]
 }
+
+export interface UpdateVendorCostItemCommentRequest {
+  kommentar: string
+}
+
+export interface UpdateVendorCostItemCommentResponse {
+  item: TenderVendorCostItem
+}
