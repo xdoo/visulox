@@ -174,37 +174,12 @@ function saveComment() {
     </div>
   </UCard>
 
-  <UModal
+  <TenderVendorCostCommentModal
     v-model:open="isCommentModalOpen"
-    title="Kommentar zu Kostenblock"
-    :description="selectedRow ? selectedRow.name : ''"
-    :ui="{ content: 'sm:max-w-2xl' }"
-  >
-    <template #body>
-      <UFormField label="Kommentar">
-        <UTextarea
-          v-model="commentDraft"
-          class="w-full"
-          autoresize
-          :rows="6"
-          placeholder="Kommentar zum Kostenblock eingeben"
-        />
-      </UFormField>
-    </template>
-
-    <template #footer>
-      <div class="flex w-full justify-between gap-2">
-        <UButton color="neutral" variant="ghost" @click="closeCommentModal">
-          Abbrechen
-        </UButton>
-        <UButton
-          icon="i-lucide-save"
-          :disabled="!canSaveComment"
-          @click="saveComment"
-        >
-          Übernehmen
-        </UButton>
-      </div>
-    </template>
-  </UModal>
+    v-model:comment="commentDraft"
+    :cost-block-name="selectedRow ? selectedRow.name : ''"
+    :can-save="canSaveComment"
+    @cancel="closeCommentModal"
+    @save="saveComment"
+  />
 </template>
