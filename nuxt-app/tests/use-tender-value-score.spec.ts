@@ -83,10 +83,10 @@ describe('useTenderValueScore', () => {
         { id: '101', name: 'Hosting', type: 'infrastructure' }
       ],
       [
-        { id: 'c1', vendorId: '1', costBlockId: '100', amount: 4_000_000 },
-        { id: 'c2', vendorId: '1', costBlockId: '101', amount: 200_000 },
-        { id: 'c3', vendorId: '2', costBlockId: '100', amount: 3_000_000 },
-        { id: 'c4', vendorId: '2', costBlockId: '101', amount: 100_000 }
+        { id: 'c1', vendorId: '1', costBlockId: '100', amount: 4_000_000, kommentar: '' },
+        { id: 'c2', vendorId: '1', costBlockId: '101', amount: 200_000, kommentar: '' },
+        { id: 'c3', vendorId: '2', costBlockId: '100', amount: 3_000_000, kommentar: '' },
+        { id: 'c4', vendorId: '2', costBlockId: '101', amount: 100_000, kommentar: '' }
       ],
       10
     )

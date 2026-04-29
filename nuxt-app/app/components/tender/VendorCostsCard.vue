@@ -21,6 +21,7 @@ const {
   canSave,
   hasInvalidAmounts,
   updateAmount,
+  updateComment,
   save
 } = useTenderVendorCosts(
   props.tenderId,
@@ -76,6 +77,7 @@ const { projectSummaries, runSummaries } = useVendorCostSummaries(
         :rows="projectRows"
         :summaries="projectSummaries"
         @update-amount="updateAmount"
+        @update-comment="updateComment"
       />
 
       <TenderVendorCostGroupCard
@@ -84,6 +86,7 @@ const { projectSummaries, runSummaries } = useVendorCostSummaries(
         :rows="runRows"
         :summaries="runSummaries"
         @update-amount="updateAmount"
+        @update-comment="updateComment"
       />
     </div>
 

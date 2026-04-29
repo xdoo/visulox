@@ -18,6 +18,7 @@ export interface VendorCostRow {
   name: string
   type: TenderCostBlockType
   amount: string
+  kommentar: string
 }
 
 type PutFetcher = <T>(request: string, options: { method: 'PUT', body: SaveVendorCostItemsRequest }) => Promise<T>
@@ -95,7 +96,8 @@ export function mapVendorCostRows(
     costBlockId: costBlock.id,
     name: costBlock.name,
     type: costBlock.type,
-    amount: formatVendorCostAmount(vendorItemsByCostBlockId.get(costBlock.id)?.amount ?? null)
+    amount: formatVendorCostAmount(vendorItemsByCostBlockId.get(costBlock.id)?.amount ?? null),
+    kommentar: vendorItemsByCostBlockId.get(costBlock.id)?.kommentar || ''
   }))
 }
 
@@ -140,7 +142,11 @@ export function useTenderVendorCosts(
       return true
     }
 
-    return baselineRows.some((baselineRow, index) => baselineRow.amount !== rows.value[index]?.amount)
+    return baselineRows.some((baselineRow, index) => {
+      const currentRow = rows.value[index]
+
+      return baselineRow.amount !== currentRow?.amount || baselineRow.kommentar !== currentRow?.kommentar
+    })
   })
 
   const canSave = computed(() => {
@@ -157,6 +163,16 @@ export function useTenderVendorCosts(
     row.amount = value
   }
 
+  function updateComment(costBlockId: string, value: string) {
+    const row = rows.value.find((entry) => entry.costBlockId === costBlockId)
+
+    if (!row) {
+      return
+    }
+
+    row.kommentar = value
+  }
+
   async function save() {
     const currentVendor = toValue(vendor)
 
@@ -170,7 +186,8 @@ export function useTenderVendorCosts(
     try {
       const items = rows.value.map((row) => ({
         costBlockId: row.costBlockId,
-        amount: parseVendorCostAmount(row.amount)
+        amount: parseVendorCostAmount(row.amount),
+        kommentar: row.kommentar.trim()
       }))
 
       await runMutation(() => putFetcher(`/api/vendors/${currentVendor.id}/cost-items`, {
@@ -193,6 +210,7 @@ export function useTenderVendorCosts(
     canSave,
     hasInvalidAmounts,
     updateAmount,
+    updateComment,
     save
   }
 }

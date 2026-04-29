@@ -41,16 +41,16 @@ describe('PUT /api/vendors/:id/cost-items', () => {
       .mockResolvedValueOnce({ rows: [{ id: 11, ausschreibung_id: 1 }] })
       .mockResolvedValueOnce({ rows: [{ id: 41, ausschreibung_id: 1 }, { id: 42, ausschreibung_id: 1 }] })
       .mockResolvedValueOnce({ rows: [] })
-      .mockResolvedValueOnce({ rows: [{ id: 101, anbieter_id: 11, kostenblock_id: 41, amount: '1200.50' }] })
-      .mockResolvedValueOnce({ rows: [{ id: 102, anbieter_id: 11, kostenblock_id: 42, amount: null }] })
+      .mockResolvedValueOnce({ rows: [{ id: 101, anbieter_id: 11, kostenblock_id: 41, amount: '1200.50', kommentar: 'CAPEX' }] })
+      .mockResolvedValueOnce({ rows: [{ id: 102, anbieter_id: 11, kostenblock_id: 42, amount: null, kommentar: '' }] })
       .mockResolvedValueOnce({ rows: [] })
     const release = vi.fn()
 
     getPostgresClient.mockResolvedValue({ query, release })
     readBody.mockResolvedValue({
       items: [
-        { costBlockId: '41', amount: 1200.5 },
-        { costBlockId: '42', amount: null }
+        { costBlockId: '41', amount: 1200.5, kommentar: ' CAPEX ' },
+        { costBlockId: '42', amount: null, kommentar: '' }
       ]
     })
 
@@ -68,25 +68,24 @@ describe('PUT /api/vendors/:id/cost-items', () => {
     expect(query).toHaveBeenNthCalledWith(3, 'SELECT id, ausschreibung_id FROM kostenbloecke WHERE id = ANY($1::bigint[])', [['41', '42']])
     expect(query).toHaveBeenNthCalledWith(4, 'DELETE FROM anbieter_kostenpositionen WHERE anbieter_id = $1', ['11'])
     expect(query).toHaveBeenNthCalledWith(5,
-      `INSERT INTO anbieter_kostenpositionen (anbieter_id, kostenblock_id, amount)
-         VALUES ($1, $2, $3)
-         RETURNING id, anbieter_id, kostenblock_id, amount`,
-      ['11', '41', 1200.5]
+      `INSERT INTO anbieter_kostenpositionen (anbieter_id, kostenblock_id, amount, kommentar)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, anbieter_id, kostenblock_id, amount, kommentar`,
+      ['11', '41', 1200.5, 'CAPEX']
     )
     expect(query).toHaveBeenNthCalledWith(6,
-      `INSERT INTO anbieter_kostenpositionen (anbieter_id, kostenblock_id, amount)
-         VALUES ($1, $2, $3)
-         RETURNING id, anbieter_id, kostenblock_id, amount`,
-      ['11', '42', null]
+      `INSERT INTO anbieter_kostenpositionen (anbieter_id, kostenblock_id, amount, kommentar)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, anbieter_id, kostenblock_id, amount, kommentar`,
+      ['11', '42', null, '']
     )
     expect(query).toHaveBeenNthCalledWith(7, 'COMMIT')
     expect(response).toEqual({
       items: [
-        { id: '101', vendorId: '11', costBlockId: '41', amount: 1200.5 },
-        { id: '102', vendorId: '11', costBlockId: '42', amount: null }
+        { id: '101', vendorId: '11', costBlockId: '41', amount: 1200.5, kommentar: 'CAPEX' },
+        { id: '102', vendorId: '11', costBlockId: '42', amount: null, kommentar: '' }
       ]
     })
     expect(release).toHaveBeenCalledTimes(1)
   })
 })
-

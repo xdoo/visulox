@@ -45,21 +45,21 @@ describe('useTenderVendorCosts', () => {
         { id: '42', name: 'Hosting', type: 'infrastructure' }
       ],
       [
-        { id: '1', vendorId: '11', costBlockId: '41', amount: 1000 }
+        { id: '1', vendorId: '11', costBlockId: '41', amount: 1000, kommentar: 'Projektteam passt' }
       ],
       '11'
     )).toEqual([
-      { costBlockId: '41', name: 'Projektteam', type: 'project', amount: '1000' },
-      { costBlockId: '42', name: 'Hosting', type: 'infrastructure', amount: '' }
+      { costBlockId: '41', name: 'Projektteam', type: 'project', amount: '1000', kommentar: 'Projektteam passt' },
+      { costBlockId: '42', name: 'Hosting', type: 'infrastructure', amount: '', kommentar: '' }
     ])
   })
 
   it('calculates group totals from valid row amounts', () => {
     expect(calculateVendorCostTotal([
-      { costBlockId: '41', name: 'Projektteam', type: 'project', amount: '1.000,5' },
-      { costBlockId: '42', name: 'Lizenz', type: 'license_one_time', amount: '250' },
-      { costBlockId: '43', name: 'Optional', type: 'project', amount: '' },
-      { costBlockId: '44', name: 'Fehlerhaft', type: 'project', amount: 'abc' }
+      { costBlockId: '41', name: 'Projektteam', type: 'project', amount: '1.000,5', kommentar: '' },
+      { costBlockId: '42', name: 'Lizenz', type: 'license_one_time', amount: '250', kommentar: '' },
+      { costBlockId: '43', name: 'Optional', type: 'project', amount: '', kommentar: '' },
+      { costBlockId: '44', name: 'Fehlerhaft', type: 'project', amount: 'abc', kommentar: '' }
     ])).toBe(1250.5)
   })
 
@@ -70,7 +70,7 @@ describe('useTenderVendorCosts', () => {
       { id: '42', name: 'Hosting', type: 'infrastructure' as const }
     ])
     const vendorCostItems = ref([
-      { id: '1', vendorId: '11', costBlockId: '41', amount: 1000 }
+      { id: '1', vendorId: '11', costBlockId: '41', amount: 1000, kommentar: '' }
     ])
 
     const state = useTenderVendorCosts(

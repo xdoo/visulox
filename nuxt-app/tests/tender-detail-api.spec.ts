@@ -65,7 +65,7 @@ describe('GET /api/tenders/:id', () => {
       })
       .mockResolvedValueOnce({
         rows: [
-          { id: 51, anbieter_id: 11, kostenblock_id: 41, amount: '1200.50' }
+          { id: 51, anbieter_id: 11, kostenblock_id: 41, amount: '1200.50', kommentar: 'Einmalkosten' }
         ]
       })
       .mockResolvedValueOnce({
@@ -105,7 +105,7 @@ describe('GET /api/tenders/:id', () => {
     expect(query).toHaveBeenNthCalledWith(4, 'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(5, 'SELECT id, name, type FROM kostenbloecke WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(6,
-      `SELECT id, anbieter_id, kostenblock_id, amount
+      `SELECT id, anbieter_id, kostenblock_id, amount, kommentar
          FROM anbieter_kostenpositionen
          WHERE anbieter_id = ANY($1::bigint[])
          ORDER BY id ASC`,
@@ -138,7 +138,7 @@ describe('GET /api/tenders/:id', () => {
         { id: '41', name: 'Lizenzen', type: 'license_one_time' }
       ],
       vendorCostItems: [
-        { id: '51', vendorId: '11', costBlockId: '41', amount: 1200.5 }
+        { id: '51', vendorId: '11', costBlockId: '41', amount: 1200.5, kommentar: 'Einmalkosten' }
       ],
       sections: [
         {
