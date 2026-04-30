@@ -118,6 +118,8 @@ const vendorCostBreakdowns = computed(() => {
   return tender.value.vendors.map((vendor) => ({
     vendorId: vendor.id,
     vendorName: vendor.name,
+    projectAssessment: vendor.projectCostAssessment || '',
+    runAssessment: vendor.runCostAssessment || '',
     projectRow: projectCostRows.value.find((row) => row.vendorId === vendor.id) || null,
     runRow: runCostRows.value.find((row) => row.vendorId === vendor.id) || null
   }))
@@ -449,6 +451,8 @@ useSeoMeta({
             >
               <ReportVendorCostBreakdown
                 :vendor-name="entry.vendorName"
+                :project-assessment="entry.projectAssessment"
+                :run-assessment="entry.runAssessment"
                 :project-row="entry.projectRow"
                 :run-row="entry.runRow"
                 :consideration-years="tender.settings.considerationYears"

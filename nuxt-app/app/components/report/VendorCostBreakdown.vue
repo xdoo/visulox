@@ -17,6 +17,8 @@ const props = defineProps<{
   vendorName: string
   projectRow: VendorCostOverviewRow | null
   runRow: VendorCostOverviewRow | null
+  projectAssessment: string
+  runAssessment: string
   considerationYears: number
   palette?: typeof defaultTenderChartPalette
   renderer?: 'canvas' | 'svg'
@@ -160,9 +162,12 @@ const chartStyle = computed(() => ({
         <p v-else class="report-empty-state">
           Es wurden noch keine Projektkosten für diesen Anbieter erfasst.
         </p>
-        <p class="report-vendor-cost-note">
-          Erklärungstext folgt.
-        </p>
+        <ReportMarkdownBlock
+          v-if="props.projectAssessment.trim()"
+          :markdown="props.projectAssessment"
+          class="report-vendor-cost-note"
+        />
+        <p v-else class="report-vendor-cost-note">Erklärungstext folgt.</p>
       </section>
 
       <section class="report-vendor-cost-block">
@@ -180,9 +185,12 @@ const chartStyle = computed(() => ({
         <p v-else class="report-empty-state">
           Es wurden noch keine Run-Kosten für diesen Anbieter erfasst.
         </p>
-        <p class="report-vendor-cost-note">
-          Erklärungstext folgt.
-        </p>
+        <ReportMarkdownBlock
+          v-if="props.runAssessment.trim()"
+          :markdown="props.runAssessment"
+          class="report-vendor-cost-note"
+        />
+        <p v-else class="report-vendor-cost-note">Erklärungstext folgt.</p>
       </section>
     </div>
 

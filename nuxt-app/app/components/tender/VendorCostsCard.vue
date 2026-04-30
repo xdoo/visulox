@@ -2,6 +2,7 @@
 import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 import type { TenderCostBlock, TenderVendor, TenderVendorCostItem } from '../../../shared/types/tenders'
 import { downloadVendorCostBlocksJson } from '../../composables/useVendorCostBlocksJsonExport'
+import { useVendorCostAssessmentsEditor } from '../../composables/useVendorCostAssessmentsEditor'
 import { useVendorCostSummaries } from '../../composables/useVendorCostSummaries'
 
 const props = defineProps<{
@@ -41,6 +42,18 @@ const { projectSummaries, runSummaries } = useVendorCostSummaries(
   () => runTotalOverConsiderationYears.value,
   () => props.considerationYears
 )
+const {
+  errorMessage: costAssessmentErrorMessage,
+  isCostAssessmentModalOpen,
+  selectedKind,
+  assessment,
+  modalTitle,
+  isSavingCostAssessment,
+  canSaveCostAssessment,
+  openCostAssessmentEditor,
+  saveCostAssessment
+} = useVendorCostAssessmentsEditor(props.tenderId)
+
 async function handleCommentSaved(costBlockId: string, value: string) {
   updateComment(costBlockId, value)
   await saveComment(costBlockId, value)
@@ -103,7 +116,20 @@ function downloadCostBlocksJson() {
           :rows="projectRows"
           :consideration-years="props.considerationYears"
           :palette="props.palette"
-        />
+        >
+          <template #header-actions>
+            <UTooltip text="Projektkosten-Bewertungstext bearbeiten">
+              <UButton
+                icon="i-lucide-file-pen-line"
+                color="neutral"
+                variant="outline"
+                square
+                aria-label="Projektkosten-Bewertungstext bearbeiten"
+                @click="openCostAssessmentEditor(props.vendor, 'project')"
+              />
+            </UTooltip>
+          </template>
+        </TenderVendorCostDonutChart>
 
         <TenderVendorCostDonutChart
           title="Run-Kosten nach Kostenblock"
@@ -111,7 +137,20 @@ function downloadCostBlocksJson() {
           :rows="runRows"
           :consideration-years="props.considerationYears"
           :palette="props.palette"
-        />
+        >
+          <template #header-actions>
+            <UTooltip text="Run-Kosten-Bewertungstext bearbeiten">
+              <UButton
+                icon="i-lucide-file-pen-line"
+                color="neutral"
+                variant="outline"
+                square
+                aria-label="Run-Kosten-Bewertungstext bearbeiten"
+                @click="openCostAssessmentEditor(props.vendor, 'run')"
+              />
+            </UTooltip>
+          </template>
+        </TenderVendorCostDonutChart>
       </div>
 
       <TenderVendorCostGroupCard
@@ -138,6 +177,17 @@ function downloadCostBlocksJson() {
       color="error"
       variant="subtle"
       :description="errorMessage"
+    />
+
+    <TenderVendorCostAssessmentModal
+      v-model:open="isCostAssessmentModalOpen"
+      v-model:assessment="assessment"
+      :title="modalTitle"
+      :kind="selectedKind"
+      :is-saving="isSavingCostAssessment"
+      :can-save="canSaveCostAssessment"
+      :error-message="costAssessmentErrorMessage"
+      @submit="saveCostAssessment"
     />
   </div>
 </template>

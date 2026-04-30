@@ -34,6 +34,8 @@ interface TenderChartPaletteRow {
 interface VendorRow {
   id: string | number
   name: string
+  project_cost_assessment: string | null
+  run_cost_assessment: string | null
 }
 
 interface CostBlockRow {
@@ -122,13 +124,15 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     )
 
     const vendorsResult = await client.query<VendorRow>(
-      'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC',
+      'SELECT id, name, project_cost_assessment, run_cost_assessment FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC',
       [tenderId]
     )
 
     const vendors: TenderVendor[] = vendorsResult.rows.map(row => ({
       id: String(row.id),
-      name: row.name
+      name: row.name,
+      projectCostAssessment: row.project_cost_assessment || '',
+      runCostAssessment: row.run_cost_assessment || ''
     }))
 
     const costBlocksResult = await client.query<CostBlockRow>(

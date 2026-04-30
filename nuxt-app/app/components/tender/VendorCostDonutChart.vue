@@ -141,11 +141,17 @@ const option = computed<EChartsOption>(() => ({
 <template>
   <UCard>
     <template #header>
-      <div class="space-y-1">
-        <h3 class="font-semibold">{{ props.title }}</h3>
-        <p class="text-sm ui-text-muted">
-          {{ props.kind === 'run' ? `Werte über ${props.considerationYears} Jahre.` : 'Einmalkosten im Projektzeitraum.' }}
-        </p>
+      <div class="flex items-start justify-between gap-3">
+        <div class="space-y-1">
+          <h3 class="font-semibold">{{ props.title }}</h3>
+          <p class="text-sm ui-text-muted">
+            {{ props.kind === 'run' ? `Werte über ${props.considerationYears} Jahre.` : 'Einmalkosten im Projektzeitraum.' }}
+          </p>
+        </div>
+
+        <div class="shrink-0">
+          <slot name="header-actions" />
+        </div>
       </div>
     </template>
 
