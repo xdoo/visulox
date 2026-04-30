@@ -37,6 +37,7 @@ const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 const initOptions = computed(() => ({
   renderer: props.renderer || 'canvas'
 }))
+const MIN_VISIBLE_LABEL_PERCENT = 4
 
 function getPaletteEntry(index: number) {
   const palette = chartPalette.value
@@ -72,6 +73,14 @@ function buildChartOption(kind: CostKind, row: VendorCostOverviewRow | null): EC
   const total = Number(segments.reduce((sum, segment) => sum + segment.value, 0).toFixed(2))
   const legendRowCount = Math.max(1, Math.ceil(segments.length / 2))
   const legendBottomSpace = 20 + (legendRowCount * 22)
+
+  function shouldShowSegmentLabel(value: number) {
+    if (!Number.isFinite(value) || value <= 0 || total <= 0) {
+      return false
+    }
+
+    return ((value / total) * 100) >= MIN_VISIBLE_LABEL_PERCENT
+  }
 
   return {
     title: {
@@ -127,20 +136,20 @@ function buildChartOption(kind: CostKind, row: VendorCostOverviewRow | null): EC
     series: [
       {
         type: 'pie',
-        radius: ['45%', '72%'],
-        center: ['50%', '38%'],
+        radius: [72, 116],
+        center: ['50%', '42%'],
         avoidLabelOverlap: false,
         label: {
           show: true,
           position: 'outside',
-          alignTo: 'edge',
-          edgeDistance: 8,
-          bleedMargin: 6,
+          alignTo: 'none',
+          distanceToLabelLine: 2,
+          bleedMargin: 2,
           formatter: (params: any) => {
             const value = Number(params?.value || 0)
             const share = Number(params?.percent || 0)
 
-            if (!Number.isFinite(value) || !Number.isFinite(share) || share < 6) {
+            if (!Number.isFinite(value) || !Number.isFinite(share) || share < MIN_VISIBLE_LABEL_PERCENT) {
               return ''
             }
 
@@ -152,8 +161,8 @@ function buildChartOption(kind: CostKind, row: VendorCostOverviewRow | null): EC
         },
         labelLine: {
           show: true,
-          length: 8,
-          length2: 6,
+          length: 12,
+          length2: 10,
           lineStyle: {
             color: '#9ca3af'
           }
@@ -169,6 +178,12 @@ function buildChartOption(kind: CostKind, row: VendorCostOverviewRow | null): EC
         data: segments.map((segment) => ({
           value: segment.value,
           name: segment.name,
+          label: {
+            show: shouldShowSegmentLabel(segment.value)
+          },
+          labelLine: {
+            show: shouldShowSegmentLabel(segment.value)
+          },
           itemStyle: {
             color: segment.color
           }
