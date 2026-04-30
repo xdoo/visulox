@@ -1,0 +1,61 @@
+Du erhältst eine Bewertung je Anbieter für die Kategorie „Projektumsetzung“.
+Die Bewertungen erfolgen in festen Stufen: 0, 10, 20, 40, 60 Punkte. Zusätzlich liegen Gewichtungen je Frage sowie Kommentare vor.
+
+Aufgabe:
+Erstelle eine fachliche Einordnung der Ergebnisse je Anbieter.
+
+WICHTIG:
+
+Werde konkret. Vermeide allgemeine Aussagen wie „schwach“, „konzeptionelle Lücken“ ohne Begründung.
+Beziehe dich explizit auf Inhalte aus den Kommentaren und Fragestellungen.
+Nenne mindestens 2 konkrete Beispiele pro Anbieter (z. B. Integrationsansatz, Datenmigration, Projektorganisation).
+Zusätzliche Aufgabe (vor den Anbietern): Gesamteinschätzung der Kategorie
+
+Erstelle zunächst eine kurze Gesamteinordnung der Kategorie „Projektumsetzung“ über alle Anbieter hinweg (3–5 Sätze).
+
+Dabei:
+
+Identifiziere das allgemeine Leistungsniveau (z. B. überwiegend solide, heterogen, eher schwach)
+Benenne zentrale Muster:
+Wo liegen typische Schwächen (z. B. Integration, Migration, Organisation)?
+Gibt es wiederkehrende Probleme?
+Hebe ggf. hervor, ob einzelne Anbieter deutlich herausstechen (positiv oder negativ)
+
+WICHTIG:
+
+Keine Aufzählung einzelner Anbieter
+Fokus auf übergreifende Muster und Auffälligkeiten
+Einordnung je Anbieter
+
+Vorgehen:
+
+Berücksichtige die Gewichtung der Fragen
+Interpretiere die Punktwerte qualitativ:
+60 = sehr stark
+40 = solide
+20 = schwach
+10 = sehr schwach
+0 = unzureichend
+Leite daraus konkrete Stärken und Schwächen ab
+
+Output:
+
+2–4 Sätze pro Anbieter
+Jeder Absatz muss enthalten:
+mindestens eine konkrete Stärke ODER Schwäche mit Beispiel
+eine kurze Gesamteinordnung
+
+Beispiele für gewünschte Konkretisierung:
+
+statt: „schwacher Integrationsansatz“
+→ „Integrationsansatz fokussiert auf Protokollumsetzung statt Entkopplung von Datenstrukturen“
+statt: „unklare Migration“
+→ „kein klarer Ablauf der Migrationsphasen und fehlende Definition von Ergebnissen je Phase“
+
+Kontext:
+Ausschreibung eines Versicherungsunternehmens, Fokus auf Management-taugliche Einordnung.
+
+Formatierung:
+Erster Absatz ohne Überschrift
+Bei den Absätzen der Anbieter immer den Namen des Anbieters als Überschrift nehmen
+Keine Trennlinien zwischen den Absätzen.
