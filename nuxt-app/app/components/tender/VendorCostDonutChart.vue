@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { EChartsOption } from 'echarts'
 import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
-import { formatCostChartValue } from '../../composables/useTenderCostOverview'
+import { formatCostChartMillionValue, formatCostChartValue } from '../../composables/useTenderCostOverview'
 import { parseVendorCostAmount } from '../../composables/useTenderVendorCosts'
 import type { VendorCostRow } from '../../composables/useTenderVendorCosts'
 
@@ -33,6 +33,7 @@ const chartPalette = computed(() => props.palette || defaultTenderChartPalette)
 const initOptions = computed(() => ({
   renderer: props.renderer || 'canvas'
 }))
+const MIN_VISIBLE_LABEL_PERCENT = 4
 const legendRowCount = computed(() => Math.max(1, Math.ceil(segments.value.length / 2)))
 const legendBottomSpace = computed(() => 20 + (legendRowCount.value * 22))
 
@@ -77,7 +78,34 @@ const total = computed(() => {
   return Number(segments.value.reduce((sum, segment) => sum + segment.value, 0).toFixed(2))
 })
 
+function shouldShowSegmentLabel(value: number) {
+  if (!Number.isFinite(value) || value <= 0 || total.value <= 0) {
+    return false
+  }
+
+  const percentage = (value / total.value) * 100
+  return percentage >= MIN_VISIBLE_LABEL_PERCENT
+}
+
 const option = computed<EChartsOption>(() => ({
+  title: {
+    text: `${formatCostChartMillionValue(total.value)} €`,
+    subtext: props.kind === 'run' ? `${props.considerationYears} Jahre` : '',
+    left: '50%',
+    top: '38%',
+    textAlign: 'center',
+    textVerticalAlign: 'middle',
+    itemGap: 3,
+    textStyle: {
+      color: '#111827',
+      fontSize: 13,
+      fontWeight: 700
+    },
+    subtextStyle: {
+      color: '#6b7280',
+      fontSize: 10
+    }
+  },
   tooltip: {
     trigger: 'item',
     formatter: (params: any) => {
@@ -113,14 +141,40 @@ const option = computed<EChartsOption>(() => ({
   series: [
     {
       type: 'pie',
-      radius: ['45%', '72%'],
-      center: ['50%', '38%'],
+      radius: [72, 116],
+      center: ['50%', '42%'],
       avoidLabelOverlap: false,
       label: {
-        show: false
+        show: true,
+        position: 'outside',
+        alignTo: 'none',
+        distanceToLabelLine: 2,
+        bleedMargin: 2,
+        formatter: (params: any) => {
+          const value = Number(params?.value || 0)
+          const share = Number(params?.percent || 0)
+
+          if (!Number.isFinite(value) || !Number.isFinite(share) || share < MIN_VISIBLE_LABEL_PERCENT) {
+            return ''
+          }
+
+          return `${formatCostChartMillionValue(value)} €\n${share.toFixed(1)}%`
+        },
+        fontSize: 10,
+        lineHeight: 14,
+        color: '#374151'
       },
       labelLine: {
-        show: false
+        show: true,
+        length: 12,
+        length2: 10,
+        lineStyle: {
+          color: '#9ca3af'
+        }
+      },
+      labelLayout: {
+        hideOverlap: true,
+        moveOverlap: 'shiftY'
       },
       itemStyle: {
         borderColor: '#fff',
@@ -129,6 +183,12 @@ const option = computed<EChartsOption>(() => ({
       data: segments.value.map((segment) => ({
         value: segment.value,
         name: segment.name,
+        label: {
+          show: shouldShowSegmentLabel(segment.value)
+        },
+        labelLine: {
+          show: shouldShowSegmentLabel(segment.value)
+        },
         itemStyle: {
           color: segment.color
         }
@@ -159,8 +219,8 @@ const option = computed<EChartsOption>(() => ({
       Keine Kostenwerte für diese Darstellung vorhanden.
     </div>
 
-    <div v-else class="space-y-4">
-      <div :style="{ height: `${Math.max(280, 220 + legendBottomSpace)}px` }">
+    <div v-else>
+      <div :style="{ height: `${Math.max(380, 320 + legendBottomSpace)}px` }">
         <ClientOnly>
           <VChart
             v-if="isVisible"
@@ -169,13 +229,6 @@ const option = computed<EChartsOption>(() => ({
             autoresize
           />
         </ClientOnly>
-      </div>
-
-      <div class="space-y-2 border-t ui-border pt-3">
-        <div class="flex items-center justify-between text-sm font-semibold">
-          <span>Gesamt</span>
-          <span>{{ formatCostChartValue(total) }} €</span>
-        </div>
       </div>
     </div>
   </UCard>

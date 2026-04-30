@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { EChartsOption } from 'echarts'
 import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
-import { formatCostChartValue } from '../../composables/useTenderCostOverview'
+import { formatCostChartMillionValue, formatCostChartValue } from '../../composables/useTenderCostOverview'
 import type { VendorCostOverviewRow } from '../../composables/useTenderCostOverview'
 
 type CostKind = 'project' | 'run'
@@ -69,10 +69,29 @@ function getSegments(row: VendorCostOverviewRow | null) {
 
 function buildChartOption(kind: CostKind, row: VendorCostOverviewRow | null): EChartsOption {
   const segments = getSegments(row)
+  const total = Number(segments.reduce((sum, segment) => sum + segment.value, 0).toFixed(2))
   const legendRowCount = Math.max(1, Math.ceil(segments.length / 2))
   const legendBottomSpace = 20 + (legendRowCount * 22)
 
   return {
+    title: {
+      text: `${formatCostChartMillionValue(total)} €`,
+      subtext: kind === 'run' ? `${props.considerationYears} Jahre` : '',
+      left: '50%',
+      top: '38%',
+      textAlign: 'center',
+      textVerticalAlign: 'middle',
+      itemGap: 3,
+      textStyle: {
+        color: '#111827',
+        fontSize: 13,
+        fontWeight: 700
+      },
+      subtextStyle: {
+        color: '#6b7280',
+        fontSize: 10
+      }
+    },
     tooltip: {
       trigger: 'item',
       formatter: (params: any) => {
@@ -112,10 +131,36 @@ function buildChartOption(kind: CostKind, row: VendorCostOverviewRow | null): EC
         center: ['50%', '38%'],
         avoidLabelOverlap: false,
         label: {
-          show: false
+          show: true,
+          position: 'outside',
+          alignTo: 'edge',
+          edgeDistance: 8,
+          bleedMargin: 6,
+          formatter: (params: any) => {
+            const value = Number(params?.value || 0)
+            const share = Number(params?.percent || 0)
+
+            if (!Number.isFinite(value) || !Number.isFinite(share) || share < 6) {
+              return ''
+            }
+
+            return `${formatCostChartMillionValue(value)} €\n${share.toFixed(1)}%`
+          },
+          fontSize: 10,
+          lineHeight: 14,
+          color: '#374151'
         },
         labelLine: {
-          show: false
+          show: true,
+          length: 8,
+          length2: 6,
+          lineStyle: {
+            color: '#9ca3af'
+          }
+        },
+        labelLayout: {
+          hideOverlap: true,
+          moveOverlap: 'shiftY'
         },
         itemStyle: {
           borderColor: '#fff',
