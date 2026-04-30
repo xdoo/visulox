@@ -110,6 +110,18 @@ const combinedCostRows = computed(() => buildCombinedVendorCostOverviewRows(cost
 const hasProjectCosts = computed(() => projectCostRows.value.some((row) => row.total > 0))
 const hasRunCosts = computed(() => runCostRows.value.some((row) => row.total > 0))
 const hasCombinedCosts = computed(() => combinedCostRows.value.some((row) => row.total > 0))
+const vendorCostBreakdowns = computed(() => {
+  if (!tender.value) {
+    return []
+  }
+
+  return tender.value.vendors.map((vendor) => ({
+    vendorId: vendor.id,
+    vendorName: vendor.name,
+    projectRow: projectCostRows.value.find((row) => row.vendorId === vendor.id) || null,
+    runRow: runCostRows.value.find((row) => row.vendorId === vendor.id) || null
+  }))
+})
 
 const categoryComparisonRows = computed(() => {
   if (!tender.value) {
@@ -428,6 +440,24 @@ useSeoMeta({
               Es wurden noch keine Run-Kosten erfasst.
             </p>
           </ReportChartBlock>
+
+          <div class="report-cost-vendor-sections">
+            <section
+              v-for="entry in vendorCostBreakdowns"
+              :key="entry.vendorId"
+              class="report-cost-vendor-section"
+            >
+              <ReportVendorCostBreakdown
+                :vendor-name="entry.vendorName"
+                :project-row="entry.projectRow"
+                :run-row="entry.runRow"
+                :consideration-years="tender.settings.considerationYears"
+                :palette="tender.settings.chartPalette"
+                renderer="svg"
+                :width="reportChartWidth"
+              />
+            </section>
+          </div>
         </div>
       </section>
 
@@ -648,6 +678,16 @@ useSeoMeta({
   font-size: 9.5pt;
   line-height: 1.45;
   margin: 0;
+}
+
+.report-cost-vendor-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8mm;
+}
+
+.report-cost-vendor-section {
+  break-inside: avoid;
 }
 
 .report-empty-state {
