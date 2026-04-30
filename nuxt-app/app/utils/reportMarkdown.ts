@@ -15,6 +15,25 @@ function renderInlineMarkdown(value: string) {
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
 }
 
+function renderListItem(value: string) {
+  const normalizedValue = value.trim()
+
+  if (!normalizedValue) {
+    return ''
+  }
+
+  const paragraphs = normalizedValue
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+
+  if (paragraphs.length <= 1) {
+    return renderInlineMarkdown(paragraphs[0] || normalizedValue)
+  }
+
+  return paragraphs.map((paragraph) => `<p>${renderInlineMarkdown(paragraph)}</p>`).join('')
+}
+
 function renderImage(line: string) {
   const imageMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
 
@@ -31,6 +50,7 @@ export function renderReportMarkdown(markdown: string) {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n')
   const blocks: string[] = []
   let paragraphLines: string[] = []
+  let currentListType: 'ul' | 'ol' | null = null
   let listItems: string[] = []
 
   function flushParagraph() {
@@ -47,7 +67,9 @@ export function renderReportMarkdown(markdown: string) {
       return
     }
 
-    blocks.push(`<ul>${listItems.map(item => `<li>${renderInlineMarkdown(item)}</li>`).join('')}</ul>`)
+    const listTag = currentListType || 'ul'
+    blocks.push(`<${listTag}>${listItems.map(item => `<li>${renderListItem(item)}</li>`).join('')}</${listTag}>`)
+    currentListType = null
     listItems = []
   }
 
@@ -83,7 +105,30 @@ export function renderReportMarkdown(markdown: string) {
 
     if (listItemMatch) {
       flushParagraph()
+      if (currentListType && currentListType !== 'ul') {
+        flushList()
+      }
+      currentListType = 'ul'
       listItems.push(listItemMatch[1]!)
+      continue
+    }
+
+    const orderedListItemMatch = line.match(/^\d+[.)]\s+(.+)$/)
+
+    if (orderedListItemMatch) {
+      flushParagraph()
+      if (currentListType && currentListType !== 'ol') {
+        flushList()
+      }
+      currentListType = 'ol'
+      listItems.push(orderedListItemMatch[1]!)
+      continue
+    }
+
+    if (currentListType && listItems.length > 0 && /^\s{2,}\S/.test(rawLine)) {
+      const lastIndex = listItems.length - 1
+      const currentValue = listItems[lastIndex] || ''
+      listItems[lastIndex] = currentValue ? `${currentValue}\n${line}` : line
       continue
     }
 
