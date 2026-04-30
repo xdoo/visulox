@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 import type { TenderCostBlock, TenderVendor, TenderVendorCostItem } from '../../../shared/types/tenders'
+import { downloadVendorCostBlocksJson } from '../../composables/useVendorCostBlocksJsonExport'
 import { useVendorCostSummaries } from '../../composables/useVendorCostSummaries'
 
 const props = defineProps<{
@@ -44,6 +45,10 @@ async function handleCommentSaved(costBlockId: string, value: string) {
   updateComment(costBlockId, value)
   await saveComment(costBlockId, value)
 }
+
+function downloadCostBlocksJson() {
+  downloadVendorCostBlocksJson(props.vendor, projectRows.value, runRows.value)
+}
 </script>
 
 <template>
@@ -58,15 +63,28 @@ async function handleCommentSaved(costBlockId: string, value: string) {
         </p>
       </div>
 
-      <UButton
-        icon="i-lucide-save"
-        color="primary"
-        :loading="isSaving"
-        :disabled="!canSave"
-        @click="save"
-      >
-        Speichern
-      </UButton>
+      <div class="flex items-center gap-2">
+        <UTooltip text="Kostenblöcke als JSON herunterladen">
+          <UButton
+            icon="i-lucide-file-json"
+            color="neutral"
+            variant="outline"
+            square
+            aria-label="Kostenblöcke als JSON herunterladen"
+            @click="downloadCostBlocksJson"
+          />
+        </UTooltip>
+
+        <UButton
+          icon="i-lucide-save"
+          color="primary"
+          :loading="isSaving"
+          :disabled="!canSave"
+          @click="save"
+        >
+          Speichern
+        </UButton>
+      </div>
     </div>
 
     <UAlert
