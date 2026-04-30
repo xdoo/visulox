@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { defaultTenderChartPalette } from '~~/shared/constants/tender-settings'
 import type { TenderCostBlock, TenderVendor, TenderVendorCostItem } from '../../../shared/types/tenders'
 import { useVendorCostSummaries } from '../../composables/useVendorCostSummaries'
 
@@ -8,6 +9,7 @@ const props = defineProps<{
   costBlocks: TenderCostBlock[]
   vendorCostItems: TenderVendorCostItem[]
   considerationYears: number
+  palette?: typeof defaultTenderChartPalette
 }>()
 
 const {
@@ -76,6 +78,24 @@ async function handleCommentSaved(costBlockId: string, value: string) {
     />
 
     <div class="grid gap-6">
+      <div class="grid gap-6 xl:grid-cols-2">
+        <TenderVendorCostDonutChart
+          title="Projektkosten nach Kostenblock"
+          kind="project"
+          :rows="projectRows"
+          :consideration-years="props.considerationYears"
+          :palette="props.palette"
+        />
+
+        <TenderVendorCostDonutChart
+          title="Run-Kosten nach Kostenblock"
+          kind="run"
+          :rows="runRows"
+          :consideration-years="props.considerationYears"
+          :palette="props.palette"
+        />
+      </div>
+
       <TenderVendorCostGroupCard
         title="Projektkosten"
         description="Einmalkosten und projektbezogene Kostenblöcke."
