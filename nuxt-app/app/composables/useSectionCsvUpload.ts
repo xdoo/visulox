@@ -129,29 +129,36 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
     const result = Papa.parse<string[]>(csvContent, {
       delimiter: ';',
       header: false,
-      skipEmptyLines: true
+      skipEmptyLines: 'greedy'
     })
 
     if (result.errors.length > 0) {
       throw new Error(buildParseErrorMessage(result.errors))
     }
 
-    return result.data.map((row, index) => {
-      const [nr, frage, punkteRaw, kommentar, anteilRaw] = normalizeCsvRow(row, index)
-      validateRequiredValue(nr, 'Nr', index)
-      validateRequiredValue(frage, 'Frage', index)
-      validateRequiredValue(punkteRaw, 'Punkte', index)
-      validateRequiredValue(anteilRaw, 'Anteil', index)
+    const preparedRows = result.data
+      .map((row, originalIndex) => ({
+        row: row.slice(0, 6),
+        originalIndex
+      }))
+      .filter(({ row }) => row.some((value) => normalizeCellValue(value) !== ''))
+
+    return preparedRows.map(({ row, originalIndex }) => {
+      const [nr, frage, punkteRaw, kommentar, anteilRaw] = normalizeCsvRow(row, originalIndex)
+      validateRequiredValue(nr, 'Nr', originalIndex)
+      validateRequiredValue(frage, 'Frage', originalIndex)
+      validateRequiredValue(punkteRaw, 'Punkte', originalIndex)
+      validateRequiredValue(anteilRaw, 'Anteil', originalIndex)
 
       const punkte = parseNumber(punkteRaw)
       const anteil = parseNumber(anteilRaw)
 
       if (punkte === null) {
-        throw new Error(`CSV-Zeile ${index + 1} hat keinen gueltigen Punkte-Wert.`)
+        throw new Error(`CSV-Zeile ${originalIndex + 1} hat keinen gueltigen Punkte-Wert.`)
       }
 
       if (anteil === null) {
-        throw new Error(`CSV-Zeile ${index + 1} hat keinen gueltigen Anteil-Wert.`)
+        throw new Error(`CSV-Zeile ${originalIndex + 1} hat keinen gueltigen Anteil-Wert.`)
       }
 
       return {
