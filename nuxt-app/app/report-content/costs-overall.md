@@ -1,0 +1,5 @@
+Die Gesamtkosten über 7 Jahre zeigen eine klare Spreizung zwischen den Anbietern. Adesso und SAP Fioneer liegen am unteren Ende, MSG im Mittelfeld, während Faktor 10 und insbesondere Guidewire deutlich höhere Gesamtaufwände verursachen.
+
+Die Unterschiede entstehen aus zwei grundlegend verschiedenen Kostenmodellen. Anbieter wie Adesso und MSG bündeln einen großen Teil der Kosten in die Projektphase und halten die laufenden Kosten vergleichsweise gering. Demgegenüber stehen Modelle mit starken laufenden Lizenzanteilen, insbesondere bei Guidewire und Faktor 10, die über den gesamten Zeitraum zu deutlich höheren Gesamtkosten führen.
+
+Auffällig ist, dass hohe Gesamtkosten entweder durch sehr intensive externe Unterstützung im Projekt (z. B. Guidewire) oder durch langfristig wirkende Lizenzmechaniken entstehen (z. B. Faktor 10, Guidewire). Günstigere Anbieter erreichen ihre Position typischerweise durch geringere externe Tagessätze oder durch Verlagerung von Leistungen in interne Ressourcen.

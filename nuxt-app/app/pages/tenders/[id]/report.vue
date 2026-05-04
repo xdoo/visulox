@@ -5,6 +5,9 @@ import {
 } from '../../../composables/useCriteriaSectionFulfillment'
 import marketOverviewMarkdown from '../../../report-content/market-overview.md?raw'
 import valueScoreResultsMarkdown from '../../../report-content/value-score-results.md?raw'
+import costsOverallMarkdown from '../../../report-content/costs-overall.md?raw'
+import costsProjectMarkdown from '../../../report-content/costs-project.md?raw'
+import costsRunMarkdown from '../../../report-content/costs-run.md?raw'
 import { buildSectionVendorComparisonRows } from '../../../composables/useTenderCategoryComparison'
 import {
   buildCombinedVendorCostOverviewRows,
@@ -407,6 +410,8 @@ useSeoMeta({
             <p v-else class="report-empty-state">
               Es wurden noch keine Gesamtkosten erfasst.
             </p>
+
+            <ReportMarkdownBlock :markdown="costsOverallMarkdown" />
           </ReportChartBlock>
 
           <ReportChartBlock
@@ -424,6 +429,8 @@ useSeoMeta({
             <p v-else class="report-empty-state">
               Es wurden noch keine Projektkosten erfasst.
             </p>
+
+            <ReportMarkdownBlock :markdown="costsProjectMarkdown" />
           </ReportChartBlock>
 
           <ReportChartBlock
@@ -441,6 +448,8 @@ useSeoMeta({
             <p v-else class="report-empty-state">
               Es wurden noch keine Run-Kosten erfasst.
             </p>
+
+            <ReportMarkdownBlock :markdown="costsRunMarkdown" />
           </ReportChartBlock>
 
           <div class="report-cost-vendor-sections">
