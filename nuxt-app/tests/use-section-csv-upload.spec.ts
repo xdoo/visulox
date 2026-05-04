@@ -130,4 +130,28 @@ describe('useSectionCsvUpload helpers', () => {
     ])
     expect(onError).not.toHaveBeenCalled()
   })
+
+  it('ignores columns after the sixth and skips semicolon-only garbage rows', async () => {
+    const uploaded = vi.fn()
+    const onError = vi.fn()
+    const { handleCsvSelection } = useSectionCsvUpload({
+      sectionWeight: 3,
+      onUploaded: uploaded,
+      onError
+    })
+
+    const file = new File(
+      ['1;Frage A;40;;0,40;1,00%;;;;;\n;;;;;;\n2;Frage B;20;Kommentar;0,60;2,00%;;;;'],
+      'fragen.csv',
+      { type: 'text/csv' }
+    )
+
+    await handleCsvSelection(file)
+
+    expect(uploaded).toHaveBeenCalledWith([
+      { nr: '1', frage: 'Frage A', punkte: 40, kommentar: '', anteil: 0.01 },
+      { nr: '2', frage: 'Frage B', punkte: 20, kommentar: 'Kommentar', anteil: 0.02 }
+    ])
+    expect(onError).not.toHaveBeenCalled()
+  })
 })
