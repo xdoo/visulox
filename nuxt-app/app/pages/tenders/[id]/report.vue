@@ -700,7 +700,7 @@ useSeoMeta({
 }
 
 .report-cost-vendor-section {
-  break-inside: avoid;
+  break-inside: auto;
 }
 
 .report-empty-state {

@@ -20,7 +20,7 @@ defineProps<{
 
 <style scoped>
 .report-chart-block {
-  break-inside: avoid;
+  break-inside: auto;
   box-sizing: border-box;
   max-width: 100%;
   overflow: hidden;
@@ -28,6 +28,8 @@ defineProps<{
 }
 
 .report-chart-block header {
+  break-after: avoid-page;
+  page-break-after: avoid;
   margin-bottom: 4mm;
 }
 
@@ -54,10 +56,17 @@ defineProps<{
   width: 100%;
 }
 
+.report-chart-content > :first-child {
+  break-inside: avoid-page;
+  page-break-inside: avoid;
+}
+
 .report-chart-content :deep(.echarts),
 .report-chart-content :deep(.vue-echarts),
 .report-chart-content :deep(canvas),
 .report-chart-content :deep(svg) {
+  break-inside: avoid-page;
+  page-break-inside: avoid;
   max-width: 100% !important;
 }
 

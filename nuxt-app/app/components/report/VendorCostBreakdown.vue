@@ -262,7 +262,7 @@ const chartStyle = computed(() => ({
 
 <style scoped>
 .report-vendor-cost {
-  break-inside: avoid;
+  break-inside: auto;
   display: flex;
   flex-direction: column;
   gap: 4mm;
@@ -282,7 +282,7 @@ const chartStyle = computed(() => ({
 }
 
 .report-vendor-cost-block {
-  break-inside: avoid;
+  break-inside: auto;
   display: flex;
   flex-direction: column;
   gap: 2.5mm;
@@ -299,6 +299,8 @@ const chartStyle = computed(() => ({
   height: 84mm;
   max-width: 100%;
   overflow: hidden;
+  break-inside: avoid-page;
+  page-break-inside: avoid;
 }
 
 .report-vendor-cost-note,
@@ -324,5 +326,34 @@ const chartStyle = computed(() => ({
   justify-content: center;
   min-height: 48mm;
   text-align: center;
+}
+
+@media print {
+  .report-vendor-cost-grid {
+    display: block;
+  }
+
+  .report-vendor-cost-block {
+    break-inside: auto;
+    page-break-inside: auto;
+    margin-bottom: 6mm;
+  }
+
+  .report-vendor-cost-block:last-child {
+    margin-bottom: 0;
+  }
+
+  .report-vendor-cost-chart {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  .report-vendor-cost-chart :deep(.echarts),
+  .report-vendor-cost-chart :deep(.vue-echarts),
+  .report-vendor-cost-chart :deep(svg),
+  .report-vendor-cost-chart :deep(canvas) {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
 }
 </style>
