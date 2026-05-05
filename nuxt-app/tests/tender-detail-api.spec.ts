@@ -54,8 +54,8 @@ describe('GET /api/tenders/:id', () => {
       })
       .mockResolvedValueOnce({
         rows: [
-          { id: 11, name: 'Acme AG' },
-          { id: 12, name: 'Beispiel GmbH' }
+          { id: 11, name: 'Acme AG', project_cost_assessment: 'Projekttext', run_cost_assessment: 'Runtext' },
+          { id: 12, name: 'Beispiel GmbH', project_cost_assessment: null, run_cost_assessment: null }
         ]
       })
       .mockResolvedValueOnce({
@@ -102,7 +102,7 @@ describe('GET /api/tenders/:id', () => {
          ORDER BY position ASC`,
       ['2']
     )
-    expect(query).toHaveBeenNthCalledWith(4, 'SELECT id, name FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
+    expect(query).toHaveBeenNthCalledWith(4, 'SELECT id, name, project_cost_assessment, run_cost_assessment FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(5, 'SELECT id, name, type FROM kostenbloecke WHERE ausschreibung_id = $1 ORDER BY id ASC', ['2'])
     expect(query).toHaveBeenNthCalledWith(6,
       `SELECT id, anbieter_id, kostenblock_id, amount, kommentar
@@ -131,8 +131,8 @@ describe('GET /api/tenders/:id', () => {
         ]
       },
       vendors: [
-        { id: '11', name: 'Acme AG' },
-        { id: '12', name: 'Beispiel GmbH' }
+        { id: '11', name: 'Acme AG', projectCostAssessment: 'Projekttext', runCostAssessment: 'Runtext' },
+        { id: '12', name: 'Beispiel GmbH', projectCostAssessment: '', runCostAssessment: '' }
       ],
       costBlocks: [
         { id: '41', name: 'Lizenzen', type: 'license_one_time' }

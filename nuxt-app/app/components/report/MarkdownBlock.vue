@@ -49,12 +49,29 @@ const renderedMarkdown = computed(() => renderReportMarkdown(props.markdown))
 }
 
 .report-markdown :deep(ul) {
+  list-style-type: disc;
+  list-style-position: outside;
+  margin: 0;
+  padding-left: 6mm;
+}
+
+.report-markdown :deep(ol) {
+  list-style-type: decimal;
+  list-style-position: outside;
   margin: 0;
   padding-left: 6mm;
 }
 
 .report-markdown :deep(li) {
   margin: 0 0 1.5mm;
+}
+
+.report-markdown :deep(li p) {
+  margin: 0 0 1mm;
+}
+
+.report-markdown :deep(li p:last-child) {
+  margin-bottom: 0;
 }
 
 .report-markdown :deep(strong) {

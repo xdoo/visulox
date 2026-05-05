@@ -32,8 +32,14 @@ interface SavedSectionQuestionRow {
   gewichtete_punkte: string | number
 }
 
+const SECTION_WEIGHT_PERCENT_TOLERANCE = 0.05
+
 function toNumber(value: string | number) {
   return typeof value === 'number' ? value : Number(value)
+}
+
+function roundToTwoDecimals(value: number) {
+  return Number(value.toFixed(2))
 }
 
 function normalizeQuestion(input: Partial<SectionQuestionInput>, index: number): SectionQuestionInput {
@@ -228,12 +234,13 @@ export default defineEventHandler(async (event): Promise<SaveSectionQuestionsRes
     }
 
     const totalAnteil = questions.reduce((sum, question) => sum + question.anteil, 0)
-    const totalPercentage = totalAnteil * 100
+    const totalPercentage = roundToTwoDecimals(totalAnteil * 100)
+    const expectedWeight = roundToTwoDecimals(section.weight)
 
-    if (Math.abs(totalPercentage - section.weight) > 0.0001) {
+    if (Math.abs(totalPercentage - expectedWeight) > SECTION_WEIGHT_PERCENT_TOLERANCE) {
       throw createError({
         statusCode: 400,
-        statusMessage: `Question anteil sum ${totalPercentage.toFixed(2).replace(/\.?0+$/, '')}% does not match abschnitt weight ${section.weight}%`
+        statusMessage: `Question anteil sum ${totalPercentage.toFixed(2).replace(/\.?0+$/, '')}% does not match abschnitt weight ${expectedWeight.toFixed(2).replace(/\.?0+$/, '')}%`
       })
     }
 

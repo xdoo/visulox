@@ -46,6 +46,8 @@ export interface TenderListItem {
 export interface TenderVendor {
   id: string
   name: string
+  projectCostAssessment?: string
+  runCostAssessment?: string
 }
 
 export interface TenderChartPaletteEntry {
@@ -185,4 +187,13 @@ export interface UpdateVendorCostItemCommentRequest {
 
 export interface UpdateVendorCostItemCommentResponse {
   item: TenderVendorCostItem
+}
+
+export interface UpdateVendorCostAssessmentRequest {
+  kind: 'project' | 'run'
+  assessment: string
+}
+
+export interface UpdateVendorCostAssessmentResponse {
+  vendor: Pick<TenderVendor, 'id' | 'projectCostAssessment' | 'runCostAssessment'>
 }

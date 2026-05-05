@@ -45,6 +45,12 @@ describe('useSectionCsvUpload helpers', () => {
     expect(normalizeQuestionSharesForSectionWeight(questions, 10)).toBeNull()
   })
 
+  it('accepts tiny rounding differences in percentage sums', () => {
+    const questions = [createQuestion(0.1125), createQuestion(0.0376)]
+
+    expect(normalizeQuestionSharesForSectionWeight(questions, 15)).toEqual(questions)
+  })
+
   it('detects duplicate question numbers', () => {
     expect(findDuplicateQuestionNumber([
       { ...createQuestion(0.1), nr: '1.1' },
