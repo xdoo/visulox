@@ -11,6 +11,7 @@ interface UseSectionCsvUploadOptions {
 }
 
 type CsvQuestionRowTuple = [string, string, string, string, string]
+const SECTION_WEIGHT_PERCENT_TOLERANCE = 0.05
 
 function normalizeCellValue(value: string | undefined) {
   return value?.replace(/^\uFEFF/, '').trim() || ''
@@ -20,18 +21,23 @@ export function formatPercentageValue(value: number) {
   return value.toFixed(2).replace(/\.?0+$/, '')
 }
 
+function roundToTwoDecimals(value: number) {
+  return Number(value.toFixed(2))
+}
+
 export function normalizeQuestionSharesForSectionWeight(
   questions: CriteriaCsvQuestionRow[],
   sectionWeight: number
 ) {
   const totalAnteil = questions.reduce((sum, question) => sum + question.anteil, 0)
-  const totalPercentageFromFraction = totalAnteil * 100
+  const totalPercentageFromFraction = roundToTwoDecimals(totalAnteil * 100)
+  const normalizedSectionWeight = roundToTwoDecimals(sectionWeight)
 
-  if (Math.abs(totalPercentageFromFraction - sectionWeight) <= 0.0001) {
+  if (Math.abs(totalPercentageFromFraction - normalizedSectionWeight) <= SECTION_WEIGHT_PERCENT_TOLERANCE) {
     return questions
   }
 
-  if (Math.abs(totalAnteil - sectionWeight) <= 0.0001) {
+  if (Math.abs(roundToTwoDecimals(totalAnteil) - normalizedSectionWeight) <= SECTION_WEIGHT_PERCENT_TOLERANCE) {
     return questions.map(question => ({
       ...question,
       anteil: question.anteil / 100
@@ -182,10 +188,12 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
 
     if (!normalizedQuestions) {
       const totalAnteil = questions.reduce((sum, question) => sum + question.anteil, 0)
-      const totalPercentage = totalAnteil * 100
+      const totalPercentage = roundToTwoDecimals(totalAnteil * 100)
+      const expectedPercentage = roundToTwoDecimals(options.sectionWeight)
+      const difference = roundToTwoDecimals(totalPercentage - expectedPercentage)
 
       throw new Error(
-        `Die Summe der Spalte Anteil ergibt ${formatPercentageValue(totalPercentage)}% und entspricht nicht dem Abschnittsgewicht von ${options.sectionWeight}%.`
+        `Die Summe der Spalte Anteil ergibt ${formatPercentageValue(totalPercentage)}%. Erwartet sind ${formatPercentageValue(expectedPercentage)}% (Abweichung ${formatPercentageValue(difference)}%).`
       )
     }
 

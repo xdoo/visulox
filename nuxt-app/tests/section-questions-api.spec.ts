@@ -124,6 +124,40 @@ describe('POST /api/sections/:id/questions', () => {
     expect(release).toHaveBeenCalledTimes(1)
   })
 
+  it('accepts uploads when anteil sum differs only by tiny rounding from section weight', async () => {
+    const query = vi.fn()
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ id: 7, ausschreibung_id: 1, weight: 15 }] })
+      .mockResolvedValueOnce({ rows: [{ id: 11, ausschreibung_id: 1 }] })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ id: 101, nr: '1', frage: 'Frage A', punkte: '40', kommentar: '', anteil: '0.1125', gewichtete_punkte: '4.5' }] })
+      .mockResolvedValueOnce({ rows: [{ id: 102, nr: '2', frage: 'Frage B', punkte: '20', kommentar: '', anteil: '0.0376', gewichtete_punkte: '0.752' }] })
+      .mockResolvedValueOnce({ rows: [] })
+    const release = vi.fn()
+
+    getPostgresClient.mockResolvedValue({ query, release })
+    readBody.mockResolvedValue({
+      vendorId: '11',
+      questions: [
+        { nr: '1', frage: 'Frage A', punkte: 40, kommentar: '', anteil: 0.1125 },
+        { nr: '2', frage: 'Frage B', punkte: 20, kommentar: '', anteil: 0.0376 }
+      ]
+    })
+
+    const { default: handler } = await import('../server/api/sections/[id]/questions.post')
+    const response = await handler({
+      context: {
+        params: {
+          id: '7'
+        }
+      }
+    } as never)
+
+    expect(query).toHaveBeenLastCalledWith('COMMIT')
+    expect(response.questions).toHaveLength(2)
+    expect(release).toHaveBeenCalledTimes(1)
+  })
+
   it('rejects uploads with duplicate question numbers before inserting', async () => {
     const query = vi.fn()
     const release = vi.fn()
