@@ -170,6 +170,14 @@ export interface CloneCriteriaCatalogResponse {
   catalog: TenderCriteriaCatalog
 }
 
+export interface UpdateCriteriaCatalogRequest {
+  name: string
+}
+
+export interface UpdateCriteriaCatalogResponse {
+  catalog: TenderCriteriaCatalog
+}
+
 export interface DeleteTenderResponse {
   tender: TenderListItem
 }

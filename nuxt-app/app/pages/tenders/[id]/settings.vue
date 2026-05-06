@@ -72,6 +72,7 @@ useSeoMeta({
             v-if="item.value === 'general'"
             :tender-id="tenderId"
             :tender-name="tender?.name || ''"
+            :criteria-catalogs="tender?.criteriaCatalogs || []"
             :settings="tender?.settings || defaultTenderSettings"
           />
 

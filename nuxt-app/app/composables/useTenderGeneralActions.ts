@@ -6,6 +6,7 @@ import { useTenders } from './useTenders'
 import type {
   CloneCriteriaCatalogResponse,
   DeleteTenderResponse,
+  UpdateCriteriaCatalogResponse,
   UpdateTenderResponse
 } from '../../shared/types/tenders'
 
@@ -81,6 +82,23 @@ export function useTenderGeneralActions(tenderId: string) {
     return response.catalog
   }
 
+  async function renameCriteriaCatalog(catalogId: string, name: string) {
+    const response = await runAction(() => patchFetcher<UpdateCriteriaCatalogResponse>(`/api/tenders/${tenderId}/criteria-catalogs/${catalogId}`, {
+      method: 'PATCH',
+      body: { name }
+    }))
+
+    if (!response) {
+      return null
+    }
+
+    await loadTenders()
+    await refreshNuxtData(`tender-detail:${tenderId}:default`)
+    await refreshNuxtData(`tender-detail:${tenderId}:${catalogId}`)
+
+    return response.catalog
+  }
+
   async function deleteTender() {
     const response = await runAction(() => deleteFetcher<DeleteTenderResponse>(`/api/tenders/${tenderId}`, {
       method: 'DELETE'
@@ -105,6 +123,7 @@ export function useTenderGeneralActions(tenderId: string) {
     isSaving,
     renameTender,
     cloneCriteriaCatalog,
+    renameCriteriaCatalog,
     deleteTender,
     clearError
   }
