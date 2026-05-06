@@ -208,7 +208,6 @@ const chartStyle = computed(() => ({
 
     <div class="report-vendor-cost-grid">
       <section class="report-vendor-cost-block">
-        <h4>Projekt</h4>
         <div v-if="projectHasData" class="report-vendor-cost-chart" :style="chartStyle">
           <ClientOnly>
             <VChart
@@ -231,7 +230,6 @@ const chartStyle = computed(() => ({
       </section>
 
       <section class="report-vendor-cost-block">
-        <h4>Run</h4>
         <div v-if="runHasData" class="report-vendor-cost-chart" :style="chartStyle">
           <ClientOnly>
             <VChart
@@ -269,6 +267,8 @@ const chartStyle = computed(() => ({
 }
 
 .report-vendor-cost h3 {
+  break-after: avoid-page;
+  page-break-after: avoid;
   color: #111827;
   font-size: 15pt;
   font-weight: 750;
@@ -286,13 +286,6 @@ const chartStyle = computed(() => ({
   display: flex;
   flex-direction: column;
   gap: 2.5mm;
-}
-
-.report-vendor-cost-block h4 {
-  color: #111827;
-  font-size: 11pt;
-  font-weight: 700;
-  margin: 0;
 }
 
 .report-vendor-cost-chart {
@@ -329,6 +322,11 @@ const chartStyle = computed(() => ({
 }
 
 @media print {
+  .report-vendor-cost h3 + .report-vendor-cost-grid {
+    break-before: avoid-page;
+    page-break-before: avoid;
+  }
+
   .report-vendor-cost-grid {
     display: block;
   }

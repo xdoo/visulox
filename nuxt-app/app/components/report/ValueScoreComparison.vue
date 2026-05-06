@@ -16,7 +16,11 @@ const props = defineProps<{
 
 const highestBalancedScore = computed(() => getHighestScoreValue(props.rows, 'balancedScore'))
 const highestCostFocusScore = computed(() => getHighestScoreValue(props.rows, 'costFocusScore'))
+const highestCostFocusThirtySeventyScore = computed(() => getHighestScoreValue(props.rows, 'costFocusThirtySeventyScore'))
+const highestCostFocusTwentyEightyScore = computed(() => getHighestScoreValue(props.rows, 'costFocusTwentyEightyScore'))
 const highestUtilityFocusScore = computed(() => getHighestScoreValue(props.rows, 'utilityFocusScore'))
+const highestUtilityFocusSeventyThirtyScore = computed(() => getHighestScoreValue(props.rows, 'utilityFocusSeventyThirtyScore'))
+const highestUtilityFocusEightyTwentyScore = computed(() => getHighestScoreValue(props.rows, 'utilityFocusEightyTwentyScore'))
 const hasRankableRows = computed(() => props.rows.some((row) => row.balancedScore !== null))
 const hasMissingCostRows = computed(() => props.rows.some((row) => row.balancedScore === null))
 
@@ -129,6 +133,46 @@ function getWinningClass(value: number | null, highestValue: number | null) {
               </td>
               <td class="numeric" :class="getWinningClass(row.utilityFocusScore, highestUtilityFocusScore)">
                 {{ formatValueScore(row.utilityFocusScore) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="report-table-block">
+        <h3>Erweiterte Sensitivität der Gewichtung</h3>
+        <p>
+          Die zusätzliche Tabelle zeigt die Rangstabilität bei stärker ausgeprägten Kosten- und Nutzenfoki.
+          Damit wird sichtbar, welche Anbieter auch bei klarer Priorisierung einer Dimension konsistent vorne bleiben.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Anbieter</th>
+              <th class="numeric">Kostenfokus 30/70</th>
+              <th class="numeric">Kostenfokus 20/80</th>
+              <th class="numeric">Nutzenfokus 30/70</th>
+              <th class="numeric">Nutzenfokus 20/80</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in props.rows"
+              :key="`sensitivity-extended-${row.vendorId}`"
+            >
+              <td>{{ row.vendorName }}</td>
+              <td class="numeric" :class="getWinningClass(row.costFocusThirtySeventyScore, highestCostFocusThirtySeventyScore)">
+                {{ formatValueScore(row.costFocusThirtySeventyScore) }}
+              </td>
+              <td class="numeric" :class="getWinningClass(row.costFocusTwentyEightyScore, highestCostFocusTwentyEightyScore)">
+                {{ formatValueScore(row.costFocusTwentyEightyScore) }}
+              </td>
+              <td class="numeric" :class="getWinningClass(row.utilityFocusSeventyThirtyScore, highestUtilityFocusSeventyThirtyScore)">
+                {{ formatValueScore(row.utilityFocusSeventyThirtyScore) }}
+              </td>
+              <td class="numeric" :class="getWinningClass(row.utilityFocusEightyTwentyScore, highestUtilityFocusEightyTwentyScore)">
+                {{ formatValueScore(row.utilityFocusEightyTwentyScore) }}
               </td>
             </tr>
           </tbody>

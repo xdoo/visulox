@@ -26,10 +26,31 @@ const renderedMarkdown = computed(() => renderReportMarkdown(props.markdown))
 .report-markdown :deep(h2),
 .report-markdown :deep(h3),
 .report-markdown :deep(h4) {
+  break-after: avoid-page;
+  page-break-after: avoid;
   color: #111827;
   font-weight: 750;
   line-height: 1.2;
   margin: 0;
+}
+
+.report-markdown :deep(h2 + p),
+.report-markdown :deep(h2 + ul),
+.report-markdown :deep(h2 + ol),
+.report-markdown :deep(h2 + table),
+.report-markdown :deep(h2 + div),
+.report-markdown :deep(h3 + p),
+.report-markdown :deep(h3 + ul),
+.report-markdown :deep(h3 + ol),
+.report-markdown :deep(h3 + table),
+.report-markdown :deep(h3 + div),
+.report-markdown :deep(h4 + p),
+.report-markdown :deep(h4 + ul),
+.report-markdown :deep(h4 + ol),
+.report-markdown :deep(h4 + table),
+.report-markdown :deep(h4 + div) {
+  break-before: avoid-page;
+  page-break-before: avoid;
 }
 
 .report-markdown :deep(h2) {
