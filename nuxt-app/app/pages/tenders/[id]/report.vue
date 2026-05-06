@@ -731,6 +731,56 @@ useSeoMeta({
   color: var(--report-primary-color) !important;
 }
 
+.report-page :deep(h1),
+.report-page :deep(h2),
+.report-page :deep(h3),
+.report-page :deep(h4),
+.report-page :deep(h5),
+.report-page :deep(h6) {
+  break-after: avoid-page;
+  page-break-after: avoid;
+}
+
+.report-page :deep(h1 + p),
+.report-page :deep(h1 + ul),
+.report-page :deep(h1 + ol),
+.report-page :deep(h1 + table),
+.report-page :deep(h1 + div),
+.report-page :deep(h1 + section),
+.report-page :deep(h2 + p),
+.report-page :deep(h2 + ul),
+.report-page :deep(h2 + ol),
+.report-page :deep(h2 + table),
+.report-page :deep(h2 + div),
+.report-page :deep(h2 + section),
+.report-page :deep(h3 + p),
+.report-page :deep(h3 + ul),
+.report-page :deep(h3 + ol),
+.report-page :deep(h3 + table),
+.report-page :deep(h3 + div),
+.report-page :deep(h3 + section),
+.report-page :deep(h4 + p),
+.report-page :deep(h4 + ul),
+.report-page :deep(h4 + ol),
+.report-page :deep(h4 + table),
+.report-page :deep(h4 + div),
+.report-page :deep(h4 + section),
+.report-page :deep(h5 + p),
+.report-page :deep(h5 + ul),
+.report-page :deep(h5 + ol),
+.report-page :deep(h5 + table),
+.report-page :deep(h5 + div),
+.report-page :deep(h5 + section),
+.report-page :deep(h6 + p),
+.report-page :deep(h6 + ul),
+.report-page :deep(h6 + ol),
+.report-page :deep(h6 + table),
+.report-page :deep(h6 + div),
+.report-page :deep(h6 + section) {
+  break-before: avoid-page;
+  page-break-before: avoid;
+}
+
 @media print {
   :global(html),
   :global(body),
