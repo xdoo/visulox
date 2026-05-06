@@ -41,6 +41,12 @@ export interface CreateTenderResponse {
 export interface TenderListItem {
   id: string
   name: string
+  criteriaCatalogs?: TenderCriteriaCatalog[]
+}
+
+export interface TenderCriteriaCatalog {
+  id: string
+  name: string
 }
 
 export interface TenderVendor {
@@ -101,6 +107,8 @@ export interface UpdateSectionResultAssessmentResponse {
 export interface TenderDetail {
   id: string
   name: string
+  criteriaCatalogs: TenderCriteriaCatalog[]
+  activeCriteriaCatalogId: string
   settings: TenderSettings
   vendors: TenderVendor[]
   sections: TenderSection[]
@@ -151,6 +159,15 @@ export interface CloneTenderRequest {
 
 export interface CloneTenderResponse {
   tender: TenderListItem
+}
+
+export interface CloneCriteriaCatalogRequest {
+  name: string
+  sourceCatalogId?: string
+}
+
+export interface CloneCriteriaCatalogResponse {
+  catalog: TenderCriteriaCatalog
 }
 
 export interface DeleteTenderResponse {

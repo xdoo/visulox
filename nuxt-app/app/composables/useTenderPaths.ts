@@ -8,6 +8,10 @@ export function getTenderCriteriaPath(id: string) {
   return `${getTenderPath(id)}/criteria`
 }
 
+export function getTenderCriteriaCatalogPath(id: string, catalogId: string) {
+  return `${getTenderCriteriaPath(id)}/${catalogId}`
+}
+
 export function getTenderCostsPath(id: string) {
   return `${getTenderPath(id)}/costs`
 }
@@ -31,7 +35,7 @@ export function resolveTenderSubpage(path: string, tenderId: string): TenderSubp
     return 'overview'
   }
 
-  if (path === getTenderCriteriaPath(normalizedTenderId)) {
+  if (path === getTenderCriteriaPath(normalizedTenderId) || path.startsWith(`${getTenderCriteriaPath(normalizedTenderId)}/`)) {
     return 'criteria'
   }
 

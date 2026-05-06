@@ -2,6 +2,7 @@ import { computed } from 'vue'
 
 import {
   getTenderCostsPath,
+  getTenderCriteriaCatalogPath,
   getTenderCriteriaPath,
   getTenderPath,
   getTenderSettingsPath,
@@ -32,11 +33,17 @@ export function useTendersNavigation() {
       icon: 'i-lucide-file-text',
       to: getTenderPath(item.id),
       children: [
-        {
-          label: 'Kriterienkatalog',
-          icon: 'i-lucide-list-checks',
-          to: getTenderCriteriaPath(item.id)
-        },
+        ...(item.criteriaCatalogs && item.criteriaCatalogs.length > 0
+          ? item.criteriaCatalogs.map((catalog) => ({
+            label: catalog.name,
+            icon: 'i-lucide-list-checks',
+            to: getTenderCriteriaCatalogPath(item.id, catalog.id)
+          }))
+          : [{
+            label: 'Kriterienkatalog',
+            icon: 'i-lucide-list-checks',
+            to: getTenderCriteriaPath(item.id)
+          }]),
         {
           label: 'Kosten',
           icon: 'i-lucide-badge-euro',
@@ -80,6 +87,19 @@ export function useTendersNavigation() {
     return resolveTenderSubpage(route.path, currentTender.value.id)
   })
 
+  const currentCriteriaCatalog = computed(() => {
+    if (!currentTender.value) {
+      return null
+    }
+
+    const catalogId = typeof route.params.catalogId === 'string' ? route.params.catalogId : ''
+    if (!catalogId) {
+      return currentTender.value.criteriaCatalogs?.[0] || null
+    }
+
+    return currentTender.value.criteriaCatalogs?.find((catalog) => catalog.id === catalogId) || null
+  })
+
   const breadcrumbItems = computed(() => {
     const items: Array<{ label: string, icon?: string, to: string }> = [
       { label: 'Home', icon: 'i-lucide-house', to: '/' }
@@ -95,8 +115,10 @@ export function useTendersNavigation() {
 
       if (currentTenderSubpage.value === 'criteria') {
         items.push({
-          label: 'Kriterienkatalog',
-          to: getTenderCriteriaPath(currentTender.value.id)
+          label: currentCriteriaCatalog.value?.name || 'Kriterienkatalog',
+          to: currentCriteriaCatalog.value
+            ? getTenderCriteriaCatalogPath(currentTender.value.id, currentCriteriaCatalog.value.id)
+            : getTenderCriteriaPath(currentTender.value.id)
         })
       } else if (currentTenderSubpage.value === 'costs') {
         items.push({
@@ -128,7 +150,7 @@ export function useTendersNavigation() {
 
     if (currentTender.value) {
       if (currentTenderSubpage.value === 'criteria') {
-        return 'Kriterienkatalog'
+        return currentCriteriaCatalog.value?.name || 'Kriterienkatalog'
       }
 
       if (currentTenderSubpage.value === 'costs') {

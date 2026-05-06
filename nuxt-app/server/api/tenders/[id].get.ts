@@ -1,4 +1,4 @@
-import { createError, defineEventHandler } from 'h3'
+import { createError, defineEventHandler, getQuery } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
 import { getPostgresClient } from '../../utils/postgres'
@@ -8,6 +8,7 @@ import { mapTenderCostBlockRow } from '../../utils/tender-cost-blocks'
 import type {
   SectionQuestion,
   TenderCostBlock,
+  TenderCriteriaCatalog,
   TenderDetail,
   TenderSection,
   TenderSectionQuestionsByVendor,
@@ -61,6 +62,11 @@ interface SectionRow {
   result_assessment: string | null
 }
 
+interface CriteriaCatalogRow {
+  id: string | number
+  name: string
+}
+
 interface SectionQuestionRow {
   id: string | number
   abschnitt_id: string | number
@@ -79,6 +85,7 @@ function toNumber(value: string | number) {
 
 export default defineEventHandler(async (event): Promise<TenderDetail> => {
   const tenderId = event.context.params?.id?.trim()
+  const selectedCatalogId = getQuery(event).catalogId ? String(getQuery(event).catalogId).trim() : ''
 
   if (!tenderId) {
     throw createError({
@@ -123,6 +130,23 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
       tenderChartPaletteResult.rows
     )
 
+    const catalogsResult = await client.query<CriteriaCatalogRow>(
+      `SELECT id, name
+       FROM kriterienkataloge
+       WHERE ausschreibung_id = $1
+       ORDER BY position ASC, id ASC`,
+      [tenderId]
+    )
+
+    const criteriaCatalogs: TenderCriteriaCatalog[] = catalogsResult.rows.map((row) => ({
+      id: String(row.id),
+      name: row.name
+    }))
+
+    const activeCriteriaCatalogId = selectedCatalogId && criteriaCatalogs.some((catalog) => catalog.id === selectedCatalogId)
+      ? selectedCatalogId
+      : (criteriaCatalogs[0]?.id || '')
+
     const vendorsResult = await client.query<VendorRow>(
       'SELECT id, name, project_cost_assessment, run_cost_assessment FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC',
       [tenderId]
@@ -159,10 +183,21 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
       }))
       : []
 
-    const sectionsResult = await client.query<SectionRow>(
-      'SELECT id, name, weight, evaluators, description, result_assessment FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
-      [tenderId]
-    )
+    const firstCriteriaCatalogId = criteriaCatalogs[0]?.id || ''
+
+    const sectionsResult = activeCriteriaCatalogId
+      ? await client.query<SectionRow>(
+        `SELECT id, name, weight, evaluators, description, result_assessment
+         FROM abschnitte
+         WHERE ausschreibung_id = $1
+           AND (
+             kriterienkatalog_id = $2
+             OR (kriterienkatalog_id IS NULL AND $2 = $3)
+           )
+         ORDER BY id ASC`,
+        [tenderId, activeCriteriaCatalogId, firstCriteriaCatalogId]
+      )
+      : { rows: [] as SectionRow[] }
 
     const sectionIds = sectionsResult.rows.map(row => String(row.id))
     const sectionQuestionsMap = new Map<string, Map<string, SectionQuestion[]>>()
@@ -218,6 +253,8 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     return {
       id: String(tender.id),
       name: tender.name,
+      criteriaCatalogs,
+      activeCriteriaCatalogId,
       settings,
       vendors,
       sections,

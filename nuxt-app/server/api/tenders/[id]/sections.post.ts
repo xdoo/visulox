@@ -1,4 +1,4 @@
-import { createError, defineEventHandler, readBody } from 'h3'
+import { createError, defineEventHandler, getQuery, readBody } from 'h3'
 import { useRuntimeConfig } from '#imports'
 
 import { getPostgresClient } from '../../../utils/postgres'
@@ -30,6 +30,7 @@ function normalizeBody(body: Partial<CreateSectionBody> | null | undefined): Cre
 
 export default defineEventHandler(async (event): Promise<{ id: string, name: string, weight: number, evaluators: string, description: string }> => {
   const tenderId = event.context.params?.id?.trim()
+  const catalogIdQuery = getQuery(event).catalogId ? String(getQuery(event).catalogId).trim() : ''
 
   if (!tenderId) {
     throw createError({
@@ -69,9 +70,30 @@ export default defineEventHandler(async (event): Promise<{ id: string, name: str
       })
     }
 
+    const catalogsResult = await client.query<{ id: string | number }>(
+      `SELECT id
+       FROM kriterienkataloge
+       WHERE ausschreibung_id = $1
+       ORDER BY position ASC, id ASC`,
+      [tenderId]
+    )
+
+    const catalogId = catalogIdQuery && catalogsResult.rows.some((row) => String(row.id) === catalogIdQuery)
+      ? catalogIdQuery
+      : String(catalogsResult.rows[0]?.id || '')
+
+    if (!catalogId) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Es existiert kein Kriterienkatalog für diese Ausschreibung.'
+      })
+    }
+
     const result = await client.query<CreatedSectionRow>(
-      'INSERT INTO abschnitte (ausschreibung_id, name, weight, evaluators, description) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, weight, evaluators, description',
-      [tenderId, body.name, body.weight, body.evaluators || null, body.description || null]
+      `INSERT INTO abschnitte (ausschreibung_id, kriterienkatalog_id, name, weight, evaluators, description)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, name, weight, evaluators, description`,
+      [tenderId, catalogId, body.name, body.weight, body.evaluators || null, body.description || null]
     )
 
     const section = result.rows[0]

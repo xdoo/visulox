@@ -16,6 +16,7 @@ const props = defineProps<{
   tenderName: string
   settings: TenderSettings
 }>()
+const route = useRoute()
 
 const {
   errorMessage,
@@ -32,7 +33,7 @@ const {
   errorMessage: actionErrorMessage,
   isSaving: isActionSaving,
   renameTender,
-  cloneTender,
+  cloneCriteriaCatalog,
   deleteTender,
   clearError: clearActionError
 } = useTenderGeneralActions(props.tenderId)
@@ -69,7 +70,7 @@ function openRenameTenderModal() {
 
 function openCloneTenderModal() {
   clearActionError()
-  cloneTenderName.value = `Kopie von ${props.tenderName}`
+  cloneTenderName.value = 'Bewertung VKB'
   isCloneModalOpen.value = true
 }
 
@@ -113,7 +114,10 @@ async function submitRenameTender() {
 }
 
 async function submitCloneTender() {
-  await cloneTender(cloneTenderName.value.trim())
+  const sourceCatalogId = typeof route.params.catalogId === 'string'
+    ? route.params.catalogId
+    : undefined
+  await cloneCriteriaCatalog(cloneTenderName.value.trim(), sourceCatalogId)
   isCloneModalOpen.value = false
 }
 
@@ -190,9 +194,9 @@ async function submitDeleteTender() {
 
         <div class="flex items-start justify-between gap-4 border-t ui-border pt-4">
           <div class="space-y-1">
-            <h4 class="font-medium">Ausschreibung klonen</h4>
+            <h4 class="font-medium">Kriterienkatalog klonen</h4>
             <p class="text-sm ui-text-muted">
-              Klont die Struktur der Ausschreibung inklusive Settings, Abschnitten, Kostenblöcken und Anbietern. Bewertungsdaten werden nicht übernommen.
+              Klont einen Kriterienkatalog innerhalb dieser Ausschreibung. Kosten bleiben global und unverändert.
             </p>
           </div>
 
@@ -202,7 +206,7 @@ async function submitDeleteTender() {
             variant="outline"
             @click="openCloneTenderModal"
           >
-            Klonen
+            Kriterienkatalog klonen
           </UButton>
         </div>
 
