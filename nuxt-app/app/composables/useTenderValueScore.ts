@@ -22,7 +22,11 @@ export interface TenderValueScoreRow {
   normalizedCost: number | null
   balancedScore: number | null
   costFocusScore: number | null
+  costFocusThirtySeventyScore: number | null
+  costFocusTwentyEightyScore: number | null
   utilityFocusScore: number | null
+  utilityFocusSeventyThirtyScore: number | null
+  utilityFocusEightyTwentyScore: number | null
   rank: number | null
   hasQuestions: boolean
 }
@@ -63,7 +67,14 @@ export function calculateWeightedScore(
 
 export function getHighestScoreValue(
   rows: TenderValueScoreRow[],
-  key: 'balancedScore' | 'costFocusScore' | 'utilityFocusScore'
+  key:
+  | 'balancedScore'
+  | 'costFocusScore'
+  | 'costFocusThirtySeventyScore'
+  | 'costFocusTwentyEightyScore'
+  | 'utilityFocusScore'
+  | 'utilityFocusSeventyThirtyScore'
+  | 'utilityFocusEightyTwentyScore'
 ) {
   const scores = rows
     .map((row) => row[key])
@@ -178,7 +189,11 @@ export function buildTenderValueScoreRows(
     const normalizedCost = hasValidCost ? roundValue(cheapestCost / totalCost) : null
     const balancedScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.5, 0.5)
     const costFocusScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.4, 0.6)
+    const costFocusThirtySeventyScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.3, 0.7)
+    const costFocusTwentyEightyScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.2, 0.8)
     const utilityFocusScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.6, 0.4)
+    const utilityFocusSeventyThirtyScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.7, 0.3)
+    const utilityFocusEightyTwentyScore = calculateWeightedScore(normalizedUtility, normalizedCost, 0.8, 0.2)
 
     return {
       vendorId: vendor.id,
@@ -189,7 +204,11 @@ export function buildTenderValueScoreRows(
       normalizedCost,
       balancedScore,
       costFocusScore,
+      costFocusThirtySeventyScore,
+      costFocusTwentyEightyScore,
       utilityFocusScore,
+      utilityFocusSeventyThirtyScore,
+      utilityFocusEightyTwentyScore,
       rank: null,
       hasQuestions
     }
