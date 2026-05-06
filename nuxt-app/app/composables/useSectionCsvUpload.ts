@@ -12,6 +12,7 @@ interface UseSectionCsvUploadOptions {
 
 type CsvQuestionRowTuple = [string, string, string, string, string]
 const SECTION_WEIGHT_PERCENT_TOLERANCE = 0.05
+const ACCEPTED_CSV_DELIMITERS = ['', ';', ','] as const
 
 function normalizeCellValue(value: string | undefined) {
   return value?.replace(/^\uFEFF/, '').trim() || ''
@@ -131,23 +132,56 @@ export function useSectionCsvUpload(options: UseSectionCsvUploadOptions) {
     ]
   }
 
-  function parseCsvQuestions(csvContent: string): CriteriaCsvQuestionRow[] {
-    const result = Papa.parse<string[]>(csvContent, {
-      delimiter: ';',
+  function parseCsvContent(csvContent: string, delimiter: typeof ACCEPTED_CSV_DELIMITERS[number]) {
+    return Papa.parse<string[]>(csvContent, {
+      delimiter,
       header: false,
       skipEmptyLines: 'greedy'
     })
+  }
 
-    if (result.errors.length > 0) {
-      throw new Error(buildParseErrorMessage(result.errors))
-    }
-
-    const preparedRows = result.data
+  function getPreparedRows(rows: string[][]) {
+    return rows
       .map((row, originalIndex) => ({
         row: row.slice(0, 6),
         originalIndex
       }))
       .filter(({ row }) => row.some((value) => normalizeCellValue(value) !== ''))
+  }
+
+  function hasValidCsvShape(rows: string[][]) {
+    const preparedRows = getPreparedRows(rows)
+
+    return preparedRows.length > 0 && preparedRows.every(({ row }) => (
+      row.length === 4 || row.length === 5 || row.length === 6
+    ))
+  }
+
+  function parseCsvWithAcceptedDelimiter(csvContent: string) {
+    const results = ACCEPTED_CSV_DELIMITERS.map((delimiter) => parseCsvContent(csvContent, delimiter))
+    const validResult = results.find((result) => result.errors.length === 0 && hasValidCsvShape(result.data))
+
+    if (validResult) {
+      return validResult
+    }
+
+    const leastBrokenResult = results.find((result) => result.errors.length === 0) || results[0]
+
+    if (!leastBrokenResult) {
+      throw new Error('Die CSV-Datei konnte nicht interpretiert werden.')
+    }
+
+    return leastBrokenResult
+  }
+
+  function parseCsvQuestions(csvContent: string): CriteriaCsvQuestionRow[] {
+    const result = parseCsvWithAcceptedDelimiter(csvContent)
+
+    if (result.errors.length > 0) {
+      throw new Error(buildParseErrorMessage(result.errors))
+    }
+
+    const preparedRows = getPreparedRows(result.data)
 
     return preparedRows.map(({ row, originalIndex }) => {
       const [nr, frage, punkteRaw, kommentar, anteilRaw] = normalizeCsvRow(row, originalIndex)
