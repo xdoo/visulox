@@ -14,15 +14,15 @@ defineEmits<{
 <template>
   <UModal
     v-model:open="open"
-    title="Ausschreibung klonen"
-    description="Es wird nur die Struktur geklont: allgemeine Settings, Abschnitte, Kostenblöcke und Anbieter. Bewertungsdaten werden nicht übernommen."
+    title="Kriterienkatalog klonen"
+    description="Es wird ein weiterer Kriterienkatalog innerhalb derselben Ausschreibung erstellt. Kategorien werden als leere Struktur übernommen; Bewertungen/Fragen bleiben leer."
   >
     <template #body>
-      <UFormField label="Neuer Name">
+      <UFormField label="Name des Kriterienkatalogs">
         <UInput
           v-model="name"
           class="w-full"
-          placeholder="Name der neuen Ausschreibung"
+          placeholder="z. B. Bewertung VKB"
         />
       </UFormField>
     </template>
@@ -39,7 +39,7 @@ defineEmits<{
           :loading="isSaving"
           @click="$emit('submit')"
         >
-          Klonen
+          Kriterienkatalog klonen
         </UButton>
       </div>
     </template>

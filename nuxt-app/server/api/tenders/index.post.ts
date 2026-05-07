@@ -30,10 +30,26 @@ export async function insertTender(client: Pick<PoolClient, 'query'>, payload: C
     })
   }
 
+  const insertCatalogResult = await client.query<{ id: string | number }>(
+    `INSERT INTO kriterienkataloge (ausschreibung_id, name, position, catalog_type)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id`,
+    [tenderId, 'Kriterienkatalog A', 1, 'main']
+  )
+
+  const catalogId = insertCatalogResult.rows[0]?.id
+
+  if (catalogId === undefined || catalogId === null) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Kriterienkatalog could not be created'
+    })
+  }
+
   for (const section of payload.sections) {
     await client.query(
-      'INSERT INTO abschnitte (ausschreibung_id, name, weight, evaluators, description) VALUES ($1, $2, $3, $4, $5)',
-      [tenderId, section.name, section.weight, section.evaluators?.trim() || null, section.description?.trim() || null]
+      'INSERT INTO abschnitte (ausschreibung_id, kriterienkatalog_id, name, weight, evaluators, description) VALUES ($1, $2, $3, $4, $5, $6)',
+      [tenderId, catalogId, section.name, section.weight, section.evaluators?.trim() || null, section.description?.trim() || null]
     )
   }
 

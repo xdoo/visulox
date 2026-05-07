@@ -1,8 +1,8 @@
-Du erhältst eine Bewertung je Anbieter für die Kategorie „Projektumsetzung“.
+Du erhältst eine Bewertung je Anbieter für eine Kategorie.
 Die Bewertungen erfolgen in festen Stufen: 0, 10, 20, 40, 60 Punkte. Zusätzlich liegen Gewichtungen je Frage sowie Kommentare vor.
 
 Aufgabe:
-Erstelle eine fachliche Einordnung der Ergebnisse je Anbieter.
+Erstelle eine fachliche Einordnung der Ergebnisse je Anbieter. Berücksichtige hierbei ALLE Anbieter.
 
 WICHTIG:
 
@@ -15,7 +15,7 @@ Erstelle zunächst eine kurze Gesamteinordnung der Kategorie „Projektumsetzung
 
 Dabei:
 
-Identifiziere das allgemeine Leistungsniveau (z. B. überwiegend solide, heterogen, eher schwach)
+Identifiziere das allgemeine Leistungsniveau (z. B. überwiegend solide, heterogen, eher schwach).
 Benenne zentrale Muster:
 Wo liegen typische Schwächen (z. B. Integration, Migration, Organisation)?
 Gibt es wiederkehrende Probleme?
@@ -59,3 +59,13 @@ Formatierung:
 Erster Absatz ohne Überschrift
 Bei den Absätzen der Anbieter immer den Namen des Anbieters als Überschrift nehmen
 Keine Trennlinien zwischen den Absätzen.
+
+Die Daten für die Bewertungskriterien findest du in der Datei (Muster des Namens): kategorie-[hier der Name der Kategorie]-fragen.json
+
+Es kann zu einer  Kategorie auch Ausschluss (A) Kriterien geben. Diese findest du angehängt in der Datei a-kriterien.json.
+
+Wenn es A Kriterien gibt, dann für bei jedem Anbieter einen weitern Abschnitt hinzu, in dem du erläuterst, ob er die Mindestanforderungen erfüllen kann oder nicht. Wenn nicht, dann begründe kurz.
+
+Gehe auf die A-Kriterien auch in der übergeordneten Beschreibung der Kategorie ein.
+
+

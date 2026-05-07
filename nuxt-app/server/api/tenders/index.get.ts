@@ -8,6 +8,9 @@ import type { TenderListItem } from '../../../shared/types/tenders'
 interface TenderNavigationRow {
   id: string | number
   name: string
+  catalog_id: string | number | null
+  catalog_name: string | null
+  catalog_type: string | null
 }
 
 export default defineEventHandler(async (event): Promise<TenderListItem[]> => {
@@ -16,13 +19,36 @@ export default defineEventHandler(async (event): Promise<TenderListItem[]> => {
 
   try {
     const result = await client.query<TenderNavigationRow>(
-      'SELECT id, name FROM ausschreibungen WHERE deleted_at IS NULL ORDER BY created_at DESC, id DESC'
+      `SELECT a.id, a.name, k.id AS catalog_id, k.name AS catalog_name, k.catalog_type
+       FROM ausschreibungen a
+       LEFT JOIN kriterienkataloge k
+         ON k.ausschreibung_id = a.id
+       WHERE a.deleted_at IS NULL
+       ORDER BY a.created_at DESC, a.id DESC, k.position ASC, k.id ASC`
     )
 
-    return result.rows.map(row => ({
-      id: String(row.id),
-      name: row.name
-    }))
+    const itemsById = new Map<string, TenderListItem>()
+
+    for (const row of result.rows) {
+      const tenderId = String(row.id)
+      const existing = itemsById.get(tenderId) || {
+        id: tenderId,
+        name: row.name,
+        criteriaCatalogs: []
+      }
+
+      if (row.catalog_id !== null && row.catalog_name) {
+        existing.criteriaCatalogs!.push({
+          id: String(row.catalog_id),
+          name: row.catalog_name,
+          type: row.catalog_type === 'main' || row.catalog_type === 'report' ? row.catalog_type : 'draft'
+        })
+      }
+
+      itemsById.set(tenderId, existing)
+    }
+
+    return Array.from(itemsById.values())
   } finally {
     client.release()
   }

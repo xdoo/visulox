@@ -1,22 +1,24 @@
 import { ref } from 'vue'
 
-import { getTenderPath } from './useTenderPaths'
+import { getTenderCriteriaCatalogPath } from './useTenderPaths'
 import { useTenders } from './useTenders'
 
 import type {
-  CloneTenderResponse,
+  CloneCriteriaCatalogResponse,
   DeleteTenderResponse,
+  TenderCriteriaCatalogType,
+  UpdateCriteriaCatalogResponse,
   UpdateTenderResponse
 } from '../../shared/types/tenders'
 
 type PatchTenderFetcher = <T>(request: string, options: {
   method: 'PATCH'
-  body: { name: string }
+  body: Record<string, unknown>
 }) => Promise<T>
 
-type PostTenderFetcher = <T>(request: string, options: {
+type PostFetcher = <T>(request: string, options: {
   method: 'POST'
-  body: { name: string }
+  body: Record<string, unknown>
 }) => Promise<T>
 
 type DeleteTenderFetcher = <T>(request: string, options: {
@@ -25,9 +27,9 @@ type DeleteTenderFetcher = <T>(request: string, options: {
 
 export function useTenderGeneralActions(tenderId: string) {
   const patchFetcher = $fetch as PatchTenderFetcher
-  const postFetcher = $fetch as PostTenderFetcher
+  const postFetcher = $fetch as PostFetcher
   const deleteFetcher = $fetch as DeleteTenderFetcher
-  const { addTender, updateTender, removeTender } = useTenders()
+  const { loadTenders, updateTender, removeTender } = useTenders()
   const errorMessage = ref('')
   const isSaving = ref(false)
 
@@ -61,20 +63,41 @@ export function useTenderGeneralActions(tenderId: string) {
     return response.tender
   }
 
-  async function cloneTender(name: string) {
-    const response = await runAction(() => postFetcher<CloneTenderResponse>(`/api/tenders/${tenderId}/clone`, {
+  async function cloneCriteriaCatalog(name: string, sourceCatalogId?: string) {
+    const response = await runAction(() => postFetcher<CloneCriteriaCatalogResponse>(`/api/tenders/${tenderId}/criteria-catalogs/clone`, {
       method: 'POST',
-      body: { name }
+      body: {
+        name,
+        sourceCatalogId
+      }
     }))
 
     if (!response) {
       return null
     }
 
-    addTender(response.tender)
-    await navigateTo(getTenderPath(response.tender.id))
+    await loadTenders()
+    await refreshNuxtData(`tender-detail:${tenderId}`)
+    await navigateTo(getTenderCriteriaCatalogPath(tenderId, response.catalog.id))
 
-    return response.tender
+    return response.catalog
+  }
+
+  async function renameCriteriaCatalog(catalogId: string, name: string, type: TenderCriteriaCatalogType) {
+    const response = await runAction(() => patchFetcher<UpdateCriteriaCatalogResponse>(`/api/tenders/${tenderId}/criteria-catalogs/${catalogId}`, {
+      method: 'PATCH',
+      body: { name, type }
+    }))
+
+    if (!response) {
+      return null
+    }
+
+    await loadTenders()
+    await refreshNuxtData(`tender-detail:${tenderId}:default`)
+    await refreshNuxtData(`tender-detail:${tenderId}:${catalogId}`)
+
+    return response.catalog
   }
 
   async function deleteTender() {
@@ -100,7 +123,8 @@ export function useTenderGeneralActions(tenderId: string) {
     errorMessage,
     isSaving,
     renameTender,
-    cloneTender,
+    cloneCriteriaCatalog,
+    renameCriteriaCatalog,
     deleteTender,
     clearError
   }

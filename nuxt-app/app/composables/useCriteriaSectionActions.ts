@@ -32,7 +32,12 @@ export function useCriteriaSectionActions(options: UseCriteriaSectionActionsOpti
   const deleteFetcher = $fetch as DeleteSectionQuestionsFetcher
 
   async function refreshSectionData() {
-    await refreshNuxtData(`tender-detail:${route.params.id}`)
+    const tenderId = String(route.params.id || '').trim()
+    const catalogId = typeof route.params.catalogId === 'string'
+      ? route.params.catalogId.trim()
+      : ''
+
+    await refreshNuxtData(`tender-detail:${tenderId}:${catalogId || 'default'}`)
   }
 
   async function saveSectionQuestions(sectionId: string, questions: CriteriaCsvQuestionRow[]) {

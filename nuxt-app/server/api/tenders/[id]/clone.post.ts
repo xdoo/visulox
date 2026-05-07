@@ -24,6 +24,8 @@ interface TenderChartPaletteRow {
 }
 
 interface SectionRow {
+  source_id: string | number
+  kriterienkatalog_id: string | number | null
   name: string
   weight: number
   evaluators: string | null
@@ -37,6 +39,13 @@ interface CostBlockRow {
 
 interface VendorRow {
   name: string
+}
+
+interface CatalogRow {
+  id: string | number
+  name: string
+  position: number
+  catalog_type: string
 }
 
 async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTenderId: string, name: string) {
@@ -89,14 +98,58 @@ async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTen
   }
 
   const sectionsResult = await client.query<SectionRow>(
-    'SELECT name, weight, evaluators, description FROM abschnitte WHERE ausschreibung_id = $1 ORDER BY id ASC',
+    `SELECT id AS source_id, kriterienkatalog_id, name, weight, evaluators, description
+     FROM abschnitte
+     WHERE ausschreibung_id = $1
+     ORDER BY id ASC`,
     [sourceTenderId]
   )
 
+  const sourceCatalogsResult = await client.query<CatalogRow>(
+    `SELECT id, name, position, catalog_type
+     FROM kriterienkataloge
+     WHERE ausschreibung_id = $1
+     ORDER BY position ASC, id ASC`,
+    [sourceTenderId]
+  )
+
+  const catalogIdMap = new Map<string, string>()
+  for (const catalog of sourceCatalogsResult.rows) {
+    const insertCatalogResult = await client.query<{ id: string | number }>(
+      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position, catalog_type)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
+      [newTenderId, catalog.name, catalog.position, catalog.catalog_type]
+    )
+
+    const insertedCatalogId = insertCatalogResult.rows[0]?.id
+    if (insertedCatalogId !== undefined && insertedCatalogId !== null) {
+      catalogIdMap.set(String(catalog.id), String(insertedCatalogId))
+    }
+  }
+
+  if (catalogIdMap.size === 0 && sectionsResult.rows.length > 0) {
+    const fallbackCatalogResult = await client.query<{ id: string | number }>(
+      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position, catalog_type)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
+      [newTenderId, 'Kriterienkatalog A', 1, 'main']
+    )
+    const fallbackCatalogId = fallbackCatalogResult.rows[0]?.id
+    if (fallbackCatalogId !== undefined && fallbackCatalogId !== null) {
+      catalogIdMap.set('__fallback__', String(fallbackCatalogId))
+    }
+  }
+
   for (const section of sectionsResult.rows) {
+    const mappedCatalogId = section.kriterienkatalog_id
+      ? catalogIdMap.get(String(section.kriterienkatalog_id))
+      : catalogIdMap.get('__fallback__')
+
     await client.query(
-      'INSERT INTO abschnitte (ausschreibung_id, name, weight, evaluators, description) VALUES ($1, $2, $3, $4, $5)',
-      [newTenderId, section.name, section.weight, section.evaluators, section.description]
+      `INSERT INTO abschnitte (ausschreibung_id, kriterienkatalog_id, name, weight, evaluators, description)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [newTenderId, mappedCatalogId || null, section.name, section.weight, section.evaluators, section.description]
     )
   }
 

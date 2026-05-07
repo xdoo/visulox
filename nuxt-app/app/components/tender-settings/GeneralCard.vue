@@ -5,17 +5,21 @@ import TenderSettingsCloneTenderModal from './CloneTenderModal.vue'
 import TenderSettingsDeleteTenderModal from './DeleteTenderModal.vue'
 import TenderSettingsPaletteCard from './PaletteCard.vue'
 import TenderSettingsPaletteColorModal from './PaletteColorModal.vue'
+import TenderSettingsRenameCriteriaCatalogModal from './RenameCriteriaCatalogModal.vue'
 import TenderSettingsRenameTenderModal from './RenameTenderModal.vue'
 import TenderSettingsScoreModal from './ScoreModal.vue'
 import TenderSettingsScoreRangeRow from './ScoreRangeRow.vue'
+import { getTenderCriteriaCatalogTypeLabel } from '~~/shared/constants/criteria-catalogs'
 
-import type { TenderSettings } from '../../../shared/types/tenders'
+import type { TenderCriteriaCatalog, TenderCriteriaCatalogType, TenderSettings } from '../../../shared/types/tenders'
 
 const props = defineProps<{
   tenderId: string
   tenderName: string
+  criteriaCatalogs: TenderCriteriaCatalog[]
   settings: TenderSettings
 }>()
+const route = useRoute()
 
 const {
   errorMessage,
@@ -32,7 +36,8 @@ const {
   errorMessage: actionErrorMessage,
   isSaving: isActionSaving,
   renameTender,
-  cloneTender,
+  cloneCriteriaCatalog,
+  renameCriteriaCatalog,
   deleteTender,
   clearError: clearActionError
 } = useTenderGeneralActions(props.tenderId)
@@ -56,6 +61,10 @@ const {
 } = useTenderGeneralSettingsDialogs(() => scoreRange.value, () => considerationYears.value, () => chartPalette.value.length)
 const isRenameModalOpen = ref(false)
 const renameTenderName = ref('')
+const isRenameCriteriaCatalogModalOpen = ref(false)
+const selectedCriteriaCatalogId = ref('')
+const renameCriteriaCatalogName = ref('')
+const renameCriteriaCatalogType = ref<TenderCriteriaCatalogType>('draft')
 const isCloneModalOpen = ref(false)
 const cloneTenderName = ref('')
 const isDeleteModalOpen = ref(false)
@@ -69,8 +78,16 @@ function openRenameTenderModal() {
 
 function openCloneTenderModal() {
   clearActionError()
-  cloneTenderName.value = `Kopie von ${props.tenderName}`
+  cloneTenderName.value = 'Bewertung VKB'
   isCloneModalOpen.value = true
+}
+
+function openRenameCriteriaCatalogModal(catalog: TenderCriteriaCatalog) {
+  clearActionError()
+  selectedCriteriaCatalogId.value = catalog.id
+  renameCriteriaCatalogName.value = catalog.name
+  renameCriteriaCatalogType.value = catalog.type
+  isRenameCriteriaCatalogModalOpen.value = true
 }
 
 function openDeleteTenderModal() {
@@ -112,8 +129,20 @@ async function submitRenameTender() {
   isRenameModalOpen.value = false
 }
 
+async function submitRenameCriteriaCatalog() {
+  await renameCriteriaCatalog(
+    selectedCriteriaCatalogId.value,
+    renameCriteriaCatalogName.value.trim(),
+    renameCriteriaCatalogType.value
+  )
+  isRenameCriteriaCatalogModalOpen.value = false
+}
+
 async function submitCloneTender() {
-  await cloneTender(cloneTenderName.value.trim())
+  const sourceCatalogId = typeof route.params.catalogId === 'string'
+    ? route.params.catalogId
+    : undefined
+  await cloneCriteriaCatalog(cloneTenderName.value.trim(), sourceCatalogId)
   isCloneModalOpen.value = false
 }
 
@@ -190,9 +219,9 @@ async function submitDeleteTender() {
 
         <div class="flex items-start justify-between gap-4 border-t ui-border pt-4">
           <div class="space-y-1">
-            <h4 class="font-medium">Ausschreibung klonen</h4>
+            <h4 class="font-medium">Kriterienkatalog klonen</h4>
             <p class="text-sm ui-text-muted">
-              Klont die Struktur der Ausschreibung inklusive Settings, Abschnitten, Kostenblöcken und Anbietern. Bewertungsdaten werden nicht übernommen.
+              Klont einen Kriterienkatalog innerhalb dieser Ausschreibung. Kosten bleiben global und unverändert.
             </p>
           </div>
 
@@ -202,8 +231,49 @@ async function submitDeleteTender() {
             variant="outline"
             @click="openCloneTenderModal"
           >
-            Klonen
+            Kriterienkatalog klonen
           </UButton>
+        </div>
+
+        <div class="space-y-3 border-t ui-border pt-4">
+          <div class="space-y-1">
+            <h4 class="font-medium">Kriterienkataloge umbenennen</h4>
+            <p class="text-sm ui-text-muted">
+              Die Namen der Bewertungsgruppen erscheinen im Navigationsmenü dieser Ausschreibung.
+            </p>
+          </div>
+
+          <div
+            v-if="props.criteriaCatalogs.length === 0"
+            class="rounded-lg border border-dashed ui-border p-4 text-sm italic ui-text-muted"
+          >
+            Es sind noch keine Kriterienkataloge vorhanden.
+          </div>
+
+          <div v-else class="divide-y rounded-lg border ui-border">
+            <div
+              v-for="catalog in props.criteriaCatalogs"
+              :key="catalog.id"
+              class="flex items-center justify-between gap-3 p-3"
+            >
+              <div class="min-w-0 space-y-1">
+                <span class="block truncate font-medium">{{ catalog.name }}</span>
+                <UBadge color="neutral" variant="subtle">
+                  {{ getTenderCriteriaCatalogTypeLabel(catalog.type) }}
+                </UBadge>
+              </div>
+
+              <UTooltip text="Kriterienkatalog umbenennen">
+                <UButton
+                  icon="i-lucide-pencil-line"
+                  color="neutral"
+                  variant="ghost"
+                  aria-label="Kriterienkatalog umbenennen"
+                  @click="openRenameCriteriaCatalogModal(catalog)"
+                />
+              </UTooltip>
+            </div>
+          </div>
         </div>
 
         <div class="flex items-start justify-between gap-4 border-t ui-border pt-4">
@@ -252,6 +322,14 @@ async function submitDeleteTender() {
       v-model:name="renameTenderName"
       :is-saving="isActionSaving"
       @submit="submitRenameTender"
+    />
+
+    <TenderSettingsRenameCriteriaCatalogModal
+      v-model:open="isRenameCriteriaCatalogModalOpen"
+      v-model:name="renameCriteriaCatalogName"
+      v-model:catalog-type="renameCriteriaCatalogType"
+      :is-saving="isActionSaving"
+      @submit="submitRenameCriteriaCatalog"
     />
 
     <TenderSettingsCloneTenderModal
