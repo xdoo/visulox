@@ -44,9 +44,12 @@ export interface TenderListItem {
   criteriaCatalogs?: TenderCriteriaCatalog[]
 }
 
+export type TenderCriteriaCatalogType = 'main' | 'report' | 'draft'
+
 export interface TenderCriteriaCatalog {
   id: string
   name: string
+  type: TenderCriteriaCatalogType
 }
 
 export interface TenderVendor {
@@ -172,6 +175,7 @@ export interface CloneCriteriaCatalogResponse {
 
 export interface UpdateCriteriaCatalogRequest {
   name: string
+  type: TenderCriteriaCatalogType
 }
 
 export interface UpdateCriteriaCatalogResponse {

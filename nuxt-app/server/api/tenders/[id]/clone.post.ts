@@ -45,6 +45,7 @@ interface CatalogRow {
   id: string | number
   name: string
   position: number
+  catalog_type: string
 }
 
 async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTenderId: string, name: string) {
@@ -105,7 +106,7 @@ async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTen
   )
 
   const sourceCatalogsResult = await client.query<CatalogRow>(
-    `SELECT id, name, position
+    `SELECT id, name, position, catalog_type
      FROM kriterienkataloge
      WHERE ausschreibung_id = $1
      ORDER BY position ASC, id ASC`,
@@ -115,10 +116,10 @@ async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTen
   const catalogIdMap = new Map<string, string>()
   for (const catalog of sourceCatalogsResult.rows) {
     const insertCatalogResult = await client.query<{ id: string | number }>(
-      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position)
-       VALUES ($1, $2, $3)
+      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position, catalog_type)
+       VALUES ($1, $2, $3, $4)
        RETURNING id`,
-      [newTenderId, catalog.name, catalog.position]
+      [newTenderId, catalog.name, catalog.position, catalog.catalog_type]
     )
 
     const insertedCatalogId = insertCatalogResult.rows[0]?.id
@@ -129,10 +130,10 @@ async function cloneTenderStructure(client: Pick<PoolClient, 'query'>, sourceTen
 
   if (catalogIdMap.size === 0 && sectionsResult.rows.length > 0) {
     const fallbackCatalogResult = await client.query<{ id: string | number }>(
-      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position)
-       VALUES ($1, $2, $3)
+      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position, catalog_type)
+       VALUES ($1, $2, $3, $4)
        RETURNING id`,
-      [newTenderId, 'Kriterienkatalog A', 1]
+      [newTenderId, 'Kriterienkatalog A', 1, 'main']
     )
     const fallbackCatalogId = fallbackCatalogResult.rows[0]?.id
     if (fallbackCatalogId !== undefined && fallbackCatalogId !== null) {

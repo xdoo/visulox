@@ -6,13 +6,14 @@ import { useTenders } from './useTenders'
 import type {
   CloneCriteriaCatalogResponse,
   DeleteTenderResponse,
+  TenderCriteriaCatalogType,
   UpdateCriteriaCatalogResponse,
   UpdateTenderResponse
 } from '../../shared/types/tenders'
 
 type PatchTenderFetcher = <T>(request: string, options: {
   method: 'PATCH'
-  body: { name: string }
+  body: Record<string, unknown>
 }) => Promise<T>
 
 type PostFetcher = <T>(request: string, options: {
@@ -82,10 +83,10 @@ export function useTenderGeneralActions(tenderId: string) {
     return response.catalog
   }
 
-  async function renameCriteriaCatalog(catalogId: string, name: string) {
+  async function renameCriteriaCatalog(catalogId: string, name: string, type: TenderCriteriaCatalogType) {
     const response = await runAction(() => patchFetcher<UpdateCriteriaCatalogResponse>(`/api/tenders/${tenderId}/criteria-catalogs/${catalogId}`, {
       method: 'PATCH',
-      body: { name }
+      body: { name, type }
     }))
 
     if (!response) {

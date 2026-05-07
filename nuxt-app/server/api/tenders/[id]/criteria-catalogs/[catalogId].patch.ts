@@ -8,6 +8,7 @@ import type { UpdateCriteriaCatalogRequest, UpdateCriteriaCatalogResponse } from
 interface CatalogRow {
   id: string | number
   name: string
+  catalog_type: string
 }
 
 export default defineEventHandler(async (event): Promise<UpdateCriteriaCatalogResponse> => {
@@ -23,11 +24,19 @@ export default defineEventHandler(async (event): Promise<UpdateCriteriaCatalogRe
 
   const body = await readBody<Partial<UpdateCriteriaCatalogRequest>>(event)
   const name = body?.name?.trim() || ''
+  const catalogType = body?.type || 'draft'
 
   if (!name) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Der Name des Kriterienkatalogs ist erforderlich.'
+    })
+  }
+
+  if (catalogType !== 'main' && catalogType !== 'report' && catalogType !== 'draft') {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Der Typ des Kriterienkatalogs ist ungültig.'
     })
   }
 
@@ -37,11 +46,12 @@ export default defineEventHandler(async (event): Promise<UpdateCriteriaCatalogRe
   try {
     const result = await client.query<CatalogRow>(
       `UPDATE kriterienkataloge
-       SET name = $3
+       SET name = $3,
+           catalog_type = $4
        WHERE id = $2
          AND ausschreibung_id = $1
-       RETURNING id, name`,
-      [tenderId, catalogId, name]
+       RETURNING id, name, catalog_type`,
+      [tenderId, catalogId, name, catalogType]
     )
 
     const catalog = result.rows[0]
@@ -56,7 +66,8 @@ export default defineEventHandler(async (event): Promise<UpdateCriteriaCatalogRe
     return {
       catalog: {
         id: String(catalog.id),
-        name: catalog.name
+        name: catalog.name,
+        type: catalog.catalog_type === 'main' || catalog.catalog_type === 'report' ? catalog.catalog_type : 'draft'
       }
     }
   } finally {

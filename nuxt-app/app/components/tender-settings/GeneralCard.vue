@@ -9,8 +9,9 @@ import TenderSettingsRenameCriteriaCatalogModal from './RenameCriteriaCatalogMod
 import TenderSettingsRenameTenderModal from './RenameTenderModal.vue'
 import TenderSettingsScoreModal from './ScoreModal.vue'
 import TenderSettingsScoreRangeRow from './ScoreRangeRow.vue'
+import { getTenderCriteriaCatalogTypeLabel } from '~~/shared/constants/criteria-catalogs'
 
-import type { TenderCriteriaCatalog, TenderSettings } from '../../../shared/types/tenders'
+import type { TenderCriteriaCatalog, TenderCriteriaCatalogType, TenderSettings } from '../../../shared/types/tenders'
 
 const props = defineProps<{
   tenderId: string
@@ -63,6 +64,7 @@ const renameTenderName = ref('')
 const isRenameCriteriaCatalogModalOpen = ref(false)
 const selectedCriteriaCatalogId = ref('')
 const renameCriteriaCatalogName = ref('')
+const renameCriteriaCatalogType = ref<TenderCriteriaCatalogType>('draft')
 const isCloneModalOpen = ref(false)
 const cloneTenderName = ref('')
 const isDeleteModalOpen = ref(false)
@@ -84,6 +86,7 @@ function openRenameCriteriaCatalogModal(catalog: TenderCriteriaCatalog) {
   clearActionError()
   selectedCriteriaCatalogId.value = catalog.id
   renameCriteriaCatalogName.value = catalog.name
+  renameCriteriaCatalogType.value = catalog.type
   isRenameCriteriaCatalogModalOpen.value = true
 }
 
@@ -127,7 +130,11 @@ async function submitRenameTender() {
 }
 
 async function submitRenameCriteriaCatalog() {
-  await renameCriteriaCatalog(selectedCriteriaCatalogId.value, renameCriteriaCatalogName.value.trim())
+  await renameCriteriaCatalog(
+    selectedCriteriaCatalogId.value,
+    renameCriteriaCatalogName.value.trim(),
+    renameCriteriaCatalogType.value
+  )
   isRenameCriteriaCatalogModalOpen.value = false
 }
 
@@ -249,7 +256,12 @@ async function submitDeleteTender() {
               :key="catalog.id"
               class="flex items-center justify-between gap-3 p-3"
             >
-              <span class="min-w-0 truncate font-medium">{{ catalog.name }}</span>
+              <div class="min-w-0 space-y-1">
+                <span class="block truncate font-medium">{{ catalog.name }}</span>
+                <UBadge color="neutral" variant="subtle">
+                  {{ getTenderCriteriaCatalogTypeLabel(catalog.type) }}
+                </UBadge>
+              </div>
 
               <UTooltip text="Kriterienkatalog umbenennen">
                 <UButton
@@ -315,6 +327,7 @@ async function submitDeleteTender() {
     <TenderSettingsRenameCriteriaCatalogModal
       v-model:open="isRenameCriteriaCatalogModalOpen"
       v-model:name="renameCriteriaCatalogName"
+      v-model:catalog-type="renameCriteriaCatalogType"
       :is-saving="isActionSaving"
       @submit="submitRenameCriteriaCatalog"
     />

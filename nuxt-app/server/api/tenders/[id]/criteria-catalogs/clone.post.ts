@@ -75,10 +75,10 @@ export default defineEventHandler(async (event): Promise<CloneCriteriaCatalogRes
 
     const nextPosition = (catalogs.at(-1)?.position || 0) + 1
     const createdCatalogResult = await client.query<{ id: string | number }>(
-      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position)
-       VALUES ($1, $2, $3)
+      `INSERT INTO kriterienkataloge (ausschreibung_id, name, position, catalog_type)
+       VALUES ($1, $2, $3, $4)
        RETURNING id`,
-      [tenderId, name, nextPosition]
+      [tenderId, name, nextPosition, 'draft']
     )
 
     const newCatalogId = createdCatalogResult.rows[0]?.id
@@ -114,7 +114,8 @@ export default defineEventHandler(async (event): Promise<CloneCriteriaCatalogRes
     return {
       catalog: {
         id: String(newCatalogId),
-        name
+        name,
+        type: 'draft'
       }
     }
   } catch (error) {

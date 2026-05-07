@@ -31,10 +31,10 @@ export async function insertTender(client: Pick<PoolClient, 'query'>, payload: C
   }
 
   const insertCatalogResult = await client.query<{ id: string | number }>(
-    `INSERT INTO kriterienkataloge (ausschreibung_id, name, position)
-     VALUES ($1, $2, $3)
+    `INSERT INTO kriterienkataloge (ausschreibung_id, name, position, catalog_type)
+     VALUES ($1, $2, $3, $4)
      RETURNING id`,
-    [tenderId, 'Kriterienkatalog A', 1]
+    [tenderId, 'Kriterienkatalog A', 1, 'main']
   )
 
   const catalogId = insertCatalogResult.rows[0]?.id
