@@ -62,7 +62,7 @@ describe('useCategoryQuestionsJsonExport', () => {
   }
 
   it('builds a category questions payload in stable vendor order', () => {
-    expect(buildCategoryQuestionsJsonPayload(section, vendors)).toEqual({
+    expect(buildCategoryQuestionsJsonPayload(section, vendors, [0, 10])).toEqual({
       kategorie: {
         id: '10',
         name: 'Funktional',
@@ -72,6 +72,7 @@ describe('useCategoryQuestionsJsonExport', () => {
         {
           id: '1',
           name: 'Alpha',
+          erfuellungProzent: 68,
           fragen: [
             {
               id: 'q1',
@@ -96,6 +97,7 @@ describe('useCategoryQuestionsJsonExport', () => {
         {
           id: '2',
           name: 'Beta',
+          erfuellungProzent: 36,
           fragen: [
             {
               id: 'q3',

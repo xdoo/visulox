@@ -1,4 +1,6 @@
-import type { TenderSection, TenderVendor } from '../../shared/types/tenders'
+import { calculateSectionFulfillmentPercentage } from './useCriteriaSectionFulfillment'
+
+import type { TenderSection, TenderSettings, TenderVendor } from '../../shared/types/tenders'
 
 export interface CategoryQuestionsExportQuestion {
   id: string
@@ -13,6 +15,7 @@ export interface CategoryQuestionsExportQuestion {
 export interface CategoryQuestionsExportVendor {
   id: string
   name: string
+  erfuellungProzent: number | null
   fragen: CategoryQuestionsExportQuestion[]
 }
 
@@ -48,7 +51,8 @@ export function getCategoryQuestionsJsonFilename(section: Pick<TenderSection, 'i
 
 export function buildCategoryQuestionsJsonPayload(
   section: TenderSection,
-  vendors: TenderVendor[]
+  vendors: TenderVendor[],
+  scoreRange: TenderSettings['scoreRange']
 ): CategoryQuestionsExportPayload {
   return {
     kategorie: {
@@ -58,10 +62,12 @@ export function buildCategoryQuestionsJsonPayload(
     },
     anbieter: vendors.map((vendor) => {
       const questions = section.questionsByVendor.find((entry) => entry.vendorId === vendor.id)?.questions || []
+      const fulfillmentPercentage = calculateSectionFulfillmentPercentage(questions, section.weight, scoreRange)
 
       return {
         id: vendor.id,
         name: vendor.name,
+        erfuellungProzent: fulfillmentPercentage === null ? null : roundValue(fulfillmentPercentage, 2),
         fragen: questions.map((question) => ({
           id: question.id,
           nr: question.nr,
@@ -76,8 +82,12 @@ export function buildCategoryQuestionsJsonPayload(
   }
 }
 
-export function downloadCategoryQuestionsJson(section: TenderSection, vendors: TenderVendor[]) {
-  const payload = buildCategoryQuestionsJsonPayload(section, vendors)
+export function downloadCategoryQuestionsJson(
+  section: TenderSection,
+  vendors: TenderVendor[],
+  scoreRange: TenderSettings['scoreRange']
+) {
+  const payload = buildCategoryQuestionsJsonPayload(section, vendors, scoreRange)
   const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], {
     type: 'application/json;charset=utf-8'
   })

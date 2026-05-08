@@ -84,7 +84,7 @@ function downloadCategoryQuestions(row: SectionVendorComparisonRow) {
     return
   }
 
-  downloadCategoryQuestionsJson(section, props.vendors)
+  downloadCategoryQuestionsJson(section, props.vendors, props.scoreRange)
 }
 
 function openCategoryResultAssessmentEditor(row: SectionVendorComparisonRow) {

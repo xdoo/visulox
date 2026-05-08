@@ -1,10 +1,20 @@
 import { ref } from 'vue'
 
 export function useTenderSettingsMutation(tenderId: string) {
+  const route = useRoute()
   const errorMessage = ref('')
 
   async function refreshTenderDetail() {
-    await refreshNuxtData(`tender-detail:${tenderId}`)
+    const normalizedTenderId = String(tenderId || '').trim()
+    const catalogId = typeof route.params.catalogId === 'string'
+      ? route.params.catalogId.trim()
+      : ''
+    const keys = new Set([
+      `tender-detail:${normalizedTenderId}`,
+      `tender-detail:${normalizedTenderId}:${catalogId || 'default'}`
+    ])
+
+    await Promise.all([...keys].map(key => refreshNuxtData(key)))
   }
 
   async function runMutation<T>(action: () => Promise<T>) {
