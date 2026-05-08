@@ -87,7 +87,9 @@ function toNumber(value: string | number) {
 
 export default defineEventHandler(async (event): Promise<TenderDetail> => {
   const tenderId = event.context.params?.id?.trim()
-  const selectedCatalogId = getQuery(event).catalogId ? String(getQuery(event).catalogId).trim() : ''
+  const query = getQuery(event)
+  const selectedCatalogId = query.catalogId ? String(query.catalogId).trim() : ''
+  const selectedCatalogType = query.catalogType ? String(query.catalogType).trim() : ''
 
   if (!tenderId) {
     throw createError({
@@ -147,9 +149,13 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
       assessmentText: row.assessment_text || ''
     }))
 
-    const activeCriteriaCatalogId = selectedCatalogId && criteriaCatalogs.some((catalog) => catalog.id === selectedCatalogId)
-      ? selectedCatalogId
-      : (criteriaCatalogs[0]?.id || '')
+    const catalogById = selectedCatalogId
+      ? criteriaCatalogs.find((catalog) => catalog.id === selectedCatalogId) || null
+      : null
+    const catalogByType = selectedCatalogType === 'main' || selectedCatalogType === 'report' || selectedCatalogType === 'draft'
+      ? criteriaCatalogs.find((catalog) => catalog.type === selectedCatalogType) || null
+      : null
+    const activeCriteriaCatalogId = catalogById?.id || catalogByType?.id || criteriaCatalogs[0]?.id || ''
 
     const vendorsResult = await client.query<VendorRow>(
       'SELECT id, name, project_cost_assessment, run_cost_assessment FROM anbieter WHERE ausschreibung_id = $1 ORDER BY id ASC',

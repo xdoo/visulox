@@ -27,7 +27,7 @@ declare global {
 
 const route = useRoute()
 const tenderId = computed(() => String(route.params.id || ''))
-const { data: tender, status, error } = await useTenderDetail(tenderId)
+const { data: tender, status, error } = await useTenderDetail(tenderId, undefined, 'main')
 
 const valueScoreRows = computed(() => {
   if (!tender.value) {
@@ -152,6 +152,14 @@ const categoryComparisonSections = computed(() => {
     section: sectionById.get(row.sectionId)
   }))
 })
+const activeCriteriaCatalog = computed(() => {
+  if (!tender.value) {
+    return null
+  }
+
+  return tender.value.criteriaCatalogs.find((catalog) => catalog.id === tender.value?.activeCriteriaCatalogId) || null
+})
+const criteriaCatalogAssessmentText = computed(() => activeCriteriaCatalog.value?.assessmentText.trim() || '')
 
 const reportChartWidth = '700px'
 const reportPrimaryColor = computed(() => tender.value?.settings.chartPalette[0]?.fillColor || '#0D57A6')
@@ -355,6 +363,13 @@ useSeoMeta({
               Es wurden noch keine Fragen importiert. Der Vergleich wird angezeigt, sobald Daten vorliegen.
             </p>
           </ReportChartBlock>
+
+          <div
+            v-if="criteriaCatalogAssessmentText"
+            class="report-criteria-catalog-assessment"
+          >
+            <ReportMarkdownBlock :markdown="criteriaCatalogAssessmentText" />
+          </div>
 
           <div v-if="hasAnyQuestions" class="report-category-sections">
             <section
@@ -642,6 +657,13 @@ useSeoMeta({
   gap: 8mm;
   max-width: 100%;
   overflow: hidden;
+}
+
+.report-criteria-catalog-assessment {
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
 }
 
 .report-category-section {
