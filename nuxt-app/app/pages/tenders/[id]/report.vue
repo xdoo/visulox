@@ -3,6 +3,7 @@ import {
   calculateSectionContributionPercentage,
   calculateSectionFulfillmentPercentage
 } from '../../../composables/useCriteriaSectionFulfillment'
+import managementSummaryMarkdown from '../../../report-content/management-summary.md?raw'
 import marketOverviewMarkdown from '../../../report-content/market-overview.md?raw'
 import valueScoreResultsMarkdown from '../../../report-content/value-score-results.md?raw'
 import costsOverallMarkdown from '../../../report-content/costs-overall.md?raw'
@@ -331,10 +332,9 @@ useSeoMeta({
 
       <section :id="managementSummaryChapter.id" class="report-section">
         <ReportChapterHeader v-bind="managementSummaryChapter" />
-        <ReportManagementSummary
-          :rows="valueScoreRows"
-          :consideration-years="tender.settings.considerationYears"
-        />
+        <div class="report-section-content">
+          <ReportMarkdownBlock :markdown="managementSummaryMarkdown" />
+        </div>
       </section>
 
       <section :id="marketOverviewChapter.id" class="report-section">
