@@ -299,10 +299,9 @@ useSeoMeta({
 
     <div v-else-if="tender" class="report-content">
       <section class="report-toc">
-        <p class="report-kicker">
+        <h2 class="report-toc-title">
           Inhaltsverzeichnis
-        </p>
-        <h2 />
+        </h2>
         <ol>
           <li
             v-for="chapter in reportChapters"
@@ -567,12 +566,15 @@ useSeoMeta({
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  break-after: always;
+  break-after: page;
   box-sizing: border-box;
   display: flex;
+  height: 297mm;
   min-height: 297mm;
   flex-direction: column;
+  margin: 0;
   padding: 22mm 20mm;
+  page-break-after: always;
   position: relative;
   width: 210mm;
 }
@@ -635,17 +637,23 @@ useSeoMeta({
 }
 
 .report-toc {
-  break-after: always;
+  break-after: page;
+  break-before: page;
   box-sizing: border-box;
   min-height: 250mm;
+  page-break-after: always;
+  page-break-before: always;
   padding-top: 28mm;
 }
 
-.report-toc h2 {
+.report-toc-title {
+  color: #111827;
+  letter-spacing: 0.16em;
   margin: 0 0 18mm;
-  font-size: 24pt;
+  font-size: 11pt;
   font-weight: 750;
-  line-height: 1.1;
+  line-height: 1.35;
+  text-transform: uppercase;
 }
 
 .report-toc ol {
