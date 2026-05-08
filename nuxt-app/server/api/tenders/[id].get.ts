@@ -66,6 +66,7 @@ interface CriteriaCatalogRow {
   id: string | number
   name: string
   catalog_type: string
+  assessment_text: string | null
 }
 
 interface SectionQuestionRow {
@@ -132,7 +133,7 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     )
 
     const catalogsResult = await client.query<CriteriaCatalogRow>(
-      `SELECT id, name, catalog_type
+      `SELECT id, name, catalog_type, assessment_text
        FROM kriterienkataloge
        WHERE ausschreibung_id = $1
        ORDER BY position ASC, id ASC`,
@@ -142,7 +143,8 @@ export default defineEventHandler(async (event): Promise<TenderDetail> => {
     const criteriaCatalogs: TenderCriteriaCatalog[] = catalogsResult.rows.map((row) => ({
       id: String(row.id),
       name: row.name,
-      type: row.catalog_type === 'main' || row.catalog_type === 'report' ? row.catalog_type : 'draft'
+      type: row.catalog_type === 'main' || row.catalog_type === 'report' ? row.catalog_type : 'draft',
+      assessmentText: row.assessment_text || ''
     }))
 
     const activeCriteriaCatalogId = selectedCatalogId && criteriaCatalogs.some((catalog) => catalog.id === selectedCatalogId)

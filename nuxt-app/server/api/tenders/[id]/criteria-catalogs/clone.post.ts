@@ -115,7 +115,8 @@ export default defineEventHandler(async (event): Promise<CloneCriteriaCatalogRes
       catalog: {
         id: String(newCatalogId),
         name,
-        type: 'draft'
+        type: 'draft',
+        assessmentText: ''
       }
     }
   } catch (error) {
