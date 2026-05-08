@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { EditorToolbarItem } from '@nuxt/ui'
 import type { TenderSection } from '../../../shared/types/tenders'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -15,63 +14,6 @@ const props = defineProps<{
 defineEmits<{
   submit: []
 }>()
-
-const toolbarItems: EditorToolbarItem[][] = [
-  [
-    {
-      icon: 'i-lucide-heading',
-      tooltip: { text: 'Überschriften' },
-      content: {
-        align: 'start'
-      },
-      items: [
-        {
-          kind: 'heading',
-          level: 2,
-          icon: 'i-lucide-heading-2',
-          label: 'Überschrift 2'
-        },
-        {
-          kind: 'heading',
-          level: 3,
-          icon: 'i-lucide-heading-3',
-          label: 'Überschrift 3'
-        },
-        {
-          kind: 'paragraph',
-          icon: 'i-lucide-type',
-          label: 'Absatz'
-        }
-      ]
-    }
-  ],
-  [
-    {
-      kind: 'mark',
-      mark: 'bold',
-      icon: 'i-lucide-bold',
-      tooltip: { text: 'Fett' }
-    },
-    {
-      kind: 'mark',
-      mark: 'italic',
-      icon: 'i-lucide-italic',
-      tooltip: { text: 'Kursiv' }
-    }
-  ],
-  [
-    {
-      kind: 'bulletList',
-      icon: 'i-lucide-list',
-      tooltip: { text: 'Aufzählung' }
-    },
-    {
-      kind: 'orderedList',
-      icon: 'i-lucide-list-ordered',
-      tooltip: { text: 'Nummerierte Liste' }
-    }
-  ]
-]
 </script>
 
 <template>
@@ -92,16 +34,14 @@ const toolbarItems: EditorToolbarItem[][] = [
         />
 
         <UFormField label="Ergebnisbewertung">
-          <UEditor
-            v-slot="{ editor }"
+          <UTextarea
             v-model="resultAssessment"
-            content-type="markdown"
-            class="min-h-56 w-full"
+            class="w-full font-mono text-sm"
+            autoresize
+            :rows="12"
             placeholder="LLM-Ergebnisbewertung der Kategorie einfügen"
             :disabled="props.isSaving"
-          >
-            <UEditorToolbar :editor="editor" :items="toolbarItems" layout="bubble" />
-          </UEditor>
+          />
         </UFormField>
       </div>
     </template>

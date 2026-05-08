@@ -23,4 +23,21 @@ describe('reportMarkdown', () => {
     expect(html).toContain('<img src="/report-assets/market.png" alt="Marktbild">')
     expect(html).toContain('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;')
   })
+
+  it('renders markdown tables with alignment', () => {
+    const markdown = [
+      '| Anbieter | Fachliche Bewertung | Kostenbewertung | Einordnung |',
+      '|---|---:|---:|---|',
+      '| Adesso | 82 % | 1,0 Mio. EUR | **Sehr ausgewogen** |',
+      '| SAP Fioneer | 76 % | 1,4 Mio. EUR | Wirtschaftlich stark |'
+    ].join('\n')
+    const html = renderReportMarkdown(markdown)
+
+    expect(html).toContain('<table>')
+    expect(html).toContain('<th>Anbieter</th>')
+    expect(html).toContain('<th style="text-align: right">Fachliche Bewertung</th>')
+    expect(html).toContain('<td style="text-align: right">82 %</td>')
+    expect(html).toContain('<td><strong>Sehr ausgewogen</strong></td>')
+    expect(html).not.toContain('<p>| Anbieter')
+  })
 })

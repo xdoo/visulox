@@ -83,6 +83,35 @@ const renderedMarkdown = computed(() => renderReportMarkdown(props.markdown))
   padding-left: 6mm;
 }
 
+.report-markdown :deep(table) {
+  border-collapse: collapse;
+  break-inside: avoid;
+  font-size: 9.5pt;
+  line-height: 1.35;
+  margin: 1mm 0 2mm;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.report-markdown :deep(th),
+.report-markdown :deep(td) {
+  border: 1px solid #d1d5db;
+  padding: 2mm 2.5mm;
+  vertical-align: top;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+.report-markdown :deep(th) {
+  background: #f3f4f6;
+  color: #111827;
+  font-weight: 700;
+}
+
+.report-markdown :deep(tbody tr:nth-child(even)) {
+  background: #f9fafb;
+}
+
 .report-markdown :deep(li) {
   margin: 0 0 1.5mm;
 }

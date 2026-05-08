@@ -46,6 +46,70 @@ function renderImage(line: string) {
   return `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}">`
 }
 
+function splitTableRow(line: string) {
+  const normalizedLine = line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+
+  return normalizedLine.split('|').map(cell => cell.trim())
+}
+
+function parseTableAlignment(cell: string) {
+  const normalizedCell = cell.trim()
+
+  if (!/^:?-{3,}:?$/.test(normalizedCell)) {
+    return null
+  }
+
+  if (normalizedCell.startsWith(':') && normalizedCell.endsWith(':')) {
+    return 'center'
+  }
+
+  if (normalizedCell.endsWith(':')) {
+    return 'right'
+  }
+
+  return ''
+}
+
+function isTableDelimiter(line: string) {
+  const cells = splitTableRow(line)
+
+  return cells.length > 0 && cells.every(cell => parseTableAlignment(cell) !== null)
+}
+
+function isPotentialTableRow(line: string) {
+  return line.includes('|') && splitTableRow(line).length > 1
+}
+
+function renderTableCell(tag: 'td' | 'th', value: string, alignment: string | null | undefined) {
+  const alignmentAttribute = alignment ? ` style="text-align: ${alignment}"` : ''
+
+  return `<${tag}${alignmentAttribute}>${renderInlineMarkdown(value)}</${tag}>`
+}
+
+function renderTable(tableLines: string[]) {
+  const [headerLine = '', delimiterLine = '', ...bodyLines] = tableLines
+  const headerCells = splitTableRow(headerLine)
+  const alignments = splitTableRow(delimiterLine).map(parseTableAlignment)
+
+  const headerHtml = `<thead><tr>${headerCells
+    .map((cell, index) => renderTableCell('th', cell, alignments[index]))
+    .join('')}</tr></thead>`
+  const bodyHtml = bodyLines.length > 0
+    ? `<tbody>${bodyLines.map((row) => {
+        const cells = splitTableRow(row)
+
+        return `<tr>${headerCells
+          .map((_, index) => renderTableCell('td', cells[index] || '', alignments[index]))
+          .join('')}</tr>`
+      }).join('')}</tbody>`
+    : ''
+
+  return `<table>${headerHtml}${bodyHtml}</table>`
+}
+
 export function renderReportMarkdown(markdown: string) {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n')
   const blocks: string[] = []
@@ -73,7 +137,8 @@ export function renderReportMarkdown(markdown: string) {
     listItems = []
   }
 
-  for (const rawLine of lines) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const rawLine = lines[index] || ''
     const line = rawLine.trim()
 
     if (!line) {
@@ -88,6 +153,30 @@ export function renderReportMarkdown(markdown: string) {
       flushParagraph()
       flushList()
       blocks.push(imageHtml)
+      continue
+    }
+
+    const nextLine = lines[index + 1]?.trim() || ''
+
+    if (isPotentialTableRow(line) && isTableDelimiter(nextLine)) {
+      flushParagraph()
+      flushList()
+
+      const tableLines = [line, nextLine]
+      index += 1
+
+      while (index + 1 < lines.length) {
+        const tableRow = lines[index + 1]?.trim() || ''
+
+        if (!isPotentialTableRow(tableRow) || isTableDelimiter(tableRow)) {
+          break
+        }
+
+        tableLines.push(tableRow)
+        index += 1
+      }
+
+      blocks.push(renderTable(tableLines))
       continue
     }
 
