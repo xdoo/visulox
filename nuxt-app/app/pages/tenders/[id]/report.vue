@@ -15,6 +15,9 @@ import {
 } from '../../../composables/useTenderCostOverview'
 import { buildTenderValueScoreRows } from '../../../composables/useTenderValueScore'
 
+import type { TenderDetail, TenderSection } from '../../../../shared/types/tenders'
+import type { SectionVendorComparisonRow } from '../../../composables/useTenderCategoryComparison'
+
 definePageMeta({
   layout: false
 })
@@ -27,45 +30,45 @@ declare global {
 
 const route = useRoute()
 const tenderId = computed(() => String(route.params.id || ''))
-const { data: tender, status, error } = await useTenderDetail(tenderId)
+const {
+  data: criteriaCatalogReportData,
+  status,
+  error
+} = await useAsyncData(`report-criteria-catalogs:${tenderId.value}`, async () => {
+  const mainCatalogTender = await $fetch<TenderDetail>(`/api/tenders/${tenderId.value}`, {
+    query: {
+      catalogType: 'main'
+    }
+  })
 
-const valueScoreRows = computed(() => {
-  if (!tender.value) {
-    return []
-  }
+  const reportCatalogs = mainCatalogTender.criteriaCatalogs.filter((catalog) => catalog.type === 'report')
+  const reportCatalogTenders = await Promise.all(reportCatalogs.map((catalog) => (
+    $fetch<TenderDetail>(`/api/tenders/${tenderId.value}`, {
+      query: {
+        catalogId: catalog.id
+      }
+    })
+  )))
 
-  return buildTenderValueScoreRows(
-    tender.value.vendors,
-    tender.value.sections,
-    tender.value.settings.scoreRange,
-    tender.value.costBlocks,
-    tender.value.vendorCostItems,
-    tender.value.settings.considerationYears
-  )
+  return [mainCatalogTender, ...reportCatalogTenders]
 })
 
-const valueScoreChartHasData = computed(() => {
-  return valueScoreRows.value.some((row) => row.balancedScore !== null && row.normalizedCost !== null)
-})
+const tender = computed(() => criteriaCatalogReportData.value?.[0] || null)
 
-const vendorScores = computed(() => {
-  if (!tender.value) {
-    return []
-  }
-
-  return tender.value.vendors.map(vendor => {
+function buildVendorScoresForCatalog(catalogTender: TenderDetail) {
+  return catalogTender.vendors.map(vendor => {
     let totalScore = 0
-    const sectionScores = tender.value!.sections.map(section => {
+    const sectionScores = catalogTender.sections.map(section => {
       const questions = section.questionsByVendor.find(entry => entry.vendorId === vendor.id)?.questions || []
       const fulfillment = calculateSectionFulfillmentPercentage(
         questions,
         section.weight,
-        tender.value!.settings.scoreRange
+        catalogTender.settings.scoreRange
       ) || 0
       const contribution = calculateSectionContributionPercentage(
         questions,
         section.weight,
-        tender.value!.settings.scoreRange
+        catalogTender.settings.scoreRange
       ) || 0
 
       totalScore += contribution
@@ -86,12 +89,74 @@ const vendorScores = computed(() => {
       sectionScores
     }
   })
+}
+
+function hasAnyQuestionsForCatalog(catalogTender: TenderDetail) {
+  return catalogTender.sections.some(section =>
+    section.questionsByVendor.some(entry => entry.questions.length > 0)
+  )
+}
+
+function buildCategoryComparisonSectionsForCatalog(catalogTender: TenderDetail) {
+  const rows = buildSectionVendorComparisonRows(
+    catalogTender.vendors,
+    catalogTender.sections,
+    catalogTender.settings.scoreRange
+  )
+  const sectionById = new Map(catalogTender.sections.map(section => [section.id, section]))
+
+  return rows.map(row => ({
+    row,
+    section: sectionById.get(row.sectionId)
+  }))
+}
+
+interface ReportCriteriaCatalogEntry {
+  catalogId: string
+  catalogAnchorId: string
+  catalogName: string
+  assessmentText: string
+  vendorScores: ReturnType<typeof buildVendorScoresForCatalog>
+  hasAnyQuestions: boolean
+  categoryComparisonSections: Array<{
+    row: SectionVendorComparisonRow
+    section: TenderSection | undefined
+  }>
+}
+
+const reportCriteriaCatalogEntries = computed<ReportCriteriaCatalogEntry[]>(() => {
+  return (criteriaCatalogReportData.value || []).map((catalogTender) => {
+    const activeCatalog = catalogTender.criteriaCatalogs.find((catalog) => catalog.id === catalogTender.activeCriteriaCatalogId)
+
+    return {
+      catalogId: activeCatalog?.id || catalogTender.activeCriteriaCatalogId,
+      catalogAnchorId: `criteria-catalog-${activeCatalog?.id || catalogTender.activeCriteriaCatalogId}`,
+      catalogName: activeCatalog?.name || 'Kriterienkatalog',
+      assessmentText: activeCatalog?.assessmentText.trim() || '',
+      vendorScores: buildVendorScoresForCatalog(catalogTender),
+      hasAnyQuestions: hasAnyQuestionsForCatalog(catalogTender),
+      categoryComparisonSections: buildCategoryComparisonSectionsForCatalog(catalogTender)
+    }
+  })
 })
 
-const hasAnyQuestions = computed(() => {
-  return tender.value?.sections.some(section =>
-    section.questionsByVendor.some(entry => entry.questions.length > 0)
-  ) || false
+const valueScoreRows = computed(() => {
+  if (!tender.value) {
+    return []
+  }
+
+  return buildTenderValueScoreRows(
+    tender.value.vendors,
+    tender.value.sections,
+    tender.value.settings.scoreRange,
+    tender.value.costBlocks,
+    tender.value.vendorCostItems,
+    tender.value.settings.considerationYears
+  )
+})
+
+const valueScoreChartHasData = computed(() => {
+  return valueScoreRows.value.some((row) => row.balancedScore !== null && row.normalizedCost !== null)
 })
 
 const costOverviewRows = computed(() => {
@@ -125,31 +190,6 @@ const vendorCostBreakdowns = computed(() => {
     runAssessment: vendor.runCostAssessment || '',
     projectRow: projectCostRows.value.find((row) => row.vendorId === vendor.id) || null,
     runRow: runCostRows.value.find((row) => row.vendorId === vendor.id) || null
-  }))
-})
-
-const categoryComparisonRows = computed(() => {
-  if (!tender.value) {
-    return []
-  }
-
-  return buildSectionVendorComparisonRows(
-    tender.value.vendors,
-    tender.value.sections,
-    tender.value.settings.scoreRange
-  )
-})
-
-const categoryComparisonSections = computed(() => {
-  if (!tender.value) {
-    return []
-  }
-
-  const sectionById = new Map(tender.value.sections.map(section => [section.id, section]))
-
-  return categoryComparisonRows.value.map(row => ({
-    row,
-    section: sectionById.get(row.sectionId)
   }))
 })
 
@@ -272,6 +312,20 @@ useSeoMeta({
               <span class="toc-number">{{ chapter.number }}</span>
               <span class="toc-title">{{ chapter.title }}</span>
             </a>
+            <ol
+              v-if="chapter.id === criteriaComparisonChapter.id && reportCriteriaCatalogEntries.length > 0"
+              class="toc-subitems"
+            >
+              <li
+                v-for="catalogEntry in reportCriteriaCatalogEntries"
+                :key="catalogEntry.catalogId"
+              >
+                <a :href="`#${catalogEntry.catalogAnchorId}`">
+                  <span class="toc-number" />
+                  <span class="toc-title">{{ catalogEntry.catalogName }}</span>
+                </a>
+              </li>
+            </ol>
           </li>
         </ol>
       </section>
@@ -340,55 +394,69 @@ useSeoMeta({
       <section :id="criteriaComparisonChapter.id" class="report-section">
         <ReportChapterHeader v-bind="criteriaComparisonChapter" />
         <div class="report-section-content">
-          <ReportChartBlock
-            title="Gesamtbewertung der Kriterien"
-            description="Das Diagramm zeigt die gewichtete fachliche Erfüllung je Anbieter. Die gestapelten Balken machen sichtbar, welche Kriterienblöcke zum Gesamtergebnis beitragen."
+          <section
+            v-for="(catalogEntry, catalogIndex) in reportCriteriaCatalogEntries"
+            :id="catalogEntry.catalogAnchorId"
+            :key="catalogEntry.catalogId"
+            class="report-criteria-catalog-section"
+            :class="{ 'report-criteria-catalog-section-page': catalogIndex > 0 }"
           >
-            <TenderOverviewChart
-              v-if="hasAnyQuestions"
-              :scores="vendorScores"
-              :palette="tender.settings.chartPalette"
-              renderer="svg"
-              :width="reportChartWidth"
-            />
-            <p v-else class="report-empty-state">
-              Es wurden noch keine Fragen importiert. Der Vergleich wird angezeigt, sobald Daten vorliegen.
-            </p>
-          </ReportChartBlock>
+            <h3 class="report-criteria-catalog-title">{{ catalogEntry.catalogName }}</h3>
 
-          <div v-if="hasAnyQuestions" class="report-category-sections">
-            <section
-              v-for="entry in categoryComparisonSections"
-              :key="entry.row.sectionId"
-              class="report-category-section"
+            <div class="report-chart-content">
+              <TenderOverviewChart
+                v-if="catalogEntry.hasAnyQuestions"
+                :scores="catalogEntry.vendorScores"
+                :palette="tender.settings.chartPalette"
+                renderer="svg"
+                :width="reportChartWidth"
+              />
+              <p v-else class="report-empty-state">
+                Es wurden noch keine Fragen importiert. Der Vergleich wird angezeigt, sobald Daten vorliegen.
+              </p>
+            </div>
+
+            <div
+              v-if="catalogEntry.assessmentText"
+              class="report-criteria-catalog-assessment"
             >
-              <h3>{{ entry.row.sectionName }} (Gewicht {{ Math.round(entry.row.sectionWeight) }}%)</h3>
-              <p class="report-category-description">
-                {{ entry.section?.description || 'Für diese Kategorie wurde keine Beschreibung erfasst.' }}
-              </p>
+              <ReportMarkdownBlock :markdown="catalogEntry.assessmentText" />
+            </div>
 
-              <div class="report-category-chart">
-                <TenderCategoryComparisonChart
-                  :row="entry.row"
-                  :palette="tender.settings.chartPalette"
-                  renderer="svg"
-                  :width="reportChartWidth"
-                />
-              </div>
-
-              <p class="report-category-note">
-                Das Diagramm vergleicht die fachliche Erfüllung dieser Kategorie über alle Anbieter. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.
-              </p>
-
-              <div
-                v-if="entry.section?.resultAssessment"
-                class="report-category-result-assessment"
+            <div v-if="catalogEntry.hasAnyQuestions" class="report-category-sections">
+              <section
+                v-for="entry in catalogEntry.categoryComparisonSections"
+                :key="entry.row.sectionId"
+                class="report-category-section"
               >
-                <h4>Einordnung der Kategorieergebnisse</h4>
-                <ReportMarkdownBlock :markdown="entry.section.resultAssessment" />
-              </div>
-            </section>
-          </div>
+                <h3>{{ entry.row.sectionName }} (Gewicht {{ Math.round(entry.row.sectionWeight) }}%)</h3>
+                <p class="report-category-description">
+                  {{ entry.section?.description || 'Für diese Kategorie wurde keine Beschreibung erfasst.' }}
+                </p>
+
+                <div class="report-category-chart">
+                  <TenderCategoryComparisonChart
+                    :row="entry.row"
+                    :palette="tender.settings.chartPalette"
+                    renderer="svg"
+                    :width="reportChartWidth"
+                  />
+                </div>
+
+                <p class="report-category-note">
+                  Das Diagramm vergleicht die fachliche Erfüllung dieser Kategorie über alle Anbieter. Der beste Anbieter in dieser Kategorie ist farblich hervorgehoben.
+                </p>
+
+                <div
+                  v-if="entry.section?.resultAssessment"
+                  class="report-category-result-assessment"
+                >
+                  <h4>Einordnung der Kategorieergebnisse</h4>
+                  <ReportMarkdownBlock :markdown="entry.section.resultAssessment" />
+                </div>
+              </section>
+            </div>
+          </section>
         </div>
       </section>
 
@@ -599,6 +667,25 @@ useSeoMeta({
   text-decoration: none;
 }
 
+.report-toc .toc-subitems {
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
+  list-style: none;
+  margin: 3mm 0 0 14mm;
+  padding: 0;
+}
+
+.report-toc .toc-subitems a {
+  grid-template-columns: 8mm minmax(0, 1fr);
+  padding-bottom: 2.5mm;
+}
+
+.report-toc .toc-subitems .toc-title {
+  font-size: 12pt;
+  font-weight: 600;
+}
+
 .toc-number {
   color: #6b7280;
   font-size: 13pt;
@@ -642,6 +729,47 @@ useSeoMeta({
   gap: 8mm;
   max-width: 100%;
   overflow: hidden;
+}
+
+.report-criteria-catalog-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8mm;
+}
+
+.report-criteria-catalog-section-page {
+  break-before: page;
+  page-break-before: always;
+}
+
+.report-section :deep(.report-criteria-catalog-title) {
+  color: #111827 !important;
+  font-size: 20pt !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+}
+
+.report-criteria-catalog-section .report-chart-content {
+  background: #ffffff;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  width: 100%;
+}
+
+.report-criteria-catalog-section .report-chart-content :deep(.echarts),
+.report-criteria-catalog-section .report-chart-content :deep(.vue-echarts),
+.report-criteria-catalog-section .report-chart-content :deep(canvas),
+.report-criteria-catalog-section .report-chart-content :deep(svg) {
+  max-width: 100% !important;
+}
+
+.report-criteria-catalog-assessment {
+  color: #374151;
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
 }
 
 .report-category-section {
@@ -803,6 +931,17 @@ useSeoMeta({
   .report-section {
     max-width: 186mm;
     overflow: hidden;
+  }
+
+  .report-criteria-catalog-section .report-chart-content {
+    width: 186mm;
+  }
+
+  .report-criteria-catalog-section .report-chart-content :deep(.echarts),
+  .report-criteria-catalog-section .report-chart-content :deep(.vue-echarts),
+  .report-criteria-catalog-section .report-chart-content :deep(canvas),
+  .report-criteria-catalog-section .report-chart-content :deep(svg) {
+    width: 186mm !important;
   }
 }
 </style>

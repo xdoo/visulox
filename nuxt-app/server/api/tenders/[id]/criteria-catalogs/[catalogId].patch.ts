@@ -9,6 +9,7 @@ interface CatalogRow {
   id: string | number
   name: string
   catalog_type: string
+  assessment_text: string | null
 }
 
 export default defineEventHandler(async (event): Promise<UpdateCriteriaCatalogResponse> => {
@@ -50,7 +51,7 @@ export default defineEventHandler(async (event): Promise<UpdateCriteriaCatalogRe
            catalog_type = $4
        WHERE id = $2
          AND ausschreibung_id = $1
-       RETURNING id, name, catalog_type`,
+       RETURNING id, name, catalog_type, assessment_text`,
       [tenderId, catalogId, name, catalogType]
     )
 
@@ -67,7 +68,8 @@ export default defineEventHandler(async (event): Promise<UpdateCriteriaCatalogRe
       catalog: {
         id: String(catalog.id),
         name: catalog.name,
-        type: catalog.catalog_type === 'main' || catalog.catalog_type === 'report' ? catalog.catalog_type : 'draft'
+        type: catalog.catalog_type === 'main' || catalog.catalog_type === 'report' ? catalog.catalog_type : 'draft',
+        assessmentText: catalog.assessment_text || ''
       }
     }
   } finally {

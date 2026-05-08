@@ -11,6 +11,7 @@ interface TenderNavigationRow {
   catalog_id: string | number | null
   catalog_name: string | null
   catalog_type: string | null
+  assessment_text: string | null
 }
 
 export default defineEventHandler(async (event): Promise<TenderListItem[]> => {
@@ -19,7 +20,7 @@ export default defineEventHandler(async (event): Promise<TenderListItem[]> => {
 
   try {
     const result = await client.query<TenderNavigationRow>(
-      `SELECT a.id, a.name, k.id AS catalog_id, k.name AS catalog_name, k.catalog_type
+      `SELECT a.id, a.name, k.id AS catalog_id, k.name AS catalog_name, k.catalog_type, k.assessment_text
        FROM ausschreibungen a
        LEFT JOIN kriterienkataloge k
          ON k.ausschreibung_id = a.id
@@ -41,7 +42,8 @@ export default defineEventHandler(async (event): Promise<TenderListItem[]> => {
         existing.criteriaCatalogs!.push({
           id: String(row.catalog_id),
           name: row.catalog_name,
-          type: row.catalog_type === 'main' || row.catalog_type === 'report' ? row.catalog_type : 'draft'
+          type: row.catalog_type === 'main' || row.catalog_type === 'report' ? row.catalog_type : 'draft',
+          assessmentText: row.assessment_text || ''
         })
       }
 

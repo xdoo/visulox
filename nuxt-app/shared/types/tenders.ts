@@ -50,6 +50,7 @@ export interface TenderCriteriaCatalog {
   id: string
   name: string
   type: TenderCriteriaCatalogType
+  assessmentText: string
 }
 
 export interface TenderVendor {
@@ -180,6 +181,14 @@ export interface UpdateCriteriaCatalogRequest {
 
 export interface UpdateCriteriaCatalogResponse {
   catalog: TenderCriteriaCatalog
+}
+
+export interface UpdateCriteriaCatalogAssessmentRequest {
+  assessmentText: string
+}
+
+export interface UpdateCriteriaCatalogAssessmentResponse {
+  catalog: Pick<TenderCriteriaCatalog, 'id' | 'assessmentText'>
 }
 
 export interface DeleteTenderResponse {
